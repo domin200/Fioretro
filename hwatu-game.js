@@ -884,6 +884,13 @@ function calculateScore() {
         triggerUpgradeEffect('tiger_cave');
     }
     
+    // 천리길 효과 (스테이지 번호 × 1 만큼 기본 점수 추가)
+    const hasThousandMile = gameState.upgrades.some(u => u.id === 'thousand_mile');
+    if (hasThousandMile) {
+        points += gameState.stage;
+        triggerUpgradeEffect('thousand_mile');
+    }
+    
     // 멍텅구리 효과 (열끗도 장당 1점)
     const hasStupidFish = gameState.upgrades.some(u => u.id === 'stupid_fish');
     if (hasStupidFish) {
@@ -1966,6 +1973,7 @@ const upgradePool = [
     { id: 'sunny_after_rain', name: '비온뒤 맑음', icon: '🌤️', description: '덱에서 12월 패 4장이 제거됨', rarity: 'epic' },
     { id: 'tiger_cave', name: '호랑이굴', icon: '🐯', description: '매 라운드 첫턴은 버리기 불가, 기본 점수 +5', rarity: 'rare' },
     { id: 'triple_discard', name: '일타삼피', icon: '3️⃣', description: '버리기시 양옆 카드도 같이 버려짐', rarity: 'epic' },
+    { id: 'thousand_mile', name: '천리길', icon: '🛤️', description: '스테이지 번호 × 1 만큼 기본 점수 추가', rarity: 'rare' },
 ];
 
 let selectedUpgrade = null;
