@@ -798,6 +798,27 @@ function calculateScore() {
         triggerUpgradeEffect('maple_hand');
     }
     
+    // 칠지도 효과 (피가 정확히 7장이면 +10점)
+    const hasSevenPi = gameState.upgrades.some(u => u.id === 'seven_pi');
+    if (hasSevenPi && piCount === 7) {
+        points += 10;
+        triggerUpgradeEffect('seven_pi');
+        if (!gameState.shownCombinations.has('칠지도')) {
+            achievedCombinations.push('칠지도!');
+            gameState.shownCombinations.add('칠지도');
+        }
+    }
+    
+    // 멍텅구리 효과 (열끗도 장당 1점)
+    const hasStupidFish = gameState.upgrades.some(u => u.id === 'stupid_fish');
+    if (hasStupidFish) {
+        const yeolCount = cardsByType['열끗'].length;
+        points += yeolCount;  // 열끗 카드 장당 1점
+        if (yeolCount > 0) {
+            triggerUpgradeEffect('stupid_fish');
+        }
+    }
+    
     // 배수 계산 (바닥 카드 + 특수 조합)
     let multiplier = calculateMultiplier(floorCards);
     
@@ -1859,6 +1880,8 @@ const upgradePool = [
     { id: 'no_possession', name: '무소유', icon: '🚫', description: '스테이지 시작 시 바닥 패가 없이 시작한다', rarity: 'common' },
     { id: 'maple_hand', name: '단풍손', icon: '🍁', description: '손패 카드가 -1(총 4장) 되지만, 기본점수 +4', rarity: 'rare' },
     { id: 'mind_reading', name: '관심법', icon: '👁️', description: '매 스테이지 시작 시 덱 맨 위의 카드를 알고 시작한다', rarity: 'rare' },
+    { id: 'seven_pi', name: '칠지도', icon: '7️⃣', description: '피 카드가 정확히 7장이면 추가로 +10점', rarity: 'rare' },
+    { id: 'stupid_fish', name: '멍텅구리', icon: '🐟', description: '열끗 카드도 장당 1점을 얻는다', rarity: 'common' },
 ];
 
 let selectedUpgrade = null;
