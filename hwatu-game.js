@@ -123,6 +123,15 @@ const gameState = {
 function initGame() {
     // 덱 준비 및 섞기
     gameState.deck = [...HWATU_CARDS];
+    
+    // 비온뒤 맑음 업그레이드 확인 - 12월 카드 제거
+    const hasSunnyAfterRain = gameState.upgrades.some(u => u.id === 'sunny_after_rain');
+    if (hasSunnyAfterRain) {
+        gameState.deck = gameState.deck.filter(card => card.month !== 12);
+        // 효과 발동 알림 (약간의 딜레이 후)
+        setTimeout(() => triggerUpgradeEffect('sunny_after_rain'), 300);
+    }
+    
     shuffleDeck();
     
     // 상태 초기화
@@ -1275,6 +1284,12 @@ function updateDisplay() {
         document.getElementById('deck-remaining').textContent = gameState.deck.length;
     }
     
+    // 덱 총 개수 업데이트 (비온뒤 맑음 업그레이드 확인)
+    if (document.getElementById('deck-total')) {
+        const hasSunnyAfterRain = gameState.upgrades.some(u => u.id === 'sunny_after_rain');
+        document.getElementById('deck-total').textContent = hasSunnyAfterRain ? 44 : 48;
+    }
+    
     // 현재 손패와 바닥패의 카드 종류별 개수 계산
     const currentCards = {
         '광': 0,
@@ -1882,6 +1897,7 @@ const upgradePool = [
     { id: 'mind_reading', name: '관심법', icon: '👁️', description: '매 스테이지 시작 시 덱 맨 위의 카드를 알고 시작한다', rarity: 'rare' },
     { id: 'seven_pi', name: '칠지도', icon: '7️⃣', description: '피 카드가 정확히 7장이면 추가로 +10점', rarity: 'rare' },
     { id: 'stupid_fish', name: '멍텅구리', icon: '🐟', description: '열끗 카드도 장당 1점을 얻는다', rarity: 'common' },
+    { id: 'sunny_after_rain', name: '비온뒤 맑음', icon: '🌤️', description: '덱에서 12월 패 4장이 제거됨', rarity: 'epic' },
 ];
 
 let selectedUpgrade = null;
