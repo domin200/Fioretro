@@ -7,15 +7,20 @@ function initAudio() {
     // OGG 지원 여부 확인
     const audio = document.createElement('audio');
     const canPlayOgg = audio.canPlayType('audio/ogg; codecs="vorbis"');
+    const canPlayMp3 = audio.canPlayType('audio/mpeg');
     
     // 지원하는 형식으로 오디오 생성
-    if (canPlayOgg) {
+    if (canPlayOgg && canPlayOgg !== 'no') {
+        console.log('Using OGG format for sound effects');
         allow1Audio = new Audio('se/allow1.ogg');
         allow2Audio = new Audio('se/allow2.ogg');
+    } else if (canPlayMp3 && canPlayMp3 !== 'no') {
+        console.log('Using MP3 format for sound effects');
+        allow1Audio = new Audio('se/allow1.mp3');
+        allow2Audio = new Audio('se/allow2.mp3');
     } else {
-        // OGG를 지원하지 않는 경우 (Safari 등)
-        console.log('OGG not supported, trying to use fallback');
-        // MP3 파일이 없으므로 오디오 비활성화
+        console.log('No audio format supported');
+        // 오디오를 지원하지 않는 경우
         allow1Audio = { play: () => Promise.resolve(), currentTime: 0 };
         allow2Audio = { play: () => Promise.resolve(), currentTime: 0 };
     }
@@ -38,8 +43,8 @@ if (typeof window !== 'undefined') {
 // 사운드 재생 함수
 function playSound(soundFile) {
     try {
-        // 프리로드된 오디오 사용
-        if (soundFile === 'se/allow1.ogg' && allow1Audio) {
+        // 프리로드된 오디오 사용 (OGG 또는 MP3 경로 모두 처리)
+        if ((soundFile === 'se/allow1.ogg' || soundFile === 'se/allow1.mp3') && allow1Audio) {
             if (allow1Audio instanceof Audio) {
                 allow1Audio.currentTime = 0;  // 처음부터 재생
                 allow1Audio.play().catch(e => {
@@ -50,7 +55,7 @@ function playSound(soundFile) {
                     }, { once: true });
                 });
             }
-        } else if (soundFile === 'se/allow2.ogg' && allow2Audio) {
+        } else if ((soundFile === 'se/allow2.ogg' || soundFile === 'se/allow2.mp3') && allow2Audio) {
             if (allow2Audio instanceof Audio) {
                 allow2Audio.currentTime = 0;  // 처음부터 재생
                 allow2Audio.play().catch(e => {
