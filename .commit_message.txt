@@ -1,1 +1,1 @@
-🗑️ 레거시 index.html 파일 삭제
+⚙️ Vercel 배포 설정 추가 - hwatu.html을 메인으로
