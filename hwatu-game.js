@@ -1248,30 +1248,52 @@ function endRound() {
             showUpgradeSelection();
         }, 2500);
     } else {
-        // 미션 실패
-        showMissionResult(false, gameState.totalScore);
-        setTimeout(() => {
-            // 스테이지 1로 돌아올 때 기본 색상으로 복원
-            if (typeof updateBackgroundColors === 'function') {
-                updateBackgroundColors(1);
-            }
+        // 두개의 심장 확인
+        const twoHeartsIndex = gameState.upgrades.findIndex(u => u.id === 'two_hearts');
+        
+        if (twoHeartsIndex !== -1) {
+            // 두개의 심장 효과 발동
+            showMissionResult(false, gameState.totalScore, true); // 두개의 심장 사용 알림
             
-            // 업그레이드 초기화
-            gameState.upgrades = [];
+            // 두개의 심장 제거
+            gameState.upgrades.splice(twoHeartsIndex, 1);
             
-            initGame();
+            // 효과 발동 알림
+            setTimeout(() => {
+                triggerUpgradeEffect('two_hearts');
+                showTwoHeartsUsed();
+            }, 1000);
             
-            // initGame 후에 스테이지 값 설정
-            gameState.stage = 1;
-            gameState.targetScore = 25;  // 초기값 25
-            gameState.discardsLeft = 4;  // 버리기 횟수 초기화
-            updateDisplay();
-        }, 2500);
+            // 다음 스테이지로 진행
+            setTimeout(() => {
+                showUpgradeSelection();
+            }, 3500);
+        } else {
+            // 미션 실패
+            showMissionResult(false, gameState.totalScore);
+            setTimeout(() => {
+                // 스테이지 1로 돌아올 때 기본 색상으로 복원
+                if (typeof updateBackgroundColors === 'function') {
+                    updateBackgroundColors(1);
+                }
+                
+                // 업그레이드 초기화
+                gameState.upgrades = [];
+                
+                initGame();
+                
+                // initGame 후에 스테이지 값 설정
+                gameState.stage = 1;
+                gameState.targetScore = 25;  // 초기값 25
+                gameState.discardsLeft = 4;  // 버리기 횟수 초기화
+                updateDisplay();
+            }, 2500);
+        }
     }
 }
 
 // 미션 결과 표시
-function showMissionResult(success, score) {
+function showMissionResult(success, score, usingTwoHearts = false) {
     const message = document.createElement('div');
     message.style.cssText = `
         position: fixed;
@@ -1292,7 +1314,7 @@ function showMissionResult(success, score) {
     
     message.innerHTML = `
         <div style="font-size: 48px; margin-bottom: 20px;">
-            ${success ? '🎉 미션 성공!' : '💔 미션 실패!'}
+            ${success ? '🎉 미션 성공!' : (usingTwoHearts ? '💕 두개의 심장!' : '💔 미션 실패!')}
         </div>
         <div style="font-size: 24px; margin-bottom: 10px;">
             스테이지 ${gameState.stage}
@@ -1305,7 +1327,9 @@ function showMissionResult(success, score) {
         </div>
         ${success ? 
             `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">다음 스테이지로 진행합니다!</div>` : 
-            `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">게임이 초기화됩니다...</div>`
+            (usingTwoHearts ? 
+                `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">두개의 심장으로 부활합니다!</div>` : 
+                `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">게임이 초기화됩니다...</div>`)
         }
     `;
     
@@ -1716,6 +1740,70 @@ function triggerUpgradeEffect(upgradeId) {
     });
 }
 
+// 두개의 심장 사용 알림
+function showTwoHeartsUsed() {
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        left: 50%;
+        top: 30%;
+        transform: translate(-50%, -50%);
+        background: linear-gradient(135deg, #ff6b6b 0%, #ff8787 100%);
+        color: white;
+        padding: 30px 50px;
+        border-radius: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        z-index: 3001;
+        box-shadow: 0 20px 60px rgba(255, 107, 107, 0.5);
+        text-align: center;
+        animation: heartBeat 2s ease;
+    `;
+    
+    notification.innerHTML = `
+        <div style="font-size: 48px; margin-bottom: 15px;">💕</div>
+        <div>두개의 심장이 발동되었습니다!</div>
+        <div style="font-size: 16px; margin-top: 10px; opacity: 0.9;">
+            한 번의 기회를 더 얻었습니다
+        </div>
+    `;
+    
+    // 애니메이션 CSS 추가
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes heartBeat {
+            0% { 
+                opacity: 0; 
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.2);
+            }
+            40% {
+                transform: translate(-50%, -50%) scale(0.9);
+            }
+            60% {
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            80% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(1);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    document.body.appendChild(notification);
+    
+    // 2초 후 제거
+    setTimeout(() => {
+        notification.remove();
+    }, 2000);
+}
+
 // 관심법 효과 - 덱 맨 위 카드 미리보기
 function showTopCardPreview() {
     if (gameState.deck.length === 0) return;
@@ -2001,6 +2089,7 @@ const upgradePool = [
     { id: 'triple_discard', name: '일타삼피', icon: '3️⃣', description: '버리기시 양옆 카드도 같이 버려짐', rarity: 'epic' },
     { id: 'thousand_mile', name: '천리길', icon: '🛤️', description: '스테이지 번호 × 1 만큼 기본 점수 추가', rarity: 'rare' },
     { id: 'reincarnation', name: '윤회', icon: '♻️', description: '버린 카드가 덱으로 돌아가고, 버리기당 +5점', rarity: 'epic' },
+    { id: 'two_hearts', name: '두개의 심장', icon: '💕', description: '한 번 패배해도 게임이 끝나지 않음 (1회용)', rarity: 'legendary' },
 ];
 
 let selectedUpgrade = null;
