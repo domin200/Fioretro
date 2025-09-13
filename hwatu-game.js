@@ -445,34 +445,81 @@ function discardCards() {
         return;
     }
     
-    // 버릴 카드 정보 저장
-    const discardedCard = gameState.hand[gameState.selectedCard];
+    // 호랑이굴 효과 - 첫 턴에는 버리기 불가
+    const hasTigerCave = gameState.upgrades.some(u => u.id === 'tiger_cave');
+    if (hasTigerCave && gameState.turn === 0) {
+        alert('호랑이굴 효과로 첫 턴에는 버리기를 사용할 수 없습니다!');
+        return;
+    }
+    
+    // 일타삼피 효과 확인
+    const hasTripleDiscard = gameState.upgrades.some(u => u.id === 'triple_discard');
+    
+    // 버릴 카드들 결정
+    const cardsToDiscard = [];
+    const indicesToRemove = [];
+    
+    if (hasTripleDiscard) {
+        // 선택한 카드와 양옆 카드 모두 버리기
+        const selectedIndex = gameState.selectedCard;
+        
+        // 중앙 카드
+        cardsToDiscard.push(gameState.hand[selectedIndex]);
+        indicesToRemove.push(selectedIndex);
+        
+        // 왼쪽 카드
+        if (selectedIndex > 0) {
+            cardsToDiscard.push(gameState.hand[selectedIndex - 1]);
+            indicesToRemove.push(selectedIndex - 1);
+        }
+        
+        // 오른쪽 카드
+        if (selectedIndex < gameState.hand.length - 1) {
+            cardsToDiscard.push(gameState.hand[selectedIndex + 1]);
+            indicesToRemove.push(selectedIndex + 1);
+        }
+        
+        // 일타삼피 효과 발동
+        triggerUpgradeEffect('triple_discard');
+    } else {
+        // 일반 버리기
+        cardsToDiscard.push(gameState.hand[gameState.selectedCard]);
+        indicesToRemove.push(gameState.selectedCard);
+    }
+    
     gameState.discardsLeft--; // 버리기 카운트 감소
     
-    // 버릴 카드 애니메이션을 위한 임시 요소 생성
+    // 버릴 카드들의 애니메이션
     const handArea = document.getElementById('hand-area');
     const cardElements = handArea.children;
-    const originalCard = cardElements[gameState.selectedCard];
+    const tempCards = [];
     
-    // 원본 카드 위치 가져오기
-    const rect = originalCard.getBoundingClientRect();
+    // 각 카드에 대해 애니메이션 생성
+    indicesToRemove.forEach((index, i) => {
+        const originalCard = cardElements[index];
+        const rect = originalCard.getBoundingClientRect();
+        const card = cardsToDiscard[i];
+        
+        // 임시 카드 생성 (애니메이션용)
+        const tempCard = createCardElement(card);
+        tempCard.style.position = 'fixed';
+        tempCard.style.left = rect.left + 'px';
+        tempCard.style.top = rect.top + 'px';
+        tempCard.style.width = rect.width + 'px';
+        tempCard.style.height = rect.height + 'px';
+        tempCard.style.zIndex = (2000 + i) + '';
+        tempCard.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 1s ease-out, filter 1s ease-out';
+        document.body.appendChild(tempCard);
+        tempCards.push(tempCard);
+        
+        // 원본 카드 즉시 숨기기
+        originalCard.style.visibility = 'hidden';
+    });
     
-    // 임시 카드 생성 (애니메이션용)
-    const tempCard = createCardElement(discardedCard);
-    tempCard.style.position = 'fixed';
-    tempCard.style.left = rect.left + 'px';
-    tempCard.style.top = rect.top + 'px';
-    tempCard.style.width = rect.width + 'px';
-    tempCard.style.height = rect.height + 'px';
-    tempCard.style.zIndex = '2000';
-    tempCard.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 1s ease-out, filter 1s ease-out';
-    document.body.appendChild(tempCard);
-    
-    // 원본 카드 즉시 숨기기
-    originalCard.style.visibility = 'hidden';
-    
-    // 카드 제거 (상태 업데이트)
-    gameState.hand.splice(gameState.selectedCard, 1);
+    // 카드들 제거 (큰 인덱스부터 제거해야 함)
+    indicesToRemove.sort((a, b) => b - a).forEach(index => {
+        gameState.hand.splice(index, 1);
+    });
     gameState.selectedCard = null;
     
     // 버리기 사운드 즉시 재생
@@ -483,28 +530,40 @@ function discardCards() {
     
     // 애니메이션 시작 (위로 올라가면서 사라짐)
     setTimeout(() => {
-        tempCard.style.transform = 'translateY(-200px) scale(0.7) rotate(15deg)';
-        tempCard.style.opacity = '0';
-        tempCard.style.filter = 'blur(4px)';
+        tempCards.forEach((tempCard, i) => {
+            // 각 카드마다 약간 다른 회전과 방향
+            const rotation = 15 + (i - 1) * 10; // -5, 15, 25도
+            const translateX = (i - 1) * 30; // -30, 0, 30px
+            tempCard.style.transform = `translateY(-200px) translateX(${translateX}px) scale(0.7) rotate(${rotation}deg)`;
+            tempCard.style.opacity = '0';
+            tempCard.style.filter = 'blur(4px)';
+        });
     }, 50);
     
-    // 덱에서 새 카드 드로우 (버리기 애니메이션과 동시에)
+    // 덱에서 새 카드들 드로우 (버린 카드 수만큼)
+    const drawCount = cardsToDiscard.length;
     setTimeout(() => {
-        if (gameState.deck.length > 0) {
-            const newCard = gameState.deck.pop();
-            showDrawAnimation(newCard);
-            
-            // 1초 후 손패에 추가
-            setTimeout(() => {
-                gameState.hand.push(newCard);
-                updateDisplay();
-            }, 1000);
+        for (let i = 0; i < drawCount; i++) {
+            if (gameState.deck.length > 0) {
+                const newCard = gameState.deck.pop();
+                
+                // 각 카드 드로우에 딜레이 추가
+                setTimeout(() => {
+                    showDrawAnimation(newCard);
+                    
+                    // 1초 후 손패에 추가
+                    setTimeout(() => {
+                        gameState.hand.push(newCard);
+                        updateDisplay();
+                    }, 1000);
+                }, i * 200); // 각 카드마다 200ms 간격
+            }
         }
     }, 500);
     
     // 애니메이션 완료 후 임시 카드 제거
     setTimeout(() => {
-        tempCard.remove();
+        tempCards.forEach(tempCard => tempCard.remove());
     }, 1050);
 }
 
@@ -816,6 +875,13 @@ function calculateScore() {
             achievedCombinations.push('칠지도!');
             gameState.shownCombinations.add('칠지도');
         }
+    }
+    
+    // 호랑이굴 효과 (기본 점수 +5)
+    const hasTigerCave = gameState.upgrades.some(u => u.id === 'tiger_cave');
+    if (hasTigerCave) {
+        points += 5;
+        triggerUpgradeEffect('tiger_cave');
     }
     
     // 멍텅구리 효과 (열끗도 장당 1점)
@@ -1898,6 +1964,8 @@ const upgradePool = [
     { id: 'seven_pi', name: '칠지도', icon: '7️⃣', description: '피 카드가 정확히 7장이면 추가로 +10점', rarity: 'rare' },
     { id: 'stupid_fish', name: '멍텅구리', icon: '🐟', description: '열끗 카드도 장당 1점을 얻는다', rarity: 'common' },
     { id: 'sunny_after_rain', name: '비온뒤 맑음', icon: '🌤️', description: '덱에서 12월 패 4장이 제거됨', rarity: 'epic' },
+    { id: 'tiger_cave', name: '호랑이굴', icon: '🐯', description: '매 라운드 첫턴은 버리기 불가, 기본 점수 +5', rarity: 'rare' },
+    { id: 'triple_discard', name: '일타삼피', icon: '3️⃣', description: '버리기시 양옆 카드도 같이 버려짐', rarity: 'epic' },
 ];
 
 let selectedUpgrade = null;
