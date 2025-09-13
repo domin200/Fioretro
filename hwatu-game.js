@@ -1,22 +1,73 @@
-// 사운드 프리로드
-const allow1Audio = new Audio('se/allow1.ogg');
-const allow2Audio = new Audio('se/allow2.ogg');
-allow1Audio.volume = 1.0;  // 100% 볼륨
-allow2Audio.volume = 0.5;  // 50% 볼륨
+// 사운드 프리로드 및 재생 시스템
+let allow1Audio = null;
+let allow2Audio = null;
+
+// 오디오 초기화 함수
+function initAudio() {
+    // OGG 지원 여부 확인
+    const audio = document.createElement('audio');
+    const canPlayOgg = audio.canPlayType('audio/ogg; codecs="vorbis"');
+    
+    // 지원하는 형식으로 오디오 생성
+    if (canPlayOgg) {
+        allow1Audio = new Audio('se/allow1.ogg');
+        allow2Audio = new Audio('se/allow2.ogg');
+    } else {
+        // OGG를 지원하지 않는 경우 (Safari 등)
+        console.log('OGG not supported, trying to use fallback');
+        // MP3 파일이 없으므로 오디오 비활성화
+        allow1Audio = { play: () => Promise.resolve(), currentTime: 0 };
+        allow2Audio = { play: () => Promise.resolve(), currentTime: 0 };
+    }
+    
+    if (allow1Audio instanceof Audio) {
+        allow1Audio.volume = 1.0;  // 100% 볼륨
+        allow1Audio.preload = 'auto';
+    }
+    if (allow2Audio instanceof Audio) {
+        allow2Audio.volume = 0.5;  // 50% 볼륨
+        allow2Audio.preload = 'auto';
+    }
+}
+
+// 페이지 로드 시 오디오 초기화
+if (typeof window !== 'undefined') {
+    window.addEventListener('DOMContentLoaded', initAudio);
+}
 
 // 사운드 재생 함수
 function playSound(soundFile) {
-    // 프리로드된 오디오 사용
-    if (soundFile === 'se/allow1.ogg') {
-        allow1Audio.currentTime = 0;  // 처음부터 재생
-        allow1Audio.play().catch(e => console.log('allow1 play failed:', e));
-    } else if (soundFile === 'se/allow2.ogg') {
-        allow2Audio.currentTime = 0;  // 처음부터 재생
-        allow2Audio.play().catch(e => console.log('allow2 play failed:', e));
-    } else {
-        const audio = new Audio(soundFile);
-        audio.volume = 0.5;
-        audio.play().catch(e => console.log('Sound play failed:', e));
+    try {
+        // 프리로드된 오디오 사용
+        if (soundFile === 'se/allow1.ogg' && allow1Audio) {
+            if (allow1Audio instanceof Audio) {
+                allow1Audio.currentTime = 0;  // 처음부터 재생
+                allow1Audio.play().catch(e => {
+                    console.log('allow1 play failed:', e);
+                    // 사용자 상호작용 후 재시도
+                    document.addEventListener('click', () => {
+                        allow1Audio.play().catch(() => {});
+                    }, { once: true });
+                });
+            }
+        } else if (soundFile === 'se/allow2.ogg' && allow2Audio) {
+            if (allow2Audio instanceof Audio) {
+                allow2Audio.currentTime = 0;  // 처음부터 재생
+                allow2Audio.play().catch(e => {
+                    console.log('allow2 play failed:', e);
+                    // 사용자 상호작용 후 재시도
+                    document.addEventListener('click', () => {
+                        allow2Audio.play().catch(() => {});
+                    }, { once: true });
+                });
+            }
+        } else {
+            const audio = new Audio(soundFile);
+            audio.volume = 0.5;
+            audio.play().catch(e => console.log('Sound play failed:', e));
+        }
+    } catch (error) {
+        console.log('Sound system error:', error);
     }
 }
 
@@ -2206,6 +2257,9 @@ function proceedToNextStage() {
 
 // 게임 시작
 window.onload = () => {
+    // 오디오 초기화
+    initAudio();
+    
     // 게임 시작시 스테이지 1 색상 확실히 설정
     if (typeof updateBackgroundColors === 'function') {
         updateBackgroundColors(1);

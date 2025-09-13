@@ -4,5 +4,25 @@
       "source": "/",
       "destination": "/hwatu.html"
     }
+  ],
+  "headers": [
+    {
+      "source": "/(.*).ogg",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "audio/ogg"
+        }
+      ]
+    },
+    {
+      "source": "/(.*).mp3",
+      "headers": [
+        {
+          "key": "Content-Type",
+          "value": "audio/mpeg"
+        }
+      ]
+    }
   ]
 }
