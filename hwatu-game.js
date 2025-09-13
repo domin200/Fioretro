@@ -115,7 +115,8 @@ const gameState = {
     selectedCard: null,
     discardsLeft: 4,    // 남은 버리기 횟수
     upgrades: [],        // 획득한 업그레이드 목록
-    shownCombinations: new Set()  // 이미 표시한 족보 추적
+    shownCombinations: new Set(),  // 이미 표시한 족보 추적
+    reincarnatedCards: 0  // 윤회로 덱으로 돌아간 카드 수
 };
 
 
@@ -149,6 +150,7 @@ function initGame() {
     gameState.turn = 0;
     gameState.selectedCard = null;
     gameState.shownCombinations = new Set();  // 족보 표시 초기화
+    gameState.reincarnatedCards = 0;  // 윤회 카운터 초기화
     
     // 버리기 횟수 계산 (기본 4 + 업그레이드)
     const extraDiscards = gameState.upgrades.filter(u => u.id === 'extra_discard').length;
@@ -540,6 +542,23 @@ function discardCards() {
         });
     }, 50);
     
+    // 윤회 효과 확인
+    const hasReincarnation = gameState.upgrades.some(u => u.id === 'reincarnation');
+    
+    if (hasReincarnation) {
+        // 윤회 효과: 버린 카드를 덱에 다시 넣기
+        cardsToDiscard.forEach(card => {
+            gameState.deck.push(card);
+            gameState.reincarnatedCards++;
+        });
+        
+        // 덱 섞기
+        shuffleDeck();
+        
+        // 윤회 효과 발동
+        triggerUpgradeEffect('reincarnation');
+    }
+    
     // 덱에서 새 카드들 드로우 (버린 카드 수만큼)
     const drawCount = cardsToDiscard.length;
     setTimeout(() => {
@@ -889,6 +908,13 @@ function calculateScore() {
     if (hasThousandMile) {
         points += gameState.stage;
         triggerUpgradeEffect('thousand_mile');
+    }
+    
+    // 윤회 효과 (덱으로 돌아간 카드당 +5점)
+    const hasReincarnation = gameState.upgrades.some(u => u.id === 'reincarnation');
+    if (hasReincarnation && gameState.reincarnatedCards > 0) {
+        points += gameState.reincarnatedCards * 5;
+        // 효과는 discardCards에서 이미 발동되므로 여기서는 점수만 추가
     }
     
     // 멍텅구리 효과 (열끗도 장당 1점)
@@ -1974,6 +2000,7 @@ const upgradePool = [
     { id: 'tiger_cave', name: '호랑이굴', icon: '🐯', description: '매 라운드 첫턴은 버리기 불가, 기본 점수 +5', rarity: 'rare' },
     { id: 'triple_discard', name: '일타삼피', icon: '3️⃣', description: '버리기시 양옆 카드도 같이 버려짐', rarity: 'epic' },
     { id: 'thousand_mile', name: '천리길', icon: '🛤️', description: '스테이지 번호 × 1 만큼 기본 점수 추가', rarity: 'rare' },
+    { id: 'reincarnation', name: '윤회', icon: '♻️', description: '버린 카드가 덱으로 돌아가고, 버리기당 +5점', rarity: 'epic' },
 ];
 
 let selectedUpgrade = null;
