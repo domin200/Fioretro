@@ -1,23 +1,28 @@
 // 사운드 프리로드 및 재생 시스템
 let allow1Audio = null;
 let allow2Audio = null;
+let audioInitialized = false;
 
 // 오디오 초기화 함수
 function initAudio() {
+    if (audioInitialized) return;
+    
     // OGG 지원 여부 확인
     const audio = document.createElement('audio');
     const canPlayOgg = audio.canPlayType('audio/ogg; codecs="vorbis"');
     const canPlayMp3 = audio.canPlayType('audio/mpeg');
     
-    // 지원하는 형식으로 오디오 생성
-    if (canPlayOgg && canPlayOgg !== 'no') {
-        console.log('Using OGG format for sound effects');
-        allow1Audio = new Audio('se/allow1.ogg');
-        allow2Audio = new Audio('se/allow2.ogg');
-    } else if (canPlayMp3 && canPlayMp3 !== 'no') {
+    console.log('Audio format support - OGG:', canPlayOgg, 'MP3:', canPlayMp3);
+    
+    // 지원하는 형식으로 오디오 생성 - MP3를 우선으로 (더 넓은 호환성)
+    if (canPlayMp3 && canPlayMp3 !== 'no') {
         console.log('Using MP3 format for sound effects');
         allow1Audio = new Audio('se/allow1.mp3');
         allow2Audio = new Audio('se/allow2.mp3');
+    } else if (canPlayOgg && canPlayOgg !== 'no') {
+        console.log('Using OGG format for sound effects');
+        allow1Audio = new Audio('se/allow1.ogg');
+        allow2Audio = new Audio('se/allow2.ogg');
     } else {
         console.log('No audio format supported');
         // 오디오를 지원하지 않는 경우
@@ -28,48 +33,106 @@ function initAudio() {
     if (allow1Audio instanceof Audio) {
         allow1Audio.volume = 1.0;  // 100% 볼륨
         allow1Audio.preload = 'auto';
+        // 에러 처리
+        allow1Audio.addEventListener('error', (e) => {
+            console.error('Error loading allow1 audio:', e);
+        });
     }
     if (allow2Audio instanceof Audio) {
         allow2Audio.volume = 0.5;  // 50% 볼륨
         allow2Audio.preload = 'auto';
+        // 에러 처리
+        allow2Audio.addEventListener('error', (e) => {
+            console.error('Error loading allow2 audio:', e);
+        });
+    }
+    
+    audioInitialized = true;
+}
+
+// 사용자 상호작용 시 오디오 활성화
+function enableAudioOnInteraction() {
+    if (!audioInitialized) {
+        initAudio();
+    }
+    
+    // 무음 재생으로 오디오 컨텍스트 활성화
+    if (allow1Audio instanceof Audio) {
+        allow1Audio.volume = 0;
+        allow1Audio.play().then(() => {
+            allow1Audio.pause();
+            allow1Audio.currentTime = 0;
+            allow1Audio.volume = 1.0;
+            console.log('Audio context activated for allow1');
+        }).catch(() => {});
+    }
+    if (allow2Audio instanceof Audio) {
+        allow2Audio.volume = 0;
+        allow2Audio.play().then(() => {
+            allow2Audio.pause();
+            allow2Audio.currentTime = 0;
+            allow2Audio.volume = 0.5;
+            console.log('Audio context activated for allow2');
+        }).catch(() => {});
     }
 }
 
 // 페이지 로드 시 오디오 초기화
 if (typeof window !== 'undefined') {
-    window.addEventListener('DOMContentLoaded', initAudio);
+    window.addEventListener('DOMContentLoaded', () => {
+        initAudio();
+        // 첫 클릭/터치 시 오디오 활성화
+        ['click', 'touchstart'].forEach(eventType => {
+            document.addEventListener(eventType, enableAudioOnInteraction, { once: true });
+        });
+    });
 }
 
 // 사운드 재생 함수
 function playSound(soundFile) {
     try {
+        // 오디오가 초기화되지 않았으면 초기화
+        if (!audioInitialized) {
+            initAudio();
+        }
+        
         // 프리로드된 오디오 사용 (OGG 또는 MP3 경로 모두 처리)
-        if ((soundFile === 'se/allow1.ogg' || soundFile === 'se/allow1.mp3') && allow1Audio) {
-            if (allow1Audio instanceof Audio) {
-                allow1Audio.currentTime = 0;  // 처음부터 재생
-                allow1Audio.play().catch(e => {
-                    console.log('allow1 play failed:', e);
-                    // 사용자 상호작용 후 재시도
-                    document.addEventListener('click', () => {
-                        allow1Audio.play().catch(() => {});
-                    }, { once: true });
-                });
+        if (soundFile.includes('allow1')) {
+            if (allow1Audio && allow1Audio instanceof Audio) {
+                // 재생 중이면 처음부터 다시 재생
+                allow1Audio.pause();
+                allow1Audio.currentTime = 0;
+                
+                const playPromise = allow1Audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.log('allow1 play failed, will retry on next interaction:', e.message);
+                    });
+                }
             }
-        } else if ((soundFile === 'se/allow2.ogg' || soundFile === 'se/allow2.mp3') && allow2Audio) {
-            if (allow2Audio instanceof Audio) {
-                allow2Audio.currentTime = 0;  // 처음부터 재생
-                allow2Audio.play().catch(e => {
-                    console.log('allow2 play failed:', e);
-                    // 사용자 상호작용 후 재시도
-                    document.addEventListener('click', () => {
-                        allow2Audio.play().catch(() => {});
-                    }, { once: true });
-                });
+        } else if (soundFile.includes('allow2')) {
+            if (allow2Audio && allow2Audio instanceof Audio) {
+                // 재생 중이면 처음부터 다시 재생
+                allow2Audio.pause();
+                allow2Audio.currentTime = 0;
+                
+                const playPromise = allow2Audio.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(e => {
+                        console.log('allow2 play failed, will retry on next interaction:', e.message);
+                    });
+                }
             }
         } else {
+            // 기타 사운드 파일
             const audio = new Audio(soundFile);
             audio.volume = 0.5;
-            audio.play().catch(e => console.log('Sound play failed:', e));
+            const playPromise = audio.play();
+            if (playPromise !== undefined) {
+                playPromise.catch(e => {
+                    console.log('Sound play failed:', soundFile, e.message);
+                });
+            }
         }
     } catch (error) {
         console.log('Sound system error:', error);
