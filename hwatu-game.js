@@ -2939,10 +2939,30 @@ function showPurchaseTooltip(upgrade, cardElement) {
         animation: fadeIn 0.2s ease;
     `;
     
+    // 등급별 그라데이션 클래스 결정
+    let rarityGradientClass = '';
+    switch(upgrade.rarity) {
+        case 'common':
+            rarityGradientClass = 'gradient-common';
+            break;
+        case 'rare':
+            rarityGradientClass = 'gradient-rare';
+            break;
+        case 'epic':
+            rarityGradientClass = 'gradient-epic';
+            break;
+        case 'legendary':
+            rarityGradientClass = 'gradient-legendary';
+            break;
+    }
+    
     tooltip.innerHTML = `
         <div style="text-align: center; margin-bottom: 10px;">
-            <div style="font-size: 18px; font-weight: bold; color: #ffd700; margin-bottom: 5px;">
-                ${upgrade.name}
+            <div style="font-size: 18px; font-weight: bold; margin-bottom: 5px;">
+                <div class="animated-gradient-text ${rarityGradientClass}">
+                    <div class="gradient-overlay"></div>
+                    <div class="text-content">${upgrade.name}</div>
+                </div>
             </div>
             <div style="font-size: 14px; color: #fff; opacity: 0.9; margin-bottom: 10px;">
                 ${upgrade.description}
