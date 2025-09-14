@@ -4723,18 +4723,19 @@ function showTitleScreen() {
     // 좌측 UI들을 화면 밖으로 이동
     const capturedSection = document.getElementById('captured-section');
     const scoreBoard = document.getElementById('score-board');
+    const capturedGwang = document.getElementById('captured-gwang');
+    const capturedYeol = document.getElementById('captured-yeol');
+    const capturedDan = document.getElementById('captured-dan');
+    const capturedPi = document.getElementById('captured-pi');
     
-    if (capturedSection) {
-        capturedSection.style.transition = 'none';
-        capturedSection.style.transform = 'translateX(-100%)';
-        capturedSection.style.opacity = '0';
-    }
-    
-    if (scoreBoard) {
-        scoreBoard.style.transition = 'none';
-        scoreBoard.style.transform = 'translateX(-100%)';
-        scoreBoard.style.opacity = '0';
-    }
+    // 모든 보유패 섹션을 화면 밖으로
+    [capturedSection, scoreBoard, capturedGwang, capturedYeol, capturedDan, capturedPi].forEach(element => {
+        if (element) {
+            element.style.transition = 'none';
+            element.style.transform = 'translateX(-100%)';
+            element.style.opacity = '0';
+        }
+    });
     
     // Play 컨테이너를 화면 중앙에 위치
     const playContainer = document.getElementById('play-container');
@@ -4807,6 +4808,15 @@ function showTitleScreen() {
     
     // 플레이 버튼 이벤트
     document.getElementById('play-button').onclick = startGame;
+    
+    // 타이틀 BGM 재생
+    const titleBGM = new Audio('bgm/fioretro.mp3');
+    titleBGM.loop = true;
+    titleBGM.volume = 0.7;
+    titleBGM.play().catch(e => console.log('타이틀 BGM 재생 실패:', e));
+    
+    // 타이틀 BGM 저장 (나중에 중지하기 위해)
+    window.titleBGM = titleBGM;
 }
 
 // 게임 시작 (타이틀에서 전환)
@@ -4816,6 +4826,20 @@ function startGame() {
     if (titleScreen) {
         titleScreen.style.transition = 'opacity 0.5s ease';
         titleScreen.style.opacity = '0';
+    }
+    
+    // 타이틀 BGM 페이드아웃
+    if (window.titleBGM) {
+        let volume = window.titleBGM.volume;
+        const fadeInterval = setInterval(() => {
+            volume -= 0.05;
+            if (volume <= 0) {
+                volume = 0;
+                window.titleBGM.pause();
+                clearInterval(fadeInterval);
+            }
+            window.titleBGM.volume = volume;
+        }, 50);
     }
     
     // 0.5초 후 게임 화면 설정
@@ -4921,15 +4945,33 @@ function startGame() {
         setTimeout(() => {
             const capturedSection = document.getElementById('captured-section');
             const scoreBoard = document.getElementById('score-board');
+            const capturedGwang = document.getElementById('captured-gwang');
+            const capturedYeol = document.getElementById('captured-yeol');
+            const capturedDan = document.getElementById('captured-dan');
+            const capturedPi = document.getElementById('captured-pi');
             
+            // 보유패 전체 컨테이너 슬라이드인
             if (capturedSection) {
                 capturedSection.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
                 capturedSection.style.transform = 'translateX(0)';
                 capturedSection.style.opacity = '1';
             }
             
+            // 개별 보유패 섹션들도 순차적으로 슬라이드인
+            const sections = [capturedGwang, capturedYeol, capturedDan, capturedPi];
+            sections.forEach((section, index) => {
+                if (section) {
+                    setTimeout(() => {
+                        section.style.transition = 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease';
+                        section.style.transform = 'translateX(0)';
+                        section.style.opacity = '1';
+                    }, index * 100);
+                }
+            });
+            
+            // 점수판 슬라이드인 (약간 늦게)
             if (scoreBoard) {
-                scoreBoard.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, opacity 0.8s ease 0.2s';
+                scoreBoard.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.4s, opacity 0.8s ease 0.4s';
                 scoreBoard.style.transform = 'translateX(0)';
                 scoreBoard.style.opacity = '1';
             }
