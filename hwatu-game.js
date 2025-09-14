@@ -4980,6 +4980,23 @@ function startGame() {
             updateBackgroundColors(1);
         }
         
+        // BGM 바로 시작
+        const gameBGM = document.getElementById('bgm');
+        if (gameBGM) {
+            gameBGM.volume = 0;
+            gameBGM.play().catch(e => console.log('BGM 재생 실패:', e));
+            // 페이드인
+            let volume = 0;
+            const fadeInterval = setInterval(() => {
+                volume += 0.05;
+                if (volume >= 1) {
+                    volume = 1;
+                    clearInterval(fadeInterval);
+                }
+                gameBGM.volume = volume;
+            }, 50);
+        }
+        
         // 게임 시작 애니메이션
         setTimeout(() => {
             const gameContainer = document.getElementById('game-container');
@@ -5038,23 +5055,6 @@ function startGame() {
         setTimeout(() => {
             // 게임 초기화 및 카드 배분
             initFullGame();
-            
-            // BGM 시작
-            const gameBGM = document.getElementById('bgm');
-            if (gameBGM) {
-                gameBGM.volume = 0;
-                gameBGM.play().catch(e => console.log('BGM 재생 실패:', e));
-                // 페이드인
-                let volume = 0;
-                const fadeInterval = setInterval(() => {
-                    volume += 0.05;
-                    if (volume >= 1) {
-                        volume = 1;
-                        clearInterval(fadeInterval);
-                    }
-                    gameBGM.volume = volume;
-                }, 50);
-            }
         }, 2100);
     }, 500);
 }
