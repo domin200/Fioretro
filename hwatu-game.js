@@ -4720,6 +4720,12 @@ function proceedToNextStage() {
 
 // 타이틀 화면 표시
 function showTitleScreen() {
+    // 게임 컨테이너 표시
+    const gameContainer = document.getElementById('game-container');
+    if (gameContainer) {
+        gameContainer.style.visibility = 'visible';
+    }
+    
     const capturedArea = document.getElementById('captured-area');
     const scoreBoard = document.getElementById('score-board');
     
@@ -4745,7 +4751,6 @@ function showTitleScreen() {
     }
     
     // 전체 게임 컨테이너를 왼쪽으로 이동 (좌측 UI 너비의 50%만큼)
-    const gameContainer = document.getElementById('game-container');
     if (gameContainer) {
         gameContainer.style.transform = `translateX(-${leftShift}px)`;
         gameContainer.style.transition = 'none';
@@ -4781,7 +4786,7 @@ function showTitleScreen() {
                 background-clip: text;
                 text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
                 animation: titleGlow 2s ease-in-out infinite;
-            ">화라투로</h1>
+            " id="main-title">화라투로</h1>
             
             <div style="
                 font-size: 20px;
@@ -5061,6 +5066,9 @@ function startGame() {
 
 // 오프닝 연출 표시
 function showOpening() {
+    // 먼저 타이틀 화면을 설정 (배경에 깔아둠)
+    showTitleScreen();
+    
     // 오프닝 컨테이너 생성
     const openingContainer = document.createElement('div');
     openingContainer.id = 'opening-container';
@@ -5071,7 +5079,7 @@ function showOpening() {
         width: 100vw;
         height: 100vh;
         background: black;
-        z-index: 10000;
+        z-index: 9999;
         display: flex;
         justify-content: center;
         align-items: center;
@@ -5081,29 +5089,35 @@ function showOpening() {
     
     // 카드 이미지 배열 (앞면과 뒷면 섞어서 사용)
     const cardImages = [
-        'images/back.png',  // 뒷면
-        'images/1-1.png', 'images/1-2.png', 'images/2-1.png', 'images/2-2.png',
-        'images/3-1.png', 'images/3-2.png', 'images/4-1.png', 'images/4-2.png',
-        'images/5-1.png', 'images/5-2.png', 'images/6-1.png', 'images/6-2.png',
-        'images/7-1.png', 'images/7-2.png', 'images/8-1.png', 'images/8-2.png',
-        'images/9-1.png', 'images/9-2.png', 'images/10-1.png', 'images/10-2.png',
-        'images/11-1.png', 'images/11-2.png', 'images/12-1.png', 'images/12-2.png'
+        'card-images/back.png',  // 뒷면
+        'card-images/back.png',  // 뒷면 더 추가
+        'card-images/back.png',
+        'card-images/1-1.png', 'card-images/1-2.png', 'card-images/2-1.png', 'card-images/2-2.png',
+        'card-images/3-1.png', 'card-images/3-2.png', 'card-images/4-1.png', 'card-images/4-2.png',
+        'card-images/5-1.png', 'card-images/5-2.png', 'card-images/6-1.png', 'card-images/6-2.png',
+        'card-images/7-1.png', 'card-images/7-2.png', 'card-images/8-1.png', 'card-images/8-2.png',
+        'card-images/9-1.png', 'card-images/9-2.png', 'card-images/10-1.png', 'card-images/10-2.png',
+        'card-images/11-1.png', 'card-images/11-2.png', 'card-images/12-1.png', 'card-images/12-2.png'
     ];
     
     // 20개 정도의 카드 생성
     for (let i = 0; i < 20; i++) {
         const card = document.createElement('img');
         card.src = cardImages[Math.floor(Math.random() * cardImages.length)];
+        
+        // 무작위 딜레이 (0 ~ 2초 사이)
+        const randomDelay = Math.random() * 2;
+        
         card.style.cssText = `
             position: absolute;
             width: 60px;
             height: 90px;
             opacity: 0;
-            animation: flyToCenter 3s ease-out ${i * 0.15}s forwards;
+            animation: flyToCenter 3s ease-out ${randomDelay}s forwards;
         `;
         
         // 랜덤한 시작 위치 설정
-        const angle = (Math.PI * 2 * i) / 20;
+        const angle = Math.random() * Math.PI * 2;  // 완전 랜덤 각도
         const distance = 800 + Math.random() * 400;
         const startX = Math.cos(angle) * distance;
         const startY = Math.sin(angle) * distance;
@@ -5114,21 +5128,19 @@ function showOpening() {
         openingContainer.appendChild(card);
     }
     
-    // 타이틀 텍스트
-    const titleText = document.createElement('h1');
-    titleText.textContent = '화라투로';
-    titleText.style.cssText = `
-        position: absolute;
-        font-family: 'YiSunShin', sans-serif;
-        font-size: 80px;
-        font-weight: bold;
-        color: white;
-        opacity: 0;
-        z-index: 10001;
-        animation: titleFadeIn 2s ease 1.5s forwards;
-        text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-    `;
-    openingContainer.appendChild(titleText);
+    // 타이틀 화면의 '화라투로' 텍스트를 오프닝 위로 이동 (1.5초 후 등장)
+    setTimeout(() => {
+        const mainTitle = document.getElementById('main-title');
+        if (mainTitle) {
+            mainTitle.style.position = 'fixed';
+            mainTitle.style.top = '50%';
+            mainTitle.style.left = '50%';
+            mainTitle.style.transform = 'translate(-50%, -50%)';
+            mainTitle.style.zIndex = '10001';
+            mainTitle.style.opacity = '0';
+            mainTitle.style.animation = 'titleFadeIn 2s ease forwards';
+        }
+    }, 1500);
     
     // 애니메이션 스타일 추가
     const style = document.createElement('style');
@@ -5182,11 +5194,22 @@ function showOpening() {
         openingContainer.style.transition = 'background 2s ease';
         openingContainer.style.background = 'transparent';
         
-        // 2초 후 오프닝 컨테이너 제거하고 타이틀 화면 표시
+        // 2초 후 오프닝 컨테이너 제거
         setTimeout(() => {
+            // 타이틀 텍스트 원위치로 복원
+            const mainTitle = document.getElementById('main-title');
+            if (mainTitle) {
+                mainTitle.style.position = '';
+                mainTitle.style.top = '';
+                mainTitle.style.left = '';
+                mainTitle.style.transform = '';
+                mainTitle.style.zIndex = '';
+                mainTitle.style.opacity = '';
+                mainTitle.style.animation = 'titleGlow 2s ease-in-out infinite';
+            }
+            
             openingContainer.remove();
             style.remove();
-            showTitleScreen();
         }, 2000);
     }, 3500);
 }
@@ -5206,6 +5229,12 @@ window.onload = () => {
     if (gameBGM) {
         gameBGM.volume = 0;  // 타이틀에서는 음소거
         gameBGM.pause();
+    }
+    
+    // 게임 컨테이너 초기 숨김
+    const gameContainer = document.getElementById('game-container');
+    if (gameContainer) {
+        gameContainer.style.visibility = 'hidden';
     }
     
     // 오프닝 연출 표시
