@@ -424,11 +424,23 @@ function selectHandCard(index) {
         card.style.transform = '';
     });
     
+    // 소모품 슬롯에서도 selected 효과 제거
+    document.querySelectorAll('.consumable-slot').forEach(slot => {
+        const innerDiv = slot.querySelector('div');
+        if (innerDiv) {
+            innerDiv.style.border = '2px solid #ffd700';
+            innerDiv.style.boxShadow = '';
+            innerDiv.style.transform = '';
+        }
+    });
+    
     const handArea = document.getElementById('hand-area');
     const cards = handArea.children;
     
     // 새 카드 선택
     gameState.selectedCard = index;
+    gameState.selectedConsumable = null;  // 소모품 카드 선택 해제
+    
     if (cards[index]) {
         const selectedCard = cards[index];
         selectedCard.classList.add('selected');
@@ -442,13 +454,37 @@ function selectHandCard(index) {
         }
     }
     
-    // 버튼 상태만 업데이트
-    document.getElementById('play-btn').disabled = gameState.selectedCard === null || gameState.stageEnded;
-    document.getElementById('discard-btn').disabled = gameState.selectedCard === null || gameState.discardsLeft <= 0 || gameState.stageEnded;
+    // 버튼 상태 업데이트
+    updateButtonStates();
+}
+
+// 버튼 상태 업데이트
+function updateButtonStates() {
+    const playBtn = document.getElementById('play-btn');
+    const discardBtn = document.getElementById('discard-btn');
+    
+    // 선택된 것이 있는지 확인 (손패 카드 또는 소모품 카드)
+    const hasSelection = gameState.selectedCard !== null || gameState.selectedConsumable !== null;
+    
+    // 바닥에 내기 버튼
+    playBtn.disabled = !hasSelection || gameState.stageEnded;
+    
+    // 버리기 버튼 - 소모품 카드는 버릴 수 없고, 손패 카드만 버리기 가능
+    if (gameState.selectedConsumable !== null) {
+        discardBtn.disabled = true;  // 소모품 카드는 버리기 불가
+    } else {
+        discardBtn.disabled = !hasSelection || gameState.discardsLeft <= 0 || gameState.stageEnded;
+    }
 }
 
 // 카드를 바닥에 내기
 function playCard() {
+    // 소모품 카드가 선택된 경우
+    if (gameState.selectedConsumable !== null) {
+        useConsumableCard(gameState.selectedConsumable);
+        return;
+    }
+    
     if (gameState.selectedCard === null) return;
     if (gameState.stageEnded) {
         console.log('Stage has ended, cannot play cards');
@@ -650,6 +686,11 @@ function captureCard(card) {
 
 // 선택한 카드 버리기
 function discardCards() {
+    // 소모품 카드는 버릴 수 없음
+    if (gameState.selectedConsumable !== null) {
+        return;
+    }
+    
     if (gameState.selectedCard === null) return;
     if (gameState.stageEnded) {
         console.log('Stage has ended, cannot discard cards');
@@ -3934,41 +3975,47 @@ function updateConsumableCards() {
 function selectConsumableCard(index) {
     if (!gameState.consumableCards[index]) return;
     
-    const card = gameState.consumableCards[index];
+    // 스테이지가 종료되었으면 선택 불가
+    if (gameState.stageEnded) {
+        console.log('Stage has ended, cannot select cards');
+        return;
+    }
     
-    // 선택 확인 팝업
-    const popup = PopupComponent.create('소모품 카드 사용', `
-        <div style="text-align: center;">
-            <div style="font-size: 50px; margin: 20px;">${card.icon}</div>
-            <h3 style="color: #ffd700;">${card.name}</h3>
-            <p style="color: #aaa; margin: 15px 0;">${card.effect}</p>
-            <p style="color: #fff;">이 카드를 사용하시겠습니까?</p>
-        </div>
-    `, {
-        buttons: [
-            {
-                text: '바닥에 내기 (사용)',
-                type: 'success',
-                gradient: true,
-                onClick: () => {
-                    useConsumableCard(index);
-                }
-            },
-            {
-                text: '버리기',
-                type: 'danger',
-                gradient: true,
-                onClick: () => {
-                    discardConsumableCard(index);
-                }
-            },
-            {
-                text: '취소',
-                type: 'secondary',
-                onClick: () => {}
-            }
-        ]
+    // 모든 카드에서 selected 클래스 제거
+    document.querySelectorAll('.card.selected').forEach(card => {
+        card.classList.remove('selected');
+        card.style.border = '';
+        card.style.boxShadow = '';
+        card.style.transform = '';
     });
+    
+    // 소모품 슬롯에서도 selected 클래스 제거
+    document.querySelectorAll('.consumable-slot').forEach(slot => {
+        const innerDiv = slot.querySelector('div');
+        if (innerDiv) {
+            innerDiv.style.border = '2px solid #ffd700';
+            innerDiv.style.boxShadow = '';
+            innerDiv.style.transform = '';
+        }
+    });
+    
+    // 소모품 카드 선택 표시
+    const slot = document.getElementById(`consumable-slot-${index + 1}`);
+    if (slot) {
+        const innerDiv = slot.querySelector('div');
+        if (innerDiv) {
+            innerDiv.style.border = '3px solid #00ff00';
+            innerDiv.style.boxShadow = '0 0 20px rgba(0, 255, 0, 0.5)';
+            innerDiv.style.transform = 'scale(1.05)';
+        }
+    }
+    
+    // 선택된 소모품 카드 정보 저장
+    gameState.selectedCard = null;  // 손패 카드 선택 해제
+    gameState.selectedConsumable = index;  // 소모품 카드 인덱스 저장
+    
+    // 버튼 업데이트
+    updateButtonStates();
 }
 
 // 소모품 카드 사용
@@ -3985,6 +4032,9 @@ function useConsumableCard(index) {
     // 카드 제거
     gameState.consumableCards.splice(index, 1);
     
+    // 선택 해제
+    gameState.selectedConsumable = null;
+    
     // 화면 업데이트
     updateDisplay();
 }
@@ -3999,6 +4049,9 @@ function discardConsumableCard(index) {
     gameState.consumableCards.splice(index, 1);
     
     PopupComponent.showMessage(`${card.name} 카드를 버렸습니다.`, 'info');
+    
+    // 선택 해제
+    gameState.selectedConsumable = null;
     
     // 화면 업데이트
     updateDisplay();
