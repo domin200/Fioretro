@@ -1476,8 +1476,9 @@ function endRound() {
     gameState.stageEnded = true;
     
     if (gameState.totalScore >= gameState.targetScore) {
-        // 미션 성공 - 획득한 점수를 소지금으로 변환
-        const earnedGold = gameState.totalScore;
+        // 미션 성공 - 스테이지에 따른 고정 소지금 지급 (3, 4, 5 반복)
+        const goldPattern = [3, 4, 5];
+        const earnedGold = goldPattern[(gameState.stage - 1) % 3];
         gameState.gold += earnedGold;
         
         showMissionResult(true, gameState.totalScore, false, earnedGold);
