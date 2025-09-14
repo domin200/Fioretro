@@ -1969,11 +1969,12 @@ function showEnhancementTooltip(event, enhancement, enhanceData) {
     `;
     
     tooltip.innerHTML = `
-        <div style="font-weight: bold; margin-bottom: 4px;">
-            ${enhancement} 강화
+        <div class="animated-gradient-text gradient-${enhancement}" style="margin-bottom: 8px;">
+            <div class="gradient-overlay"></div>
+            <div class="text-content">${enhancement} 강화</div>
         </div>
-        <div style="color: #fff; font-size: 11px;">
-            ${enhanceData.effect}
+        <div class="animated-gradient-text gradient-${enhancement}" style="padding: 4px 8px;">
+            <div class="text-content" style="font-size: 11px;">${enhanceData.effect}</div>
         </div>
     `;
     
@@ -2441,11 +2442,38 @@ function showUpgradeSelection() {
     choices.forEach((upgrade, index) => {
         const card = document.createElement('div');
         card.className = 'upgrade-card';
+        // 강화 관련 텍스트에 애니메이션 그라데이션 효과 적용
+        let enhancedDescription = upgrade.description;
+        let gradientClass = '';
+        
+        // 업그레이드 설명에서 강화 관련 키워드 찾기
+        if (upgrade.description.includes('청단') || upgrade.description.includes('청')) {
+            gradientClass = 'gradient-청';
+        } else if (upgrade.description.includes('홍단') || upgrade.description.includes('적')) {
+            gradientClass = 'gradient-적';
+        } else if (upgrade.description.includes('백')) {
+            gradientClass = 'gradient-백';
+        } else if (upgrade.description.includes('흑')) {
+            gradientClass = 'gradient-흑';
+        } else if (upgrade.description.includes('황') || upgrade.description.includes('금') || upgrade.description.includes('광')) {
+            gradientClass = 'gradient-황';
+        }
+        
+        // 강화 관련 설명이면 애니메이션 그라데이션 적용
+        if (gradientClass) {
+            enhancedDescription = `
+                <div class="animated-gradient-text ${gradientClass}">
+                    <div class="gradient-overlay"></div>
+                    <div class="text-content">${upgrade.description}</div>
+                </div>
+            `;
+        }
+        
         card.innerHTML = `
             <div class="upgrade-rarity rarity-${upgrade.rarity}">${upgrade.rarity.toUpperCase()}</div>
             <div class="upgrade-icon">${upgrade.icon}</div>
             <div class="upgrade-name">${upgrade.name}</div>
-            <div class="upgrade-description">${upgrade.description}</div>
+            <div class="upgrade-description">${enhancedDescription}</div>
         `;
         
         card.onclick = () => selectUpgrade(card, upgrade, confirmBtn);
