@@ -4722,11 +4722,7 @@ function proceedToNextStage() {
 function showTitleScreen() {
     // 배경 효과 속도를 절반으로 설정
     if (window.balatroBackground) {
-        window.balatroBackground.options.spinSpeed = 1.5;  // 원래 속도(3.0)의 절반
-        window.balatroBackground.gl.uniform1f(
-            window.balatroBackground.uniforms.uSpinSpeed, 
-            window.balatroBackground.options.spinSpeed
-        );
+        window.balatroBackground.setSpinSpeed(1.5);  // 원래 속도(3.0)의 절반
     }
     // 좌측 UI들을 화면 밖으로 이동
     const capturedArea = document.getElementById('captured-area');
@@ -4876,11 +4872,7 @@ function startGame() {
             const easedProgress = 1 - Math.pow(1 - progress, 3);
             const currentSpeed = startSpeed + (targetSpeed - startSpeed) * easedProgress;
             
-            window.balatroBackground.options.spinSpeed = currentSpeed;
-            window.balatroBackground.gl.uniform1f(
-                window.balatroBackground.uniforms.uSpinSpeed,
-                currentSpeed
-            );
+            window.balatroBackground.setSpinSpeed(currentSpeed);
             
             if (progress < 1) {
                 requestAnimationFrame(animateSpeed);

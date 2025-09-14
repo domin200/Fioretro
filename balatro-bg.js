@@ -313,6 +313,13 @@ class BalatroBackground {
         render();
     }
     
+    setSpinSpeed(speed) {
+        this.options.spinSpeed = speed;
+        if (this.gl && this.uniforms.uSpinSpeed) {
+            this.gl.uniform1f(this.uniforms.uSpinSpeed, speed);
+        }
+    }
+    
     destroy() {
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
