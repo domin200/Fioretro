@@ -2714,32 +2714,43 @@ function fadeVolume(audioElement, targetVolume, duration = 1000) {
     }, stepTime);
 }
 
+// BGM 전환 (단일 오디오 엘리먼트 사용)
+function switchBGM(type) {
+    const bgm = document.getElementById('bgm');
+    if (!bgm) return;
+    
+    const currentTime = bgm.currentTime;
+    const isPlaying = !bgm.paused;
+    
+    // 페이드 아웃
+    fadeVolume(bgm, 0, 500);
+    
+    setTimeout(() => {
+        // BGM 소스 변경
+        if (type === 'shop') {
+            bgm.src = 'bgm/Card Shark Serenade.mp3';
+        } else {
+            bgm.src = 'bgm/Card Chaos.mp3';
+        }
+        
+        // 재생 상태였다면 재생
+        if (isPlaying) {
+            bgm.play().catch(e => console.log('BGM 재생 실패:', e));
+        }
+        
+        // 페이드 인
+        fadeVolume(bgm, 1, 500);
+    }, 500);
+}
+
 // 주막 BGM으로 전환
 function switchToShopBGM() {
-    const gameBGM = document.getElementById('bgm');
-    const shopBGM = document.getElementById('shop-bgm');
-    
-    if (gameBGM && shopBGM) {
-        // 주막 BGM 재생 시작 (볼륨 0에서 시작)
-        shopBGM.volume = 0;
-        shopBGM.play().catch(e => console.log('주막 BGM 재생 실패:', e));
-        
-        // 게임 BGM 페이드 아웃, 주막 BGM 페이드 인
-        fadeVolume(gameBGM, 0, 1000);
-        fadeVolume(shopBGM, 1, 1000);
-    }
+    switchBGM('shop');
 }
 
 // 게임 BGM으로 전환
 function switchToGameBGM() {
-    const gameBGM = document.getElementById('bgm');
-    const shopBGM = document.getElementById('shop-bgm');
-    
-    if (gameBGM && shopBGM) {
-        // 주막 BGM 페이드 아웃, 게임 BGM 페이드 인
-        fadeVolume(shopBGM, 0, 1000);
-        fadeVolume(gameBGM, 1, 1000);
-    }
+    switchBGM('game');
 }
 
 // 업그레이드 상점 표시
