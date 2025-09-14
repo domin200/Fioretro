@@ -382,6 +382,10 @@ class CardSelectionComponent {
             }
         });
 
+        // 선택된 카드 추적
+        let selectedCard = null;
+        let selectedWrapper = null;
+
         // 카드 생성
         displayCards.forEach(card => {
             const cardWrapper = DOMUtils.createElement('div', {
@@ -393,34 +397,74 @@ class CardSelectionComponent {
                 }
             });
 
-            // CardComponent를 사용하여 카드 생성
-            const cardElement = CardComponent.create(card, { 
-                size: 'medium', 
-                showEnhancement: showEnhancement 
-            });
+            // 카드 이미지 생성 - createCardElement가 있으면 사용, 없으면 기본 카드
+            let cardElement;
+            if (typeof createCardElement === 'function') {
+                cardElement = createCardElement(card);
+                cardElement.style.width = '100px';
+                cardElement.style.height = '140px';
+            } else {
+                // 기본 카드 생성
+                cardElement = document.createElement('div');
+                cardElement.className = 'card';
+                cardElement.style.cssText = `
+                    width: 100px;
+                    height: 140px;
+                    background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-size: 14px;
+                    color: #333;
+                `;
+                cardElement.innerHTML = `${card.month}월<br>${card.name}`;
+            }
             
             cardWrapper.appendChild(cardElement);
 
             // 호버 효과
             cardWrapper.onmouseenter = () => {
-                cardWrapper.style.transform = 'translateY(-10px) scale(1.05)';
+                if (selectedWrapper !== cardWrapper) {
+                    cardWrapper.style.transform = 'translateY(-10px) scale(1.05)';
+                }
             };
             cardWrapper.onmouseleave = () => {
-                cardWrapper.style.transform = '';
+                if (selectedWrapper !== cardWrapper) {
+                    cardWrapper.style.transform = '';
+                }
             };
 
-            // 클릭 이벤트
+            // 클릭 이벤트 - 카드 선택만 하고 바로 적용하지 않음
             cardWrapper.onclick = () => {
-                if (onSelect) {
-                    onSelect(card);
+                // 이전 선택 해제
+                if (selectedWrapper) {
+                    selectedWrapper.style.border = '';
+                    selectedWrapper.style.boxShadow = '';
+                    selectedWrapper.style.transform = '';
                 }
-                overlay.remove();
+                
+                // 새 카드 선택
+                selectedCard = card;
+                selectedWrapper = cardWrapper;
+                cardWrapper.style.border = '3px solid #ffd700';
+                cardWrapper.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.8)';
+                cardWrapper.style.transform = 'scale(1.1)';
+                
+                // 적용 버튼 활성화
+                const applyBtn = container.querySelector('#apply-btn');
+                if (applyBtn) {
+                    applyBtn.disabled = false;
+                    applyBtn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+                    applyBtn.style.color = 'white';
+                    applyBtn.style.cursor = 'pointer';
+                }
             };
 
             grid.appendChild(cardWrapper);
         });
 
-        // 버튼 영역 (취소 버튼 제거)
+        // 버튼 영역
         const buttonArea = DOMUtils.createElement('div', {
             style: {
                 display: 'flex',
@@ -428,6 +472,32 @@ class CardSelectionComponent {
                 gap: '10px'
             }
         });
+
+        // 적용 버튼 (항상 표시, 초기에는 비활성화)
+        const applyBtn = DOMUtils.createElement('button', {
+            id: 'apply-btn',
+            textContent: '적용',
+            disabled: true,
+            style: {
+                padding: '10px 30px',
+                background: 'linear-gradient(135deg, #666 0%, #444 100%)',
+                color: '#999',
+                border: 'none',
+                borderRadius: '5px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'not-allowed',
+                transition: 'all 0.3s ease'
+            },
+            onclick: () => {
+                if (selectedCard && onSelect) {
+                    onSelect(selectedCard);
+                    overlay.remove();
+                }
+            }
+        });
+
+        buttonArea.appendChild(applyBtn);
 
         // 조립
         container.appendChild(header);

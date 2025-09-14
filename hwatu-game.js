@@ -1973,7 +1973,8 @@ function updateDisplay() {
 }
 
 // 카드 엘리먼트 생성
-function createCardElement(card) {
+// 전역으로 createCardElement 함수 노출
+window.createCardElement = function(card) {
     const div = document.createElement('div');
     div.className = 'card';
     div.dataset.cardId = card.id;  // 카드 ID 저장
@@ -2153,6 +2154,9 @@ function createCardElement(card) {
     
     return div;
 }
+
+// 전역 함수로도 사용 가능하도록
+const createCardElement = window.createCardElement;
 
 // 미니 카드 엘리먼트 생성
 function createMiniCardElement(card) {
