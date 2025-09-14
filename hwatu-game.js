@@ -1814,10 +1814,7 @@ function updateDisplay() {
         setTimeout(() => multiplierElement.style.animation = '', 300);
     }
     
-    // 버리기 카운트 업데이트
-    document.getElementById('discards-left').textContent = gameState.discardsLeft;
-    
-    // 버리기 버튼 텍스트 업데이트
+    // 버리기 버튼 텍스트 업데이트 (카운트 포함)
     const discardBtn = document.getElementById('discard-btn');
     if (discardBtn) {
         discardBtn.textContent = `버리기(${gameState.discardsLeft})`;
