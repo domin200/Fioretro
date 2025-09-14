@@ -2991,6 +2991,9 @@ function showCardEnhancementSelection(upgrade, shopCardElement) {
         }
     }
     
+    // 선택된 카드 추적
+    let selectedCardId = null;
+    
     // 선택 화면 생성
     const selectionOverlay = document.createElement('div');
     selectionOverlay.id = 'enhancement-selection-overlay';
@@ -3027,7 +3030,17 @@ function showCardEnhancementSelection(upgrade, shopCardElement) {
                 flex-wrap: wrap;
                 margin-bottom: 20px;
             "></div>
-            <div style="text-align: center;">
+            <div style="text-align: center; display: flex; gap: 10px; justify-content: center;">
+                <button id="apply-enhancement-btn" onclick="applySelectedEnhancement('${upgrade.id}')" style="
+                    padding: 10px 30px;
+                    background: linear-gradient(135deg, #666 0%, #444 100%);
+                    color: #999;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    cursor: not-allowed;
+                    display: none;
+                " disabled>적용</button>
                 <button onclick="cancelEnhancement('${upgrade.id}')" style="
                     padding: 10px 30px;
                     background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
@@ -3080,17 +3093,60 @@ function showCardEnhancementSelection(upgrade, shopCardElement) {
             }
         }
         
-        cardDiv.onclick = () => applyEnhancementToCard(card.id, upgrade, shopCardElement, selectionOverlay);
+        cardDiv.onclick = () => {
+            // 이전 선택 해제
+            const prevSelected = choicesContainer.querySelector('.selected-card');
+            if (prevSelected) {
+                prevSelected.classList.remove('selected-card');
+                prevSelected.style.border = '';
+            }
+            
+            // 현재 카드 선택
+            selectedCardId = card.id;
+            cardDiv.classList.add('selected-card');
+            cardDiv.style.border = '3px solid #ffd700';
+            
+            // 적용 버튼 활성화
+            const applyBtn = document.getElementById('apply-enhancement-btn');
+            if (applyBtn) {
+                applyBtn.style.display = 'inline-block';
+                applyBtn.disabled = false;
+                applyBtn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+                applyBtn.style.color = 'white';
+                applyBtn.style.cursor = 'pointer';
+            }
+            
+            // 선택된 카드 정보를 전역에 저장
+            window.selectedEnhancementData = {
+                cardId: card.id,
+                upgrade: upgrade,
+                shopCardElement: shopCardElement,
+                selectionOverlay: selectionOverlay
+            };
+        };
         cardDiv.onmouseover = () => {
-            cardDiv.style.transform = 'translateY(-10px) scale(1.1)';
-            cardDiv.style.boxShadow = '0 10px 30px rgba(255, 215, 0, 0.5)';
+            if (!cardDiv.classList.contains('selected-card')) {
+                cardDiv.style.transform = 'translateY(-10px) scale(1.1)';
+                cardDiv.style.boxShadow = '0 10px 30px rgba(255, 215, 0, 0.5)';
+            }
         };
         cardDiv.onmouseout = () => {
-            cardDiv.style.transform = '';
-            cardDiv.style.boxShadow = '';
+            if (!cardDiv.classList.contains('selected-card')) {
+                cardDiv.style.transform = '';
+                cardDiv.style.boxShadow = '';
+            }
         };
         choicesContainer.appendChild(cardDiv);
     });
+}
+
+// 선택된 강화 적용
+function applySelectedEnhancement(upgradeId) {
+    if (window.selectedEnhancementData) {
+        const { cardId, upgrade, shopCardElement, selectionOverlay } = window.selectedEnhancementData;
+        applyEnhancementToCard(cardId, upgrade, shopCardElement, selectionOverlay);
+        window.selectedEnhancementData = null;
+    }
 }
 
 // 강화 취소 (환불)
@@ -3116,6 +3172,11 @@ function cancelEnhancement(upgradeId) {
     if (overlay) {
         overlay.remove();
     }
+    
+    // 전역 데이터 정리
+    window.selectedEnhancementData = null;
+    window.selectedRemovalData = null;
+    window.selectedDuplicationData = null;
 }
 
 // 카드 제거 선택 화면 표시
@@ -3146,6 +3207,9 @@ function showCardRemovalSelection(upgrade, shopCardElement) {
             cardsToShow.push(availableCards[index]);
         }
     }
+    
+    // 선택된 카드 추적
+    let selectedCardId = null;
     
     // 선택 화면 생성
     const selectionOverlay = document.createElement('div');
@@ -3183,7 +3247,17 @@ function showCardRemovalSelection(upgrade, shopCardElement) {
                 flex-wrap: wrap;
                 margin-bottom: 20px;
             "></div>
-            <div style="text-align: center;">
+            <div style="text-align: center; display: flex; gap: 10px; justify-content: center;">
+                <button id="apply-removal-btn" onclick="applySelectedRemoval('${upgrade.id}')" style="
+                    padding: 10px 30px;
+                    background: linear-gradient(135deg, #666 0%, #444 100%);
+                    color: #999;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    cursor: not-allowed;
+                    display: none;
+                " disabled>적용</button>
                 <button onclick="cancelEnhancement('${upgrade.id}')" style="
                     padding: 10px 30px;
                     background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
@@ -3205,17 +3279,60 @@ function showCardRemovalSelection(upgrade, shopCardElement) {
         const cardDiv = createCardElement(card);
         cardDiv.style.cursor = 'pointer';
         cardDiv.style.transition = 'all 0.3s ease';
-        cardDiv.onclick = () => removeCardFromDeck(card.id, upgrade, shopCardElement, selectionOverlay);
+        cardDiv.onclick = () => {
+            // 이전 선택 해제
+            const prevSelected = choicesContainer.querySelector('.selected-card');
+            if (prevSelected) {
+                prevSelected.classList.remove('selected-card');
+                prevSelected.style.border = '';
+            }
+            
+            // 현재 카드 선택
+            selectedCardId = card.id;
+            cardDiv.classList.add('selected-card');
+            cardDiv.style.border = '3px solid #ff0000';
+            
+            // 적용 버튼 활성화
+            const applyBtn = document.getElementById('apply-removal-btn');
+            if (applyBtn) {
+                applyBtn.style.display = 'inline-block';
+                applyBtn.disabled = false;
+                applyBtn.style.background = 'linear-gradient(135deg, #f44336 0%, #d32f2f 100%)';
+                applyBtn.style.color = 'white';
+                applyBtn.style.cursor = 'pointer';
+            }
+            
+            // 선택된 카드 정보를 전역에 저장
+            window.selectedRemovalData = {
+                cardId: card.id,
+                upgrade: upgrade,
+                shopCardElement: shopCardElement,
+                selectionOverlay: selectionOverlay
+            };
+        };
         cardDiv.onmouseover = () => {
-            cardDiv.style.transform = 'translateY(-10px) scale(1.1)';
-            cardDiv.style.boxShadow = '0 10px 30px rgba(255, 0, 0, 0.5)';
+            if (!cardDiv.classList.contains('selected-card')) {
+                cardDiv.style.transform = 'translateY(-10px) scale(1.1)';
+                cardDiv.style.boxShadow = '0 10px 30px rgba(255, 0, 0, 0.5)';
+            }
         };
         cardDiv.onmouseout = () => {
-            cardDiv.style.transform = '';
-            cardDiv.style.boxShadow = '';
+            if (!cardDiv.classList.contains('selected-card')) {
+                cardDiv.style.transform = '';
+                cardDiv.style.boxShadow = '';
+            }
         };
         choicesContainer.appendChild(cardDiv);
     });
+}
+
+// 선택된 카드 제거 적용
+function applySelectedRemoval(upgradeId) {
+    if (window.selectedRemovalData) {
+        const { cardId, upgrade, shopCardElement, selectionOverlay } = window.selectedRemovalData;
+        removeCardFromDeck(cardId, upgrade, shopCardElement, selectionOverlay);
+        window.selectedRemovalData = null;
+    }
 }
 
 // 카드를 덱에서 제거
@@ -3278,6 +3395,9 @@ function showCardDuplicationSelection(upgrade, shopCardElement) {
         }
     }
     
+    // 선택된 카드 추적
+    let selectedCardId = null;
+    
     // 선택 화면 생성
     const selectionOverlay = document.createElement('div');
     selectionOverlay.id = 'enhancement-selection-overlay';
@@ -3314,7 +3434,17 @@ function showCardDuplicationSelection(upgrade, shopCardElement) {
                 flex-wrap: wrap;
                 margin-bottom: 20px;
             "></div>
-            <div style="text-align: center;">
+            <div style="text-align: center; display: flex; gap: 10px; justify-content: center;">
+                <button id="apply-duplication-btn" onclick="applySelectedDuplication('${upgrade.id}')" style="
+                    padding: 10px 30px;
+                    background: linear-gradient(135deg, #666 0%, #444 100%);
+                    color: #999;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    cursor: not-allowed;
+                    display: none;
+                " disabled>적용</button>
                 <button onclick="cancelEnhancement('${upgrade.id}')" style="
                     padding: 10px 30px;
                     background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
@@ -3336,17 +3466,60 @@ function showCardDuplicationSelection(upgrade, shopCardElement) {
         const cardDiv = createCardElement(card);
         cardDiv.style.cursor = 'pointer';
         cardDiv.style.transition = 'all 0.3s ease';
-        cardDiv.onclick = () => duplicateCard(card.id, upgrade, shopCardElement, selectionOverlay);
+        cardDiv.onclick = () => {
+            // 이전 선택 해제
+            const prevSelected = choicesContainer.querySelector('.selected-card');
+            if (prevSelected) {
+                prevSelected.classList.remove('selected-card');
+                prevSelected.style.border = '';
+            }
+            
+            // 현재 카드 선택
+            selectedCardId = card.id;
+            cardDiv.classList.add('selected-card');
+            cardDiv.style.border = '3px solid #00d7ff';
+            
+            // 적용 버튼 활성화
+            const applyBtn = document.getElementById('apply-duplication-btn');
+            if (applyBtn) {
+                applyBtn.style.display = 'inline-block';
+                applyBtn.disabled = false;
+                applyBtn.style.background = 'linear-gradient(135deg, #00bfff 0%, #0099cc 100%)';
+                applyBtn.style.color = 'white';
+                applyBtn.style.cursor = 'pointer';
+            }
+            
+            // 선택된 카드 정보를 전역에 저장
+            window.selectedDuplicationData = {
+                cardId: card.id,
+                upgrade: upgrade,
+                shopCardElement: shopCardElement,
+                selectionOverlay: selectionOverlay
+            };
+        };
         cardDiv.onmouseover = () => {
-            cardDiv.style.transform = 'translateY(-10px) scale(1.1)';
-            cardDiv.style.boxShadow = '0 10px 30px rgba(0, 215, 255, 0.5)';
+            if (!cardDiv.classList.contains('selected-card')) {
+                cardDiv.style.transform = 'translateY(-10px) scale(1.1)';
+                cardDiv.style.boxShadow = '0 10px 30px rgba(0, 215, 255, 0.5)';
+            }
         };
         cardDiv.onmouseout = () => {
-            cardDiv.style.transform = '';
-            cardDiv.style.boxShadow = '';
+            if (!cardDiv.classList.contains('selected-card')) {
+                cardDiv.style.transform = '';
+                cardDiv.style.boxShadow = '';
+            }
         };
         choicesContainer.appendChild(cardDiv);
     });
+}
+
+// 선택된 카드 복제 적용
+function applySelectedDuplication(upgradeId) {
+    if (window.selectedDuplicationData) {
+        const { cardId, upgrade, shopCardElement, selectionOverlay } = window.selectedDuplicationData;
+        duplicateCard(cardId, upgrade, shopCardElement, selectionOverlay);
+        window.selectedDuplicationData = null;
+    }
 }
 
 // 카드 복제
