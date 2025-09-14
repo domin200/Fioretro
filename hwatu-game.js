@@ -216,6 +216,13 @@ const HWATU_CARDS = [
     { month: 12, type: '피', name: '피', points: 0, id: 48 }
 ];
 
+// 화투 카드를 2차원 배열로 변환 (월별로 정리)
+const hwatu = [];
+for (let month = 1; month <= 12; month++) {
+    const monthCards = HWATU_CARDS.filter(card => card.month === month);
+    hwatu.push(monthCards);
+}
+
 // 게임 상태
 const gameState = {
     deck: [],           // 남은 카드 덱
