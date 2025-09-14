@@ -1150,10 +1150,8 @@ function calculateScore() {
     const baseMultiplierUpgrades = gameState.upgrades.filter(u => u.id === 'base_multiplier').length;
     multiplier += baseMultiplierUpgrades * 0.5;  // 각 기본 배수 업그레이드당 +0.5
     
-    // 적 강화로 인한 추가 배수 적용 (discardCards에서 누적된 값)
-    if (gameState.multiplier > 1) {
-        multiplier += (gameState.multiplier - 1);  // 적 강화로 추가된 배수만큼 더하기
-    }
+    // 적 강화로 인한 추가 배수는 gameState.multiplier에 이미 누적되어 있음
+    // calculateScore가 매번 호출되므로 중복 적용하지 않도록 주의
     
     // 특수 조합 배수 추가
     const gwangCount = cardsByType['광'].length;
@@ -1320,10 +1318,15 @@ function calculateScore() {
         }
     }
     
+    // 적 강화로 인한 추가 배수 적용
+    // gameState.multiplier에는 적 강화로 추가된 배수가 누적되어 있음 (초기값 1)
+    // 이번 턴에 계산된 multiplier와 합산
+    const finalMultiplier = multiplier + (gameState.multiplier - 1);
+    
     // 최종 점수 = 점수 × 배수
     gameState.score = points;
-    gameState.multiplier = multiplier;
-    gameState.totalScore = points * multiplier;
+    gameState.multiplier = finalMultiplier;
+    gameState.totalScore = points * finalMultiplier;
     
     // 달성한 족보 애니메이션 표시 (순차적으로)
     achievedCombinations.forEach((combination, index) => {
@@ -2582,58 +2585,71 @@ function updateUpgradesDisplay() {
 
 // 업그레이드 시스템
 const upgradePool = [
-    { id: 'chodan_blessing', name: '초단의 축복', icon: '🍀', description: '초단(초색 띠 3장)을 모으면 추가 +5점', rarity: 'rare' },
-    { id: 'cheongdan_blessing', name: '청단의 축복', icon: '💙', description: '청단(청색 띠 3장)을 모으면 추가 +5점', rarity: 'rare' },
-    { id: 'hongdan_blessing', name: '홍단의 축복', icon: '❤️', description: '홍단(홍색 띠 3장)을 모으면 추가 +5점', rarity: 'rare' },
-    { id: 'extra_discard', name: '추가 버리기', icon: '♻️', description: '버리기 가능 횟수 +1', rarity: 'common' },
-    { id: 'base_multiplier', name: '기본 배수 강화', icon: '✨', description: '기본 배수 +0.5', rarity: 'common' },
-    { id: 'bonus_pi', name: '보너스피', icon: '🎯', description: '기본 점수 +2', rarity: 'common' },
-    { id: 'gwangbak_charm', name: '광박의 부적', icon: '🌟', description: '라운드 종료시 바닥에 광이 없으면 배수×2', rarity: 'epic' },
-    { id: 'pibak_charm', name: '피박의 부적', icon: '🩸', description: '라운드 종료시 바닥에 피가 없으면 배수×2', rarity: 'epic' },
-    { id: 'gwang_38', name: '38광땡', icon: '🌠', description: '3광과 8광을 동시에 보유하면 추가 +10점', rarity: 'rare' },
-    { id: 'gwang_13', name: '13광땡', icon: '⭐', description: '1광과 3광을 동시에 보유하면 추가 +5점', rarity: 'common' },
-    { id: 'gwang_18', name: '18광땡', icon: '✦', description: '1광과 8광을 동시에 보유하면 추가 +5점', rarity: 'common' },
-    { id: 'samjokoh_foot', name: '삼족오 발', icon: '🦅', description: '바닥에 같은 월 3장 모이면 ×3배수 (×1 대신)', rarity: 'epic' },
-    { id: 'shake_shake', name: '흔들흔들', icon: '🎲', description: '라운드 종료시 손에 같은 월 3장 있으면 ×3배수', rarity: 'epic' },
-    { id: 'no_possession', name: '무소유', icon: '🚫', description: '스테이지 시작 시 바닥 패가 없이 시작한다', rarity: 'common' },
-    { id: 'maple_hand', name: '단풍손', icon: '🍁', description: '손패 카드가 -1(총 4장) 되지만, 기본점수 +4', rarity: 'rare' },
-    { id: 'mind_reading', name: '관심법', icon: '👁️', description: '매 스테이지 시작 시 덱 맨 위의 카드를 알고 시작한다', rarity: 'rare' },
-    { id: 'seven_pi', name: '칠지도', icon: '7️⃣', description: '피 카드가 정확히 7장이면 추가로 +10점', rarity: 'rare' },
-    { id: 'stupid_fish', name: '멍텅구리', icon: '🐟', description: '열끗 카드도 장당 1점을 얻는다', rarity: 'common' },
-    { id: 'sunny_after_rain', name: '비온뒤 맑음', icon: '🌤️', description: '덱에서 12월 패 4장이 제거됨', rarity: 'epic' },
-    { id: 'tiger_cave', name: '호랑이굴', icon: '🐯', description: '매 라운드 첫턴은 버리기 불가, 기본 점수 +5', rarity: 'rare' },
-    { id: 'triple_discard', name: '일타삼피', icon: '3️⃣', description: '버리기시 양옆 카드도 같이 버려짐', rarity: 'epic' },
-    { id: 'thousand_mile', name: '천리길', icon: '🛤️', description: '스테이지 번호 × 1 만큼 기본 점수 추가', rarity: 'rare' },
-    { id: 'reincarnation', name: '윤회', icon: '♻️', description: '버린 카드가 덱으로 돌아가고, 버리기당 +5점', rarity: 'epic' },
-    { id: 'two_hearts', name: '두개의 심장', icon: '💕', description: '한 번 패배해도 게임이 끝나지 않음 (1회용)', rarity: 'legendary' },
+    { id: 'chodan_blessing', name: '초단의 축복', icon: '🍀', description: '초단(초색 띠 3장)을 모으면 추가 +5점', rarity: 'rare', price: 8 },
+    { id: 'cheongdan_blessing', name: '청단의 축복', icon: '💙', description: '청단(청색 띠 3장)을 모으면 추가 +5점', rarity: 'rare', price: 8 },
+    { id: 'hongdan_blessing', name: '홍단의 축복', icon: '❤️', description: '홍단(홍색 띠 3장)을 모으면 추가 +5점', rarity: 'rare', price: 8 },
+    { id: 'extra_discard', name: '추가 버리기', icon: '♻️', description: '버리기 가능 횟수 +1', rarity: 'common', price: 5 },
+    { id: 'base_multiplier', name: '기본 배수 강화', icon: '✨', description: '기본 배수 +0.5', rarity: 'common', price: 5 },
+    { id: 'bonus_pi', name: '보너스피', icon: '🎯', description: '기본 점수 +2', rarity: 'common', price: 4 },
+    { id: 'gwangbak_charm', name: '광박의 부적', icon: '🌟', description: '라운드 종료시 바닥에 광이 없으면 배수×2', rarity: 'epic', price: 12 },
+    { id: 'pibak_charm', name: '피박의 부적', icon: '🩸', description: '라운드 종료시 바닥에 피가 없으면 배수×2', rarity: 'epic', price: 12 },
+    { id: 'gwang_38', name: '38광땡', icon: '🌠', description: '3광과 8광을 동시에 보유하면 추가 +10점', rarity: 'rare', price: 8 },
+    { id: 'gwang_13', name: '13광땡', icon: '⭐', description: '1광과 3광을 동시에 보유하면 추가 +5점', rarity: 'common', price: 4 },
+    { id: 'gwang_18', name: '18광땡', icon: '✦', description: '1광과 8광을 동시에 보유하면 추가 +5점', rarity: 'common', price: 4 },
+    { id: 'samjokoh_foot', name: '삼족오 발', icon: '🦅', description: '바닥에 같은 월 3장 모이면 ×3배수 (×1 대신)', rarity: 'epic', price: 15 },
+    { id: 'shake_shake', name: '흔들흔들', icon: '🎲', description: '라운드 종료시 손에 같은 월 3장 있으면 ×3배수', rarity: 'epic', price: 15 },
+    { id: 'no_possession', name: '무소유', icon: '🚫', description: '스테이지 시작 시 바닥 패가 없이 시작한다', rarity: 'common', price: 3 },
+    { id: 'maple_hand', name: '단풍손', icon: '🍁', description: '손패 카드가 -1(총 4장) 되지만, 기본점수 +4', rarity: 'rare', price: 7 },
+    { id: 'mind_reading', name: '관심법', icon: '👁️', description: '매 스테이지 시작 시 덱 맨 위의 카드를 알고 시작한다', rarity: 'rare', price: 6 },
+    { id: 'seven_pi', name: '칠지도', icon: '7️⃣', description: '피 카드가 정확히 7장이면 추가로 +10점', rarity: 'rare', price: 9 },
+    { id: 'stupid_fish', name: '멍텅구리', icon: '🐟', description: '열끗 카드도 장당 1점을 얻는다', rarity: 'common', price: 4 },
+    { id: 'sunny_after_rain', name: '비온뒤 맑음', icon: '🌤️', description: '덱에서 12월 패 4장이 제거됨', rarity: 'epic', price: 10 },
+    { id: 'tiger_cave', name: '호랑이굴', icon: '🐯', description: '매 라운드 첫턴은 버리기 불가, 기본 점수 +5', rarity: 'rare', price: 7 },
+    { id: 'triple_discard', name: '일타삼피', icon: '3️⃣', description: '버리기시 양옆 카드도 같이 버려짐', rarity: 'epic', price: 13 },
+    { id: 'thousand_mile', name: '천리길', icon: '🛤️', description: '스테이지 번호 × 1 만큼 기본 점수 추가', rarity: 'rare', price: 8 },
+    { id: 'reincarnation', name: '윤회', icon: '♻️', description: '버린 카드가 덱으로 돌아가고, 버리기당 +5점', rarity: 'epic', price: 14 },
+    { id: 'two_hearts', name: '두개의 심장', icon: '💕', description: '한 번 패배해도 게임이 끝나지 않음 (1회용)', rarity: 'legendary', price: 20 },
 ];
 
-let selectedUpgrade = null;
+let shopUpgrades = []; // 상점에 표시된 업그레이드들
+let purchasedUpgrades = []; // 이번 상점에서 구매한 업그레이드들
 
-// 업그레이드 선택 팝업 표시
+// 업그레이드 상점 표시
 function showUpgradeSelection() {
     const popup = document.getElementById('upgrade-popup');
     const choicesContainer = document.getElementById('upgrade-choices');
-    const confirmBtn = document.getElementById('confirm-upgrade');
     
-    // 이전 선택 초기화
-    selectedUpgrade = null;
-    confirmBtn.disabled = true;
+    // 초기화
+    purchasedUpgrades = [];
     choicesContainer.innerHTML = '';
     
-    // 랜덤으로 3개 업그레이드 선택
+    // 소지금 표시 업데이트
+    const shopGoldElement = document.getElementById('shop-gold-amount');
+    if (shopGoldElement) {
+        shopGoldElement.textContent = gameState.gold;
+    }
+    
+    // 랜덤으로 5개 업그레이드 선택
     const availableUpgrades = [...upgradePool];
-    const choices = [];
-    for (let i = 0; i < 3 && availableUpgrades.length > 0; i++) {
+    shopUpgrades = [];
+    for (let i = 0; i < 5 && availableUpgrades.length > 0; i++) {
         const index = Math.floor(Math.random() * availableUpgrades.length);
-        choices.push(availableUpgrades[index]);
+        shopUpgrades.push(availableUpgrades[index]);
         availableUpgrades.splice(index, 1);
     }
     
     // 업그레이드 카드 생성
-    choices.forEach((upgrade, index) => {
+    shopUpgrades.forEach((upgrade, index) => {
         const card = document.createElement('div');
         card.className = 'upgrade-card';
+        card.dataset.upgradeId = upgrade.id;
+        
+        // 구매 가능 여부 확인
+        const canAfford = gameState.gold >= upgrade.price;
+        if (!canAfford) {
+            card.classList.add('cant-afford');
+        }
+        
         // 강화 관련 텍스트에 애니메이션 그라데이션 효과 적용
         let enhancedDescription = upgrade.description;
         let gradientClass = '';
@@ -2666,9 +2682,13 @@ function showUpgradeSelection() {
             <div class="upgrade-icon">${upgrade.icon}</div>
             <div class="upgrade-name">${upgrade.name}</div>
             <div class="upgrade-description">${enhancedDescription}</div>
+            <div class="upgrade-price">${upgrade.price}</div>
         `;
         
-        card.onclick = () => selectUpgrade(card, upgrade, confirmBtn);
+        if (canAfford) {
+            card.onclick = () => purchaseUpgrade(upgrade, card);
+        }
+        
         choicesContainer.appendChild(card);
     });
     
@@ -2676,31 +2696,65 @@ function showUpgradeSelection() {
     popup.style.display = 'flex';
 }
 
-// 업그레이드 선택
-function selectUpgrade(card, upgrade, confirmBtn) {
-    // 이전 선택 제거
-    document.querySelectorAll('.upgrade-card').forEach(c => c.classList.remove('selected'));
+// 업그레이드 구매
+function purchaseUpgrade(upgrade, cardElement) {
+    // 소지금 확인
+    if (gameState.gold < upgrade.price) {
+        return;
+    }
     
-    // 새로운 선택 적용
-    card.classList.add('selected');
-    selectedUpgrade = upgrade;
-    confirmBtn.disabled = false;
-}
-
-// 업그레이드 확인
-function confirmUpgrade() {
-    if (!selectedUpgrade) return;
+    // 이미 구매한 업그레이드인지 확인
+    if (purchasedUpgrades.some(u => u.id === upgrade.id)) {
+        return;
+    }
+    
+    // 소지금 차감
+    gameState.gold -= upgrade.price;
     
     // 업그레이드 적용
-    gameState.upgrades.push(selectedUpgrade);
-    applyUpgrade(selectedUpgrade);
+    gameState.upgrades.push(upgrade);
+    purchasedUpgrades.push(upgrade);
+    applyUpgrade(upgrade);
     
-    // 팝업 닫기
-    const popup = document.getElementById('upgrade-popup');
-    popup.style.display = 'none';
+    // 효과 발동 알림
+    triggerUpgradeEffect(upgrade.id);
     
-    // 다음 스테이지 진행
-    proceedToNextStage();
+    // UI 업데이트
+    cardElement.classList.add('purchased');
+    cardElement.onclick = null;
+    const priceElement = cardElement.querySelector('.upgrade-price');
+    if (priceElement) {
+        priceElement.textContent = '구매완료';
+    }
+    
+    // 소지금 표시 업데이트
+    const shopGoldElement = document.getElementById('shop-gold-amount');
+    if (shopGoldElement) {
+        shopGoldElement.textContent = gameState.gold;
+    }
+    
+    // 다른 카드들의 구매 가능 여부 재확인
+    updateShopAffordability();
+}
+
+// 상점 카드들의 구매 가능 여부 업데이트
+function updateShopAffordability() {
+    const cards = document.querySelectorAll('.upgrade-card');
+    cards.forEach(card => {
+        if (card.classList.contains('purchased')) return;
+        
+        const upgradeId = card.dataset.upgradeId;
+        const upgrade = shopUpgrades.find(u => u.id === upgradeId);
+        if (!upgrade) return;
+        
+        if (gameState.gold < upgrade.price) {
+            card.classList.add('cant-afford');
+            card.onclick = null;
+        } else {
+            card.classList.remove('cant-afford');
+            card.onclick = () => purchaseUpgrade(upgrade, card);
+        }
+    });
 }
 
 // 업그레이드 효과 적용
@@ -2730,6 +2784,12 @@ function applyUpgrade(upgrade) {
 
 // 다음 스테이지 진행
 function proceedToNextStage() {
+    // 팝업 닫기
+    const popup = document.getElementById('upgrade-popup');
+    if (popup) {
+        popup.style.display = 'none';
+    }
+    
     // 다음 스테이지 값 설정
     const nextStage = gameState.stage + 1;
     const nextTarget = Math.floor(gameState.targetScore * 1.3);

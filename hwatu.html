@@ -732,6 +732,18 @@
             margin-bottom: 30px;
         }
         
+        .shop-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        
+        .shop-gold {
+            font-size: 24px;
+        }
+        
         .upgrade-choices {
             display: flex;
             gap: 20px;
@@ -744,6 +756,7 @@
             border: 2px solid rgba(255, 215, 0, 0.3);
             border-radius: 15px;
             padding: 20px;
+            padding-bottom: 50px;
             width: 250px;
             cursor: pointer;
             transition: all 0.3s ease;
@@ -751,17 +764,41 @@
             overflow: hidden;
         }
         
-        .upgrade-card:hover {
+        .upgrade-card:hover:not(.purchased):not(.cant-afford) {
             transform: translateY(-5px);
             background: rgba(255, 255, 255, 0.15);
             border-color: #ffd700;
             box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
         }
         
-        .upgrade-card.selected {
-            background: rgba(255, 215, 0, 0.2);
-            border-color: #ffd700;
-            transform: scale(1.05);
+        .upgrade-card.purchased {
+            background: rgba(76, 175, 80, 0.2);
+            border-color: #4CAF50;
+            cursor: not-allowed;
+            opacity: 0.8;
+        }
+        
+        .upgrade-card.cant-afford {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .upgrade-price {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .upgrade-card.purchased .upgrade-price {
+            background: #4CAF50;
+            color: white;
         }
         
         .upgrade-icon {
@@ -1379,16 +1416,21 @@
         </div>
     </div>
     
-    <!-- 업그레이드 선택 팝업 -->
+    <!-- 업그레이드 상점 팝업 -->
     <div id="upgrade-popup">
         <div class="upgrade-container">
-            <h2 class="upgrade-title">🎊 스테이지 클리어!</h2>
-            <p class="upgrade-subtitle">업그레이드를 선택하세요</p>
+            <h2 class="upgrade-title">🏪 업그레이드 상점</h2>
+            <div class="shop-header">
+                <div class="shop-gold">
+                    <span style="color: #ffd700;">보유 소지금: </span>
+                    <span id="shop-gold-amount" style="color: #ffd700; font-weight: bold;">0</span>
+                </div>
+            </div>
             <div class="upgrade-choices" id="upgrade-choices">
                 <!-- 동적으로 생성됨 -->
             </div>
             <div class="upgrade-confirm">
-                <button class="btn-confirm" id="confirm-upgrade" disabled>선택 확인</button>
+                <button class="btn-confirm" id="next-stage-btn" onclick="proceedToNextStage()">다음 스테이지로</button>
             </div>
         </div>
     </div>
