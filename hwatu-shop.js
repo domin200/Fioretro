@@ -510,12 +510,14 @@ class ShopManager {
         gameStateManager.updateGold(-item.price);
         
         // 구매 효과음 재생 (가격에 따라 다른 효과음)
-        if (typeof playSound === 'function') {
-            if (item.price >= 10) {
-                playSound('SE/gold_big.mp3');
-            } else {
-                playSound('SE/gold_small.mp3');
-            }
+        if (item.price >= 10) {
+            const audio = new Audio('SE/gold_big.mp3');
+            audio.volume = 0.9;
+            audio.play().catch(e => console.log('효과음 재생 실패:', e));
+        } else {
+            const audio = new Audio('SE/gold_small.mp3');
+            audio.volume = 0.9;
+            audio.play().catch(e => console.log('효과음 재생 실패:', e));
         }
         
         // 보물만 구매 기록에 추가 (재구매 방지)
