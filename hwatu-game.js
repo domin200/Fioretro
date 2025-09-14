@@ -268,6 +268,11 @@ const gameState = {
 
 // 전체 게임 초기화 (게임 시작 또는 실패 후 재시작)
 function initFullGame() {
+    // upgrades가 없으면 초기화
+    if (!gameState.upgrades) {
+        gameState.upgrades = [];
+    }
+    
     // 덱 준비 및 섞기
     gameState.deck = [...HWATU_CARDS];
     gameState.removedCards = [];  // 제거된 카드 목록 초기화
@@ -308,7 +313,7 @@ function initStage() {
     }
     
     // 비온뒤 맑음 업그레이드 확인 - 12월 카드 제거
-    const hasSunnyAfterRain = gameState.upgrades.some(u => u.id === 'sunny_after_rain');
+    const hasSunnyAfterRain = gameState.upgrades && gameState.upgrades.some(u => u.id === 'sunny_after_rain');
     if (hasSunnyAfterRain) {
         gameState.deck = gameState.deck.filter(card => card.month !== 12);
         // 효과 발동 알림 (약간의 딜레이 후)
@@ -323,7 +328,6 @@ function initStage() {
 
 // 게임 초기화
 function initGame() {
-    
     // 상태 초기화
     gameState.hand = [];
     gameState.floor = [];
@@ -344,21 +348,23 @@ function initGame() {
     gameState.stageEnded = false;  // 스테이지 종료 플래그 초기화
     
     // 버리기 횟수 계산 (기본 4 + 업그레이드)
-    const extraDiscards = gameState.upgrades.filter(u => u.id === 'extra_discard').length;
+    const extraDiscards = gameState.upgrades ? gameState.upgrades.filter(u => u.id === 'extra_discard').length : 0;
     gameState.discardsLeft = 4 + extraDiscards;
     
     // 초기 카드 분배 (애니메이션)
-    const hasMapleHand = gameState.upgrades.some(u => u.id === 'maple_hand');
+    const hasMapleHand = gameState.upgrades && gameState.upgrades.some(u => u.id === 'maple_hand');
     const handSize = hasMapleHand ? 4 : 5;
-    const hasNoPossession = gameState.upgrades.some(u => u.id === 'no_possession');
+    const hasNoPossession = gameState.upgrades && gameState.upgrades.some(u => u.id === 'no_possession');
     
     // 카드를 미리 뽑아둠
     const cardsToHand = [];
     for (let i = 0; i < handSize; i++) {
-        cardsToHand.push(gameState.deck.pop());
+        if (gameState.deck.length > 0) {
+            cardsToHand.push(gameState.deck.pop());
+        }
     }
     
-    const cardToFloor = !hasNoPossession ? gameState.deck.pop() : null;
+    const cardToFloor = !hasNoPossession && gameState.deck.length > 0 ? gameState.deck.pop() : null;
     
     // UI 초기화 (카드 없이)
     updateDisplay();
