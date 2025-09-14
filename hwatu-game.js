@@ -2808,6 +2808,23 @@ function showUpgradeSelection() {
         // 카테고리 결정
         const category = (upgrade.type === 'enhancement' || upgrade.type === 'remove' || upgrade.type === 'duplicate') ? '보주' : '보물';
         
+        // 등급별 그라데이션 클래스 결정
+        let rarityGradientClass = '';
+        switch(upgrade.rarity) {
+            case 'common':
+                rarityGradientClass = 'gradient-common';
+                break;
+            case 'rare':
+                rarityGradientClass = 'gradient-rare';
+                break;
+            case 'epic':
+                rarityGradientClass = 'gradient-epic';
+                break;
+            case 'legendary':
+                rarityGradientClass = 'gradient-legendary';
+                break;
+        }
+        
         card.innerHTML = `
             <div class="upgrade-rarity rarity-${upgrade.rarity}">${upgrade.rarity.toUpperCase()}</div>
             <div class="upgrade-category" style="
@@ -2820,7 +2837,12 @@ function showUpgradeSelection() {
                 text-transform: uppercase;
             ">${category}</div>
             <div class="upgrade-icon">${upgrade.icon}</div>
-            <div class="upgrade-name">${upgrade.name}</div>
+            <div class="upgrade-name">
+                <div class="animated-gradient-text ${rarityGradientClass}">
+                    <div class="gradient-overlay"></div>
+                    <div class="text-content">${upgrade.name}</div>
+                </div>
+            </div>
             <div class="upgrade-price">${upgrade.price}</div>
         `;
         
