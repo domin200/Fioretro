@@ -412,106 +412,113 @@ class ShopManager {
 
     // 카드 획득 애니메이션
     showCardAcquisitionAnimation(card, seasonName) {
-        // 전체 화면 오버레이
-        const overlay = DOMUtils.createElement('div', {
-            style: {
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: 'rgba(0, 0, 0, 0.8)',
-                zIndex: 10000,
-                display: 'flex',
-                flexDirection: 'column',
-                alignItems: 'center',
-                justifyContent: 'center',
-                animation: 'fadeIn 0.3s ease'
-            }
-        });
+        // 덱 위치 찾기
+        const deckElement = document.getElementById('deck-info');
+        const deckRect = deckElement ? deckElement.getBoundingClientRect() : { right: 100, top: 100 };
+        
+        // 화면 중앙 위치
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
 
-        // 계절 이름 표시
+        // 계절 이름 표시 (화면 상단에 고정)
         const seasonTitle = DOMUtils.createElement('h2', {
             style: {
+                position: 'fixed',
+                top: '50px',
+                left: '50%',
+                transform: 'translateX(-50%)',
                 color: '#ffd700',
                 fontSize: '36px',
-                marginBottom: '20px',
-                textShadow: '0 0 20px rgba(255, 215, 0, 0.5)'
+                textShadow: '0 0 20px rgba(255, 215, 0, 0.5)',
+                zIndex: 10001,
+                animation: 'fadeIn 0.5s ease'
             },
             textContent: `${seasonName}의 패 획득!`
         });
-        overlay.appendChild(seasonTitle);
+        document.body.appendChild(seasonTitle);
 
-        // 카드 컨테이너
-        const cardContainer = DOMUtils.createElement('div', {
-            style: {
-                position: 'relative',
-                transform: 'scale(0)',
-                transition: 'transform 0.5s ease'
-            }
-        });
-
-        // 카드 생성
-        const cardElement = CardComponent.create(card, {
-            size: 'large',
-            showEnhancement: false
-        });
-        
-        // 카드 스타일 추가
-        cardElement.style.cssText += `
-            width: 150px;
-            height: 200px;
-            box-shadow: 0 0 30px rgba(255, 215, 0, 0.8);
+        // 카드 생성 (화면 중앙에)
+        const cardElement = CardComponent.create(card, { size: 'large', showEnhancement: false });
+        cardElement.style.cssText = `
+            position: fixed;
+            left: ${centerX - 60}px;
+            top: ${centerY - 80}px;
+            width: 120px;
+            height: 160px;
+            z-index: 10002;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 1);
             border: 3px solid #ffd700;
+            border-radius: 8px;
+            transform: scale(0) rotateY(0deg);
+            transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         `;
-        
-        cardContainer.appendChild(cardElement);
-        overlay.appendChild(cardContainer);
+        document.body.appendChild(cardElement);
 
-        // 카드 이름과 설명
+        // 카드 정보 표시
         const cardInfo = DOMUtils.createElement('div', {
             style: {
-                marginTop: '30px',
+                position: 'fixed',
+                left: '50%',
+                top: `${centerY + 100}px`,
+                transform: 'translateX(-50%)',
                 textAlign: 'center',
                 opacity: '0',
-                transition: 'opacity 0.5s ease 0.5s'
+                zIndex: 10001,
+                transition: 'opacity 0.5s ease'
             },
             innerHTML: `
-                <div style="color: #fff; font-size: 24px; font-weight: bold; margin-bottom: 10px;">
+                <div style="color: #fff; font-size: 24px; font-weight: bold; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
                     ${card.month}월 - ${card.name}
                 </div>
-                <div style="color: #aaa; font-size: 16px;">
-                    덱에 추가되었습니다!
+                <div style="color: #ffd700; font-size: 18px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                    덱에 추가됩니다!
                 </div>
             `
         });
-        overlay.appendChild(cardInfo);
+        document.body.appendChild(cardInfo);
 
-        document.body.appendChild(overlay);
-
-        // 애니메이션 시작
+        // 1단계: 카드 나타나기
         setTimeout(() => {
-            cardContainer.style.transform = 'scale(1) rotateY(360deg)';
+            cardElement.style.transform = 'scale(1.5) rotateY(360deg)';
             cardInfo.style.opacity = '1';
         }, 100);
 
-        // 3초 후 덱으로 날아가는 애니메이션
+        // 2단계: 잠시 대기 후 덱으로 이동
         setTimeout(() => {
-            cardContainer.style.transition = 'all 0.8s ease';
-            cardContainer.style.transform = 'scale(0.1) translateY(300px) rotate(720deg)';
-            cardContainer.style.opacity = '0';
+            // 덱 위치로 이동
+            const targetX = deckRect.right - 100;
+            const targetY = deckRect.top + 50;
             
-            // 페이드 아웃
-            overlay.style.animation = 'fadeOut 0.5s ease 0.3s';
+            cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            cardElement.style.left = `${targetX}px`;
+            cardElement.style.top = `${targetY}px`;
+            cardElement.style.transform = 'scale(0.3) rotate(720deg)';
+            cardElement.style.opacity = '0';
             
-            // 완전히 제거
-            setTimeout(() => {
-                overlay.remove();
-                PopupComponent.showMessage(
-                    `${card.month}월 ${card.name}이(가) 덱에 추가되었습니다!`,
-                    'success'
-                );
-            }, 800);
+            // 정보 텍스트 페이드 아웃
+            cardInfo.style.opacity = '0';
+            
+            // 효과음 재생
+            if (typeof playSound === 'function') {
+                playSound('se/allow1.mp3');
+            }
+        }, 2000);
+
+        // 3단계: 제거 및 덱 카운트 업데이트
+        setTimeout(() => {
+            cardElement.remove();
+            cardInfo.remove();
+            seasonTitle.remove();
+            
+            // 덱 카운트 업데이트
+            if (typeof updateDeckCount === 'function') {
+                updateDeckCount();
+            }
+            
+            PopupComponent.showMessage(
+                `${card.month}월 ${card.name}이(가) 덱에 추가되었습니다!`,
+                'success'
+            );
         }, 3000);
     }
 
