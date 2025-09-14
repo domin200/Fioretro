@@ -2954,12 +2954,28 @@ function showUpgradeSelection() {
     
     shopUpgrades = [];
     
-    // 2개 보물 선택
-    const availableTreasures = [...treasures];
-    for (let i = 0; i < 2 && availableTreasures.length > 0; i++) {
-        const index = Math.floor(Math.random() * availableTreasures.length);
-        shopUpgrades.push(availableTreasures[index]);
-        availableTreasures.splice(index, 1);
+    // 현재 보유한 보물 개수 확인
+    const ownedTreasures = gameState.upgrades.filter(u => 
+        u.category === 'treasure' || 
+        (!u.category && u.type !== 'enhancement' && u.type !== 'remove' && u.type !== 'duplicate')
+    );
+    const treasureCount = ownedTreasures.length;
+    const canBuyTreasures = treasureCount < 5; // 최대 5개 제한
+    
+    // 이미 보유한 보물 제외하고 선택
+    const availableTreasures = treasures.filter(t => 
+        !gameState.upgrades.some(u => u.id === t.id) &&
+        !gameStateManager.state.purchasedItems.has(t.id)
+    );
+    
+    // 보물 추가 (최대 2개, 5개 제한 고려)
+    if (canBuyTreasures && availableTreasures.length > 0) {
+        const treasuresToShow = Math.min(2, 5 - treasureCount, availableTreasures.length);
+        for (let i = 0; i < treasuresToShow; i++) {
+            const index = Math.floor(Math.random() * availableTreasures.length);
+            shopUpgrades.push(availableTreasures[index]);
+            availableTreasures.splice(index, 1);
+        }
     }
     
     // 보주, 소모품, 소모품 카드를 섞어서 3개 선택
@@ -3126,6 +3142,19 @@ function showPurchaseTooltip(upgrade, cardElement) {
     // 구매 가능 여부 확인
     let canPurchase = gameState.gold >= upgrade.price;
     let purchaseMessage = '';
+    
+    // 보물의 경우 5개 제한 체크
+    if (upgrade.category === 'treasure') {
+        const treasureCount = gameState.upgrades.filter(u => 
+            u.category === 'treasure' || 
+            (!u.category && u.type !== 'enhancement' && u.type !== 'remove' && u.type !== 'duplicate')
+        ).length;
+        
+        if (treasureCount >= 5) {
+            canPurchase = false;
+            purchaseMessage = '(보물 최대 보유)';
+        }
+    }
     
     // 소모품 카드의 경우 슬롯 체크
     if (upgrade.category === 'consumable_card' || upgrade.category === 'consumable') {
