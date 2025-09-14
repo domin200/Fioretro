@@ -5059,6 +5059,138 @@ function startGame() {
     }, 500);
 }
 
+// 오프닝 연출 표시
+function showOpening() {
+    // 오프닝 컨테이너 생성
+    const openingContainer = document.createElement('div');
+    openingContainer.id = 'opening-container';
+    openingContainer.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100vw;
+        height: 100vh;
+        background: black;
+        z-index: 10000;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        overflow: hidden;
+    `;
+    document.body.appendChild(openingContainer);
+    
+    // 카드 이미지 배열 (앞면과 뒷면 섞어서 사용)
+    const cardImages = [
+        'images/back.png',  // 뒷면
+        'images/1-1.png', 'images/1-2.png', 'images/2-1.png', 'images/2-2.png',
+        'images/3-1.png', 'images/3-2.png', 'images/4-1.png', 'images/4-2.png',
+        'images/5-1.png', 'images/5-2.png', 'images/6-1.png', 'images/6-2.png',
+        'images/7-1.png', 'images/7-2.png', 'images/8-1.png', 'images/8-2.png',
+        'images/9-1.png', 'images/9-2.png', 'images/10-1.png', 'images/10-2.png',
+        'images/11-1.png', 'images/11-2.png', 'images/12-1.png', 'images/12-2.png'
+    ];
+    
+    // 20개 정도의 카드 생성
+    for (let i = 0; i < 20; i++) {
+        const card = document.createElement('img');
+        card.src = cardImages[Math.floor(Math.random() * cardImages.length)];
+        card.style.cssText = `
+            position: absolute;
+            width: 60px;
+            height: 90px;
+            opacity: 0;
+            animation: flyToCenter 3s ease-out ${i * 0.15}s forwards;
+        `;
+        
+        // 랜덤한 시작 위치 설정
+        const angle = (Math.PI * 2 * i) / 20;
+        const distance = 800 + Math.random() * 400;
+        const startX = Math.cos(angle) * distance;
+        const startY = Math.sin(angle) * distance;
+        card.style.setProperty('--start-x', `${startX}px`);
+        card.style.setProperty('--start-y', `${startY}px`);
+        card.style.setProperty('--rotation', `${Math.random() * 720 - 360}deg`);
+        
+        openingContainer.appendChild(card);
+    }
+    
+    // 타이틀 텍스트
+    const titleText = document.createElement('h1');
+    titleText.textContent = '화라투로';
+    titleText.style.cssText = `
+        position: absolute;
+        font-family: 'YiSunShin', sans-serif;
+        font-size: 80px;
+        font-weight: bold;
+        color: white;
+        opacity: 0;
+        z-index: 10001;
+        animation: titleFadeIn 2s ease 1.5s forwards;
+        text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+    `;
+    openingContainer.appendChild(titleText);
+    
+    // 애니메이션 스타일 추가
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes flyToCenter {
+            0% {
+                transform: translate(var(--start-x), var(--start-y)) rotate(0deg) scale(0.5);
+                opacity: 0;
+            }
+            20% {
+                opacity: 1;
+            }
+            100% {
+                transform: translate(0, 0) rotate(var(--rotation)) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes titleFadeIn {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes fadeToTitle {
+            0% {
+                opacity: 1;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    // 3초 후 카드와 배경 페이드아웃 (타이틀 텍스트 제외)
+    setTimeout(() => {
+        // 카드들과 배경 페이드아웃
+        const cards = openingContainer.querySelectorAll('img');
+        cards.forEach(card => {
+            card.style.transition = 'opacity 2s ease';
+            card.style.opacity = '0';
+        });
+        
+        // 배경 페이드아웃
+        openingContainer.style.transition = 'background 2s ease';
+        openingContainer.style.background = 'transparent';
+        
+        // 2초 후 오프닝 컨테이너 제거하고 타이틀 화면 표시
+        setTimeout(() => {
+            openingContainer.remove();
+            style.remove();
+            showTitleScreen();
+        }, 2000);
+    }, 3500);
+}
+
 // 게임 시작
 window.onload = () => {
     // 오디오 초기화
@@ -5076,8 +5208,8 @@ window.onload = () => {
         gameBGM.pause();
     }
     
-    // 타이틀 화면 표시
-    showTitleScreen();
+    // 오프닝 연출 표시
+    showOpening();
     
     // 테스트용 강화 제거됨
     
