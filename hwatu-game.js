@@ -2753,6 +2753,7 @@ function showUpgradeSelection() {
         const card = document.createElement('div');
         card.className = 'upgrade-card';
         card.dataset.upgradeId = upgrade.id;
+        card.style.position = 'relative'; // 카테고리 절대 위치를 위해 추가
         
         // 구매 가능 여부 확인
         const canAfford = gameState.gold >= upgrade.price;
@@ -2792,7 +2793,16 @@ function showUpgradeSelection() {
         
         card.innerHTML = `
             <div class="upgrade-rarity rarity-${upgrade.rarity}">${upgrade.rarity.toUpperCase()}</div>
-            <div class="upgrade-category" style="font-size: 12px; color: #aaa; margin-top: 5px;">${category}</div>
+            <div class="upgrade-category" style="
+                position: absolute;
+                left: 10px;
+                top: 50%;
+                transform: translateY(-50%) rotate(-90deg);
+                font-size: 12px;
+                color: #aaa;
+                letter-spacing: 2px;
+                text-transform: uppercase;
+            ">${category}</div>
             <div class="upgrade-icon">${upgrade.icon}</div>
             <div class="upgrade-name">${upgrade.name}</div>
             <div class="upgrade-price">${upgrade.price}</div>
