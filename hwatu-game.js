@@ -1803,11 +1803,16 @@ function createCardElement(card) {
     const enhancement = gameState.cardEnhancements[card.id];
     if (enhancement) {
         div.classList.add(`enhanced-${enhancement.toLowerCase()}`);
+        
+        // 툴팁 추가
         const enhanceData = Object.values(ENHANCEMENT_TYPES).find(e => e.name === enhancement);
         if (enhanceData) {
-            // 빛나는 효과 추가
-            div.style.boxShadow = `0 0 20px rgba(${enhanceData.rgb}, 0.8), inset 0 0 15px rgba(${enhanceData.rgb}, 0.3)`;
-            div.style.border = `2px solid ${enhanceData.color}`;
+            div.setAttribute('data-enhancement', enhancement);
+            div.setAttribute('data-enhancement-effect', enhanceData.effect);
+            
+            // 호버 이벤트로 툴팁 표시
+            div.addEventListener('mouseenter', (e) => showEnhancementTooltip(e, enhancement, enhanceData));
+            div.addEventListener('mouseleave', hideEnhancementTooltip);
         }
     }
     
@@ -1939,6 +1944,68 @@ function enhanceCard(cardId, enhancementType) {
 function removeCardEnhancement(cardId) {
     delete gameState.cardEnhancements[cardId];
     updateDisplay();
+}
+
+// 강화 툴팁 표시
+function showEnhancementTooltip(event, enhancement, enhanceData) {
+    // 기존 툴팁 제거
+    hideEnhancementTooltip();
+    
+    const tooltip = document.createElement('div');
+    tooltip.id = 'enhancement-tooltip';
+    tooltip.style.cssText = `
+        position: fixed;
+        background: rgba(0, 0, 0, 0.9);
+        color: ${enhanceData.color};
+        padding: 8px 12px;
+        border-radius: 6px;
+        font-size: 12px;
+        z-index: 10000;
+        pointer-events: none;
+        border: 1px solid ${enhanceData.color};
+        box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        white-space: nowrap;
+        animation: fadeIn 0.2s ease;
+    `;
+    
+    tooltip.innerHTML = `
+        <div style="font-weight: bold; margin-bottom: 4px;">
+            ${enhancement} 강화
+        </div>
+        <div style="color: #fff; font-size: 11px;">
+            ${enhanceData.effect}
+        </div>
+    `;
+    
+    document.body.appendChild(tooltip);
+    
+    // 위치 설정 (카드 위에 표시)
+    const rect = event.target.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    
+    let left = rect.left + (rect.width - tooltipRect.width) / 2;
+    let top = rect.top - tooltipRect.height - 10;
+    
+    // 화면 밖으로 나가지 않도록 조정
+    if (left < 5) left = 5;
+    if (left + tooltipRect.width > window.innerWidth - 5) {
+        left = window.innerWidth - tooltipRect.width - 5;
+    }
+    if (top < 5) {
+        // 위에 공간이 없으면 아래에 표시
+        top = rect.bottom + 10;
+    }
+    
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+}
+
+// 강화 툴팁 숨기기
+function hideEnhancementTooltip() {
+    const tooltip = document.getElementById('enhancement-tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
 }
 
 

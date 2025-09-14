@@ -913,108 +913,123 @@
         }
         
         /* 카드 강화 효과 */
-        @keyframes enhancedGlow {
+        @keyframes enhancedPulse {
             0%, 100% { 
-                filter: brightness(1) saturate(1.2);
+                opacity: 0.6;
             }
             50% { 
-                filter: brightness(1.2) saturate(1.5);
+                opacity: 1;
             }
         }
         
         .card.enhanced-청 {
-            animation: enhancedGlow 2s ease-in-out infinite;
             position: relative;
+            border: 2px solid #00bfff !important;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.6), 
+                        inset 0 0 10px rgba(0, 191, 255, 0.2) !important;
         }
         
         .card.enhanced-청::before {
             content: '';
             position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, transparent, rgba(0, 191, 255, 0.5), transparent);
-            border-radius: 6px;
-            animation: rotate 3s linear infinite;
-            z-index: -1;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, 
+                        rgba(0, 191, 255, 0.15) 0%, 
+                        transparent 70%);
+            border-radius: inherit;
+            animation: enhancedPulse 2s ease-in-out infinite;
+            pointer-events: none;
         }
         
         .card.enhanced-적 {
-            animation: enhancedGlow 2s ease-in-out infinite;
             position: relative;
+            border: 2px solid #ff4444 !important;
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.6), 
+                        inset 0 0 10px rgba(255, 68, 68, 0.2) !important;
         }
         
         .card.enhanced-적::before {
             content: '';
             position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, transparent, rgba(255, 68, 68, 0.5), transparent);
-            border-radius: 6px;
-            animation: rotate 3s linear infinite;
-            z-index: -1;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, 
+                        rgba(255, 68, 68, 0.15) 0%, 
+                        transparent 70%);
+            border-radius: inherit;
+            animation: enhancedPulse 2s ease-in-out infinite;
+            pointer-events: none;
         }
         
         .card.enhanced-백 {
-            animation: enhancedGlow 2s ease-in-out infinite;
             position: relative;
+            border: 2px solid #ffffff !important;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8), 
+                        inset 0 0 10px rgba(255, 255, 255, 0.3) !important;
         }
         
         .card.enhanced-백::before {
             content: '';
             position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.7), transparent);
-            border-radius: 6px;
-            animation: rotate 3s linear infinite;
-            z-index: -1;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, 
+                        rgba(255, 255, 255, 0.2) 0%, 
+                        transparent 70%);
+            border-radius: inherit;
+            animation: enhancedPulse 2s ease-in-out infinite;
+            pointer-events: none;
         }
         
         .card.enhanced-흑 {
-            animation: enhancedGlow 2s ease-in-out infinite;
             position: relative;
+            border: 2px solid #8b00ff !important;
+            box-shadow: 0 0 15px rgba(139, 0, 255, 0.6), 
+                        inset 0 0 10px rgba(139, 0, 255, 0.2) !important;
         }
         
         .card.enhanced-흑::before {
             content: '';
             position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, transparent, rgba(139, 0, 255, 0.5), transparent);
-            border-radius: 6px;
-            animation: rotate 3s linear infinite;
-            z-index: -1;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, 
+                        rgba(139, 0, 255, 0.15) 0%, 
+                        transparent 70%);
+            border-radius: inherit;
+            animation: enhancedPulse 2s ease-in-out infinite;
+            pointer-events: none;
         }
         
         .card.enhanced-황 {
-            animation: enhancedGlow 2s ease-in-out infinite;
             position: relative;
+            border: 2px solid #ffd700 !important;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6), 
+                        inset 0 0 10px rgba(255, 215, 0, 0.2) !important;
         }
         
         .card.enhanced-황::before {
             content: '';
             position: absolute;
-            top: -2px;
-            left: -2px;
-            right: -2px;
-            bottom: -2px;
-            background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.5), transparent);
-            border-radius: 6px;
-            animation: rotate 3s linear infinite;
-            z-index: -1;
-        }
-        
-        @keyframes rotate {
-            0% { transform: rotate(0deg); }
-            100% { transform: rotate(360deg); }
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at center, 
+                        rgba(255, 215, 0, 0.15) 0%, 
+                        transparent 70%);
+            border-radius: inherit;
+            animation: enhancedPulse 2s ease-in-out infinite;
+            pointer-events: none;
         }
     </style>
 </head>
