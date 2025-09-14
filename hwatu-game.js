@@ -4605,8 +4605,11 @@ function discardConsumableCard(index) {
 
 // 다음 스테이지 진행
 function proceedToNextStage() {
-    // 스테이지 번호가 3의 배수면 보스 BGM, 아니면 게임 BGM으로 전환
-    if (gameState.stage % 3 === 0) {
+    // 다음 스테이지 번호 계산
+    const nextStage = gameState.stage + 1;
+    
+    // 다음 스테이지가 3의 배수면 보스 BGM, 아니면 게임 BGM으로 전환
+    if (nextStage % 3 === 0) {
         switchBGM('boss');
     } else {
         switchToGameBGM();
@@ -4688,8 +4691,7 @@ function proceedToNextStage() {
         </div>
     `;
     
-    // 다음 스테이지 값 설정
-    const nextStage = gameState.stage + 1;
+    // 다음 스테이지 값 설정 (이미 위에서 계산함)
     const nextTarget = Math.floor(gameState.targetScore * 1.3);
     
     // 배경색 변경
