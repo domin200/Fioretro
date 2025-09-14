@@ -273,6 +273,12 @@ function initFullGame() {
     gameState.removedCards = [];  // 제거된 카드 목록 초기화
     gameState.duplicatedCards = [];  // 복제된 카드 목록 초기화
     gameState.cardEnhancements = {};  // 카드 강화 초기화
+    gameState.consumableCards = [];  // 소모품 카드 초기화
+    
+    // gameStateManager도 동기화
+    if (typeof gameStateManager !== 'undefined') {
+        gameStateManager.state.consumableCards = [];
+    }
     
     initStage();
 }
@@ -475,7 +481,10 @@ function updateButtonStates() {
     if (gameState.selectedConsumable !== null) {
         discardBtn.disabled = true;  // 소모품 카드는 버리기 불가
     } else {
-        discardBtn.disabled = !hasSelection || gameState.discardsLeft <= 0 || gameState.stageEnded;
+        // 호랑이굴 효과 - 첫 턴에는 버리기 불가
+        const hasTigerCave = gameState.upgrades.some(u => u.id === 'tiger_cave');
+        const tigerCaveBlock = hasTigerCave && gameState.turn === 0;
+        discardBtn.disabled = !hasSelection || gameState.discardsLeft <= 0 || gameState.stageEnded || tigerCaveBlock;
     }
 }
 
@@ -703,12 +712,7 @@ function discardCards() {
         return;
     }
     
-    // 호랑이굴 효과 - 첫 턴에는 버리기 불가
-    const hasTigerCave = gameState.upgrades.some(u => u.id === 'tiger_cave');
-    if (hasTigerCave && gameState.turn === 0) {
-        alert('호랑이굴 효과로 첫 턴에는 버리기를 사용할 수 없습니다!');
-        return;
-    }
+    // 호랑이굴 효과는 버튼에서 이미 처리됨
     
     // 일타삼피 효과 확인
     const hasTripleDiscard = gameState.upgrades.some(u => u.id === 'triple_discard');
@@ -1969,7 +1973,10 @@ function updateDisplay() {
     
     // 버튼 상태
     document.getElementById('play-btn').disabled = gameState.selectedCard === null || gameState.stageEnded;
-    document.getElementById('discard-btn').disabled = gameState.selectedCard === null || gameState.discardsLeft <= 0 || gameState.stageEnded;
+    // 호랑이굴 효과 확인
+    const hasTigerCave = gameState.upgrades.some(u => u.id === 'tiger_cave');
+    const tigerCaveBlock = hasTigerCave && gameState.turn === 0;
+    document.getElementById('discard-btn').disabled = gameState.selectedCard === null || gameState.discardsLeft <= 0 || gameState.stageEnded || tigerCaveBlock;
 }
 
 // 카드 엘리먼트 생성
