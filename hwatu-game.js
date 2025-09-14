@@ -2695,9 +2695,9 @@ function showUpgradeSelection() {
     playContainer.innerHTML = `
         <div class="shop-container" style="width: 100%; height: 100%; display: flex; flex-direction: column; padding: 20px;">
             <div class="shop-header" style="text-align: center; margin-bottom: 20px;">
-                <h2 style="color: #ffd700; font-size: 32px; margin-bottom: 10px;">🏪 업그레이드 상점</h2>
+                <h2 style="color: #ffd700; font-size: 32px; margin-bottom: 10px;">🏪 주막</h2>
                 <div style="font-size: 24px; color: #ffd700;">
-                    보유 소지금: <span id="shop-gold-amount" style="font-weight: bold;">${gameState.gold}</span>
+                    <span id="shop-gold-amount" style="font-weight: bold;">${gameState.gold}</span>
                 </div>
             </div>
             <div class="upgrade-choices" id="upgrade-choices" style="
@@ -2784,9 +2784,8 @@ function showUpgradeSelection() {
             <div class="upgrade-price">${upgrade.price}</div>
         `;
         
-        if (canAfford) {
-            card.onclick = () => showPurchaseTooltip(upgrade, card);
-        }
+        // 소지금 관계없이 클릭 가능 (설명 보기)
+        card.onclick = () => showPurchaseTooltip(upgrade, card);
         
         choicesContainer.appendChild(card);
     });
@@ -2799,6 +2798,9 @@ function showPurchaseTooltip(upgrade, cardElement) {
     
     // 카드 위치 가져오기
     const rect = cardElement.getBoundingClientRect();
+    
+    // 소지금 부족 여부 확인
+    const canAfford = gameState.gold >= upgrade.price;
     
     // 툴팁 생성
     const tooltip = document.createElement('div');
@@ -2823,23 +2825,23 @@ function showPurchaseTooltip(upgrade, cardElement) {
             <div style="font-size: 14px; color: #fff; opacity: 0.9; margin-bottom: 10px;">
                 ${upgrade.description}
             </div>
-            <div style="font-size: 16px; color: #ffd700;">
-                가격: ${upgrade.price}
+            <div style="font-size: 16px; color: ${canAfford ? '#ffd700' : '#ff4444'};">
+                가격: ${upgrade.price} ${!canAfford ? '(소지금 부족)' : ''}
             </div>
         </div>
-        <button onclick="confirmPurchase('${upgrade.id}')" style="
+        <button ${!canAfford ? 'disabled' : ''} onclick="${canAfford ? `confirmPurchase('${upgrade.id}')` : ''}" style="
             width: 100%;
             padding: 10px;
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            color: white;
+            background: ${canAfford ? 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)' : 'linear-gradient(135deg, #666 0%, #444 100%)'};
+            color: ${canAfford ? 'white' : '#999'};
             border: none;
             border-radius: 5px;
             font-size: 16px;
             font-weight: bold;
-            cursor: pointer;
+            cursor: ${canAfford ? 'pointer' : 'not-allowed'};
             transition: all 0.3s ease;
-        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
-            구매하기
+        " ${canAfford ? `onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"` : ''}>
+            ${canAfford ? '구매하기' : '소지금 부족'}
         </button>
     `;
     
@@ -2878,11 +2880,11 @@ function hidePurchaseTooltip() {
     // 카드 클릭 이벤트 복원
     const cards = document.querySelectorAll('.upgrade-card');
     cards.forEach(card => {
-        if (card.classList.contains('purchased') || card.classList.contains('cant-afford')) return;
+        if (card.classList.contains('purchased')) return;
         
         const upgradeId = card.dataset.upgradeId;
         const upgrade = shopUpgrades.find(u => u.id === upgradeId);
-        if (upgrade && gameState.gold >= upgrade.price) {
+        if (upgrade) {
             card.onclick = () => showPurchaseTooltip(upgrade, card);
         }
     });
@@ -3473,11 +3475,11 @@ function updateShopAffordability() {
         
         if (gameState.gold < upgrade.price) {
             card.classList.add('cant-afford');
-            card.onclick = null;
         } else {
             card.classList.remove('cant-afford');
-            card.onclick = () => showPurchaseTooltip(upgrade, card);
         }
+        // 소지금 관계없이 클릭 가능
+        card.onclick = () => showPurchaseTooltip(upgrade, card);
     });
 }
 
