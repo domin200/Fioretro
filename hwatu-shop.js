@@ -340,9 +340,10 @@ class ShopManager {
             const randomCards = ArrayUtils.randomSelect(allCards, 5);
             this.showCardSelectionPopup(randomCards, item);
         } else if (item.requiresDeckCard) {
-            // 덱 카드 선택
+            // 덱 카드에서 무작위 5장 선택
             const deckCards = this.getAllDeckCards();
-            this.showCardSelectionPopup(deckCards, item);
+            const randomCards = ArrayUtils.randomSelect(deckCards, Math.min(5, deckCards.length));
+            this.showCardSelectionPopup(randomCards, item);
         } else {
             // 현재 패 카드 선택
             this.showCardSelectionPopup(gameStateManager.state.playerHand, item);
