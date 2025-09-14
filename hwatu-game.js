@@ -4817,54 +4817,139 @@ function startGame() {
         titleScreen.style.opacity = '0';
     }
     
-    // 초기 스테이지 값 설정
-    gameState.stage = 1;
-    gameState.targetScore = 25;
-    gameState.discardsLeft = 4;
-    gameState.gold = 0;
-    gameState.upgrades = [];
-    
-    // 게임 시작시 스테이지 1 색상 설정
-    if (typeof updateBackgroundColors === 'function') {
-        updateBackgroundColors(1);
-    }
-    
-    // 게임 초기화
-    initFullGame();
-    
-    // 잠시 후 좌측 UI들을 슬라이드인
+    // 0.5초 후 게임 화면 설정
     setTimeout(() => {
-        const capturedSection = document.getElementById('captured-section');
-        const scoreBoard = document.getElementById('score-board');
+        // Play 컨테이너를 게임 화면으로 복원
+        const playContainer = document.getElementById('play-container');
+        playContainer.style.display = '';
+        playContainer.style.flexDirection = '';
+        playContainer.style.justifyContent = '';
+        playContainer.style.alignItems = '';
+        playContainer.style.height = '';
         
-        if (capturedSection) {
-            capturedSection.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
-            capturedSection.style.transform = 'translateX(0)';
-            capturedSection.style.opacity = '1';
+        // 게임 화면 HTML 설정
+        playContainer.innerHTML = `
+            <div id="upgrades-info">
+                <div id="upgrades-list">
+                    <!-- 동적으로 생성됨 -->
+                </div>
+            </div>
+            
+            <div style="flex: 1; display: flex; flex-direction: column;">
+                <div style="flex: 0.45; display: flex; flex-direction: column;">
+                    <div class="section-title">바닥 패</div>
+                    <div id="floor-area" style="flex: 1;"></div>
+                </div>
+                
+                <div class="divider"></div>
+                
+                <div style="flex: 0.55; display: flex; flex-direction: column;">
+                    <div class="section-title" style="margin-top: 15px;">내 손패</div>
+                    <div id="hand-area" style="flex: 1; display: flex; align-items: center;"></div>
+                    
+                    <div id="control-area" style="margin-top: 15px;">
+                        <button class="btn btn-secondary" id="discard-btn" onclick="discardCards()">버리기(4)</button>
+                        <button class="btn btn-primary" id="play-btn" onclick="playCard()">바닥에 내기</button>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- 소모품 카드 영역 -->
+            <div id="consumable-area" style="
+                position: absolute;
+                bottom: 20px;
+                right: 20px;
+                display: flex;
+                gap: 10px;
+                padding: 15px;
+                background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
+                border: 2px solid rgba(255, 215, 0, 0.3);
+                border-radius: 12px;
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            ">
+                <div id="consumable-slot-1" class="consumable-slot" style="
+                    width: 80px;
+                    height: 110px;
+                    border: 2px dashed rgba(255, 215, 0, 0.3);
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                "></div>
+                <div id="consumable-slot-2" class="consumable-slot" style="
+                    width: 80px;
+                    height: 110px;
+                    border: 2px dashed rgba(255, 215, 0, 0.3);
+                    border-radius: 8px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                "></div>
+            </div>
+            
+            <div id="deck-info">
+                <div class="deck-card">
+                    🎴
+                    <div class="deck-remaining-label">
+                        덱 <span id="deck-remaining">48</span>/<span id="deck-total">48</span>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        // 초기 스테이지 값 설정
+        gameState.stage = 1;
+        gameState.targetScore = 25;
+        gameState.discardsLeft = 4;
+        gameState.gold = 0;
+        gameState.upgrades = [];
+        
+        // 게임 시작시 스테이지 1 색상 설정
+        if (typeof updateBackgroundColors === 'function') {
+            updateBackgroundColors(1);
         }
         
-        if (scoreBoard) {
-            scoreBoard.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, opacity 0.8s ease 0.2s';
-            scoreBoard.style.transform = 'translateX(0)';
-            scoreBoard.style.opacity = '1';
-        }
+        // 게임 초기화
+        initFullGame();
         
-        // BGM 시작
-        const gameBGM = document.getElementById('bgm');
-        if (gameBGM) {
-            gameBGM.volume = 0;
-            gameBGM.play().catch(e => console.log('BGM 재생 실패:', e));
-            // 페이드인
-            let volume = 0;
-            const fadeInterval = setInterval(() => {
-                volume += 0.05;
-                if (volume >= 1) {
-                    volume = 1;
-                    clearInterval(fadeInterval);
-                }
-                gameBGM.volume = volume;
-            }, 50);
-        }
+        // 잠시 후 좌측 UI들을 슬라이드인
+        setTimeout(() => {
+            const capturedSection = document.getElementById('captured-section');
+            const scoreBoard = document.getElementById('score-board');
+            
+            if (capturedSection) {
+                capturedSection.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
+                capturedSection.style.transform = 'translateX(0)';
+                capturedSection.style.opacity = '1';
+            }
+            
+            if (scoreBoard) {
+                scoreBoard.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, opacity 0.8s ease 0.2s';
+                scoreBoard.style.transform = 'translateX(0)';
+                scoreBoard.style.opacity = '1';
+            }
+            
+            // BGM 시작
+            const gameBGM = document.getElementById('bgm');
+            if (gameBGM) {
+                gameBGM.volume = 0;
+                gameBGM.play().catch(e => console.log('BGM 재생 실패:', e));
+                // 페이드인
+                let volume = 0;
+                const fadeInterval = setInterval(() => {
+                    volume += 0.05;
+                    if (volume >= 1) {
+                        volume = 1;
+                        clearInterval(fadeInterval);
+                    }
+                    gameBGM.volume = volume;
+                }, 50);
+            }
+        }, 100);
     }, 500);
 }
 
