@@ -5089,15 +5089,21 @@ function showOpening() {
     
     // 카드 이미지 배열 (앞면과 뒷면 섞어서 사용)
     const cardImages = [
-        'card-images/back.png',  // 뒷면
-        'card-images/back.png',  // 뒷면 더 추가
-        'card-images/back.png',
-        'card-images/1-1.png', 'card-images/1-2.png', 'card-images/2-1.png', 'card-images/2-2.png',
-        'card-images/3-1.png', 'card-images/3-2.png', 'card-images/4-1.png', 'card-images/4-2.png',
-        'card-images/5-1.png', 'card-images/5-2.png', 'card-images/6-1.png', 'card-images/6-2.png',
-        'card-images/7-1.png', 'card-images/7-2.png', 'card-images/8-1.png', 'card-images/8-2.png',
-        'card-images/9-1.png', 'card-images/9-2.png', 'card-images/10-1.png', 'card-images/10-2.png',
-        'card-images/11-1.png', 'card-images/11-2.png', 'card-images/12-1.png', 'card-images/12-2.png'
+        'new card/back.png',  // 뒷면
+        'new card/back.png',  // 뒷면 더 추가
+        'new card/back.png',
+        'new card/1_일광.png', 'new card/1_띠.png', 'new card/1_피1.png', 'new card/1_피2.png',
+        'new card/2_끗.png', 'new card/2_띠.png', 'new card/2_피1.png', 'new card/2_피2.png',
+        'new card/3_광.png', 'new card/3_띠.png', 'new card/3_피1.png', 'new card/3_피2.png',
+        'new card/4_끗.png', 'new card/4_띠.png', 'new card/4_피1.png', 'new card/4_피2.png',
+        'new card/5_끗.png', 'new card/5_띠.png', 'new card/5_피1.png', 'new card/5_피2.png',
+        'new card/6_끗.png', 'new card/6_띠.png', 'new card/6_피1.png', 'new card/6_피2.png',
+        'new card/7_끗.png', 'new card/7_띠.png', 'new card/7_피1.png', 'new card/7_피2.png',
+        'new card/8_광.png', 'new card/8_끗.png', 'new card/8_피1.png', 'new card/8_피2.png',
+        'new card/9_끗.png', 'new card/9_띠.png', 'new card/9_피1.png', 'new card/9_쌍피.png',
+        'new card/10_끗.png', 'new card/10_띠.png', 'new card/10_피1.png', 'new card/10_피2.png',
+        'new card/11_똥광.png', 'new card/11_쌍피.png', 'new card/11_피1.png', 'new card/11_피2.png',
+        'new card/12_비광.png', 'new card/12_끗.png', 'new card/12_띠.png', 'new card/12_쌍피.png'
     ];
     
     // 20개 정도의 카드 생성
@@ -5110,8 +5116,8 @@ function showOpening() {
         
         card.style.cssText = `
             position: absolute;
-            width: 60px;
-            height: 90px;
+            width: 120px;  /* 2배 크기 */
+            height: 180px; /* 2배 크기 */
             opacity: 0;
             animation: flyToCenter 3s ease-out ${randomDelay}s forwards;
         `;
@@ -5128,18 +5134,26 @@ function showOpening() {
         openingContainer.appendChild(card);
     }
     
-    // 타이틀 화면의 '화라투로' 텍스트를 오프닝 위로 이동 (1.5초 후 등장)
+    // 오프닝용 타이틀 텍스트 생성 (타이틀 화면과 별개)
     setTimeout(() => {
-        const mainTitle = document.getElementById('main-title');
-        if (mainTitle) {
-            mainTitle.style.position = 'fixed';
-            mainTitle.style.top = '50%';
-            mainTitle.style.left = '50%';
-            mainTitle.style.transform = 'translate(-50%, -50%)';
-            mainTitle.style.zIndex = '10001';
-            mainTitle.style.opacity = '0';
-            mainTitle.style.animation = 'titleFadeIn 2s ease forwards';
-        }
+        const openingTitle = document.createElement('h1');
+        openingTitle.textContent = '화라투로';
+        openingTitle.style.cssText = `
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-family: 'YiSunShin', sans-serif;
+            font-size: 80px;
+            font-weight: bold;
+            color: white;
+            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            z-index: 10001;
+            opacity: 0;
+            animation: titleFadeIn 2s ease forwards;
+        `;
+        openingTitle.id = 'opening-title';
+        document.body.appendChild(openingTitle);
     }, 1500);
     
     // 애니메이션 스타일 추가
@@ -5147,14 +5161,14 @@ function showOpening() {
     style.textContent = `
         @keyframes flyToCenter {
             0% {
-                transform: translate(var(--start-x), var(--start-y)) rotate(0deg) scale(0.5);
+                transform: translate(var(--start-x), var(--start-y)) rotate(0deg) scale(1);  /* 2배 크기에서 시작 (이미 width/height가 2배) */
                 opacity: 0;
             }
             20% {
                 opacity: 1;
             }
             100% {
-                transform: translate(0, 0) rotate(var(--rotation)) scale(1);
+                transform: translate(0, 0) rotate(var(--rotation)) scale(0.5);  /* 1배로 축소 (120px -> 60px) */
                 opacity: 1;
             }
         }
@@ -5196,16 +5210,10 @@ function showOpening() {
         
         // 2초 후 오프닝 컨테이너 제거
         setTimeout(() => {
-            // 타이틀 텍스트 원위치로 복원
-            const mainTitle = document.getElementById('main-title');
-            if (mainTitle) {
-                mainTitle.style.position = '';
-                mainTitle.style.top = '';
-                mainTitle.style.left = '';
-                mainTitle.style.transform = '';
-                mainTitle.style.zIndex = '';
-                mainTitle.style.opacity = '';
-                mainTitle.style.animation = 'titleGlow 2s ease-in-out infinite';
+            // 오프닝 타이틀 제거
+            const openingTitle = document.getElementById('opening-title');
+            if (openingTitle) {
+                openingTitle.remove();
             }
             
             openingContainer.remove();
