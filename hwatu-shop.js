@@ -412,9 +412,9 @@ class ShopManager {
 
     // 카드 획득 애니메이션
     showCardAcquisitionAnimation(card, seasonName) {
-        // 덱 위치 찾기
-        const deckElement = document.getElementById('deck-info');
-        const deckRect = deckElement ? deckElement.getBoundingClientRect() : { right: 100, top: 100 };
+        // 덱 카드 요소 찾기 (🎴 이모지가 있는 요소)
+        const deckCard = document.querySelector('.deck-card');
+        const deckRect = deckCard ? deckCard.getBoundingClientRect() : null;
         
         // 화면 중앙 위치
         const centerX = window.innerWidth / 2;
@@ -437,9 +437,88 @@ class ShopManager {
         });
         document.body.appendChild(seasonTitle);
 
-        // 카드 생성 (화면 중앙에)
-        const cardElement = CardComponent.create(card, { size: 'large', showEnhancement: false });
-        cardElement.style.cssText = `
+        // 카드 생성 - createCardElement 함수 사용
+        let cardElement;
+        if (typeof createCardElement === 'function') {
+            cardElement = createCardElement(card);
+        } else {
+            // createCardElement가 없으면 기본 카드 생성
+            cardElement = document.createElement('div');
+            cardElement.className = 'card';
+            
+            // 카드 이미지 직접 설정
+            let imageName = '';
+            if (card.month === 1) {
+                if (card.type === '광') imageName = '1_일광.png';
+                else if (card.type === '홍단') imageName = '1_띠.png';
+                else if (card.id === 3) imageName = '1_피1.png';
+                else if (card.id === 4) imageName = '1_피2.png';
+            } else if (card.month === 2) {
+                if (card.type === '열끗') imageName = '2_끗.png';
+                else if (card.type === '홍단') imageName = '2_띠.png';
+                else if (card.id === 7) imageName = '2_피1.png';
+                else if (card.id === 8) imageName = '2_피2.png';
+            } else if (card.month === 3) {
+                if (card.type === '광') imageName = '3_삼광.png';
+                else if (card.type === '홍단') imageName = '3_띠.png';
+                else if (card.id === 11) imageName = '3_피1.png';
+                else if (card.id === 12) imageName = '3_피2.png';
+            } else if (card.month === 4) {
+                if (card.type === '열끗') imageName = '4_끗.png';
+                else if (card.type === '초단') imageName = '4_띠.png';
+                else if (card.id === 15) imageName = '4_피1.png';
+                else if (card.id === 16) imageName = '4_피2.png';
+            } else if (card.month === 5) {
+                if (card.type === '열끗') imageName = '5_끗.png';
+                else if (card.type === '초단') imageName = '5_띠.png';
+                else if (card.id === 19) imageName = '5_피1.png';
+                else if (card.id === 20) imageName = '5_피2.png';
+            } else if (card.month === 6) {
+                if (card.type === '열끗') imageName = '6_끗.png';
+                else if (card.type === '청단') imageName = '6_띠.png';
+                else if (card.id === 23) imageName = '6_피1.png';
+                else if (card.id === 24) imageName = '6_피2.png';
+            } else if (card.month === 7) {
+                if (card.type === '열끗') imageName = '7_끗.png';
+                else if (card.type === '초단') imageName = '7_띠.png';
+                else if (card.id === 27) imageName = '7_피1.png';
+                else if (card.id === 28) imageName = '7_피2.png';
+            } else if (card.month === 8) {
+                if (card.type === '광') imageName = '8_팔광.png';
+                else if (card.type === '열끗') imageName = '8_끗.png';
+                else if (card.id === 31) imageName = '8_피1.png';
+                else if (card.id === 32) imageName = '8_피2.png';
+            } else if (card.month === 9) {
+                if (card.type === '열끗') imageName = '9_쌍피.png';
+                else if (card.type === '청단') imageName = '9_띠.png';
+                else if (card.id === 35) imageName = '9_피1.png';
+                else if (card.id === 36) imageName = '9_피2.png';
+            } else if (card.month === 10) {
+                if (card.type === '열끗') imageName = '10_끗.png';
+                else if (card.type === '청단') imageName = '10_띠.png';
+                else if (card.id === 39) imageName = '10_피1.png';
+                else if (card.id === 40) imageName = '10_피2.png';
+            } else if (card.month === 11) {
+                if (card.type === '광') imageName = '11_똥광.png';
+                else if (card.type === '쌍피') imageName = '11_쌍피.png';
+                else if (card.id === 43) imageName = '11_피1.png';
+                else if (card.id === 44) imageName = '11_피2.png';
+            } else if (card.month === 12) {
+                if (card.type === '광') imageName = '12_비광.png';
+                else if (card.type === '열끗') imageName = '12_끗.png';
+                else if (card.type === '쌍피') imageName = '12_쌍피.png';
+                else if (card.type === '피') imageName = '12_띠.png';
+            }
+            
+            if (imageName) {
+                cardElement.style.backgroundImage = `url('new card/${imageName}')`;
+                cardElement.style.backgroundSize = 'cover';
+                cardElement.style.backgroundPosition = 'center';
+            }
+        }
+        
+        // 카드 스타일 설정
+        cardElement.style.cssText += `
             position: fixed;
             left: ${centerX - 60}px;
             top: ${centerY - 80}px;
@@ -451,6 +530,8 @@ class ShopManager {
             border-radius: 8px;
             transform: scale(0) rotateY(0deg);
             transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            background-size: cover;
+            background-position: center;
         `;
         document.body.appendChild(cardElement);
 
@@ -485,15 +566,24 @@ class ShopManager {
 
         // 2단계: 잠시 대기 후 덱으로 이동
         setTimeout(() => {
-            // 덱 위치로 이동
-            const targetX = deckRect.right - 100;
-            const targetY = deckRect.top + 50;
-            
-            cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-            cardElement.style.left = `${targetX}px`;
-            cardElement.style.top = `${targetY}px`;
-            cardElement.style.transform = 'scale(0.3) rotate(720deg)';
-            cardElement.style.opacity = '0';
+            // 덱 위치로 이동 (덱 카드의 중앙으로)
+            if (deckRect) {
+                const targetX = deckRect.left + (deckRect.width / 2) - 60;
+                const targetY = deckRect.top + (deckRect.height / 2) - 80;
+                
+                cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                cardElement.style.left = `${targetX}px`;
+                cardElement.style.top = `${targetY}px`;
+                cardElement.style.transform = 'scale(0.3) rotate(720deg)';
+                cardElement.style.opacity = '0';
+            } else {
+                // 덱 위치를 찾을 수 없으면 우측 상단으로
+                cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                cardElement.style.left = `${window.innerWidth - 150}px`;
+                cardElement.style.top = `100px`;
+                cardElement.style.transform = 'scale(0.3) rotate(720deg)';
+                cardElement.style.opacity = '0';
+            }
             
             // 정보 텍스트 페이드 아웃
             cardInfo.style.opacity = '0';

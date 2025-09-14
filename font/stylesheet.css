@@ -1,0 +1,9 @@
+@font-face {
+    font-family: 'YiSunShin';
+    src: url('YiSunShinBold.woff2') format('woff2'),
+        url('YiSunShinBold.woff') format('woff');
+    font-weight: bold;
+    font-style: normal;
+    font-display: swap;
+}
+
