@@ -2670,14 +2670,14 @@ const upgradePool = [
     { id: 'two_hearts', name: '두개의 심장', icon: '💕', description: '한 번 패배해도 게임이 끝나지 않음 (1회용)', rarity: 'legendary', price: 20 },
     
     // 카드 강화 아이템 - 사신수 보주
-    { id: 'enhance_blue', name: '청룡의 보주', icon: '🔵', description: '무작위 카드 1장에 청 강화 부여', rarity: 'common', price: 6, type: 'enhancement', enhanceType: '청' },
-    { id: 'enhance_red', name: '주작의 보주', icon: '🔴', description: '무작위 카드 1장에 적 강화 부여', rarity: 'common', price: 6, type: 'enhancement', enhanceType: '적' },
-    { id: 'enhance_white', name: '백호의 보주', icon: '⚪', description: '무작위 카드 1장에 백 강화 부여', rarity: 'rare', price: 8, type: 'enhancement', enhanceType: '백' },
-    { id: 'enhance_black', name: '현무의 보주', icon: '⚫', description: '무작위 카드 1장에 흑 강화 부여', rarity: 'rare', price: 8, type: 'enhancement', enhanceType: '흑' },
-    { id: 'enhance_gold', name: '황룡의 보주', icon: '🟡', description: '무작위 카드 1장에 황 강화 부여', rarity: 'epic', price: 10, type: 'enhancement', enhanceType: '황' },
-    { id: 'enhance_random', name: '오색의 보주', icon: '🌈', description: '무작위 카드 1장에 무작위 강화 부여', rarity: 'rare', price: 5, type: 'enhancement', enhanceType: 'random' },
-    { id: 'remove_card', name: '무극의 보주', icon: '🌀', description: '카드 1장을 덱에서 완전히 제거', rarity: 'epic', price: 12, type: 'remove' },
-    { id: 'duplicate_card', name: '쌍생의 보주', icon: '♊', description: '카드 1장을 선택해서 복제 (덱에 추가)', rarity: 'epic', price: 10, type: 'duplicate' },
+    { id: 'enhance_blue', name: '청룡의 보주', icon: '🔵', description: '덱에서 무작위 5장 중 1장을 선택하여 청 강화 부여', rarity: 'common', price: 6, type: 'enhancement', enhanceType: '청' },
+    { id: 'enhance_red', name: '주작의 보주', icon: '🔴', description: '덱에서 무작위 5장 중 1장을 선택하여 적 강화 부여', rarity: 'common', price: 6, type: 'enhancement', enhanceType: '적' },
+    { id: 'enhance_white', name: '백호의 보주', icon: '⚪', description: '덱에서 무작위 5장 중 1장을 선택하여 백 강화 부여', rarity: 'rare', price: 8, type: 'enhancement', enhanceType: '백' },
+    { id: 'enhance_black', name: '현무의 보주', icon: '⚫', description: '덱에서 무작위 5장 중 1장을 선택하여 흑 강화 부여', rarity: 'rare', price: 8, type: 'enhancement', enhanceType: '흑' },
+    { id: 'enhance_gold', name: '황룡의 보주', icon: '🟡', description: '덱에서 무작위 5장 중 1장을 선택하여 황 강화 부여', rarity: 'epic', price: 10, type: 'enhancement', enhanceType: '황' },
+    { id: 'enhance_random', name: '오색의 보주', icon: '🌈', description: '덱에서 무작위 5장 중 1장을 선택하여 무작위 강화 부여', rarity: 'rare', price: 5, type: 'enhancement', enhanceType: 'random' },
+    { id: 'remove_card', name: '무극의 보주', icon: '🌀', description: '덱에서 무작위 5장 중 1장을 선택하여 완전히 제거', rarity: 'epic', price: 12, type: 'remove' },
+    { id: 'duplicate_card', name: '쌍생의 보주', icon: '♊', description: '덱에서 무작위 5장 중 1장을 선택하여 복제 (덱에 추가)', rarity: 'epic', price: 10, type: 'duplicate' },
 ];
 
 let shopUpgrades = []; // 상점에 표시된 업그레이드들
