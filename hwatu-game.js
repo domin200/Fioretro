@@ -577,6 +577,14 @@ function playCard() {
     // 무조건 바닥에 추가
     gameState.floor.push(playedCard);
     
+    // 스택 알림 체크 (같은 월 카드가 2장 이상일 때)
+    if (matchingCards.length >= 1) {
+        const stackCount = matchingCards.length + 1; // 방금 추가한 카드 포함
+        setTimeout(() => {
+            showStackNotification(playedCard.month, stackCount);
+        }, 300); // 카드 애니메이션 후 표시
+    }
+    
     // 선택 초기화
     gameState.selectedCard = null;
     
@@ -597,6 +605,14 @@ function playCard() {
             
             // 매칭 여부와 관계없이 바닥에 추가
             gameState.floor.push(deckCard);
+            
+            // 스택 알림 체크 (덱에서 나온 카드도 같은 월이 있으면 표시)
+            if (deckMatches.length >= 1) {
+                const stackCount = deckMatches.length + 1; // 방금 추가한 카드 포함
+                setTimeout(() => {
+                    showStackNotification(deckCard.month, stackCount);
+                }, 300); // 카드 애니메이션 후 표시
+            }
             
             // 바닥패 업데이트
             updateDisplay();
@@ -1122,6 +1138,64 @@ function showInitialDealAnimation(card, destination, onComplete) {
         cardContainer.remove();
         onComplete?.();
     }, 650);
+}
+
+// 스택 알림 표시
+function showStackNotification(month, stackCount) {
+    const monthNames = {
+        1: '1월', 2: '2월', 3: '3월', 4: '4월', 
+        5: '5월', 6: '6월', 7: '7월', 8: '8월',
+        9: '9월', 10: '10월', 11: '11월', 12: '12월'
+    };
+    
+    const text = `${monthNames[month]} ${stackCount}스택!`;
+    
+    const notification = document.createElement('div');
+    notification.style.cssText = `
+        position: fixed;
+        left: 50%;
+        top: 30%;
+        transform: translate(-50%, -50%);
+        font-size: 48px;
+        font-weight: bold;
+        color: #87ceeb;
+        text-shadow: 
+            2px 2px 4px rgba(0, 0, 0, 0.8),
+            0 0 15px rgba(135, 206, 235, 0.6);
+        z-index: 5000;
+        pointer-events: none;
+        animation: stackNotificationFloat 1.5s ease-out forwards;
+    `;
+    notification.textContent = text;
+    
+    // 애니메이션 스타일 추가 (아직 없으면)
+    if (!document.getElementById('stack-notification-style')) {
+        const style = document.createElement('style');
+        style.id = 'stack-notification-style';
+        style.textContent = `
+            @keyframes stackNotificationFloat {
+                0% {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.8);
+                }
+                20% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1.1);
+                }
+                40% {
+                    transform: translate(-50%, -50%) scale(1);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translate(-50%, -70%) scale(0.9);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(notification);
+    setTimeout(() => notification.remove(), 1500);
 }
 
 // 족보 달성 애니메이션 표시
