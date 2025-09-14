@@ -4724,7 +4724,7 @@ function showTitleScreen() {
     const mainLayout = document.getElementById('main-game-layout');
     if (mainLayout) {
         mainLayout.style.transition = 'none';
-        mainLayout.style.gridTemplateColumns = '0 minmax(400px, 3fr)';
+        mainLayout.style.gridTemplateColumns = '0px 1fr';
     }
     
     // 좌측 UI들 overflow 숨기기
@@ -4979,7 +4979,7 @@ function startGame() {
             // Grid 열 크기를 서서히 원래대로 복원 (2초)
             if (mainLayout) {
                 mainLayout.style.transition = 'grid-template-columns 2s cubic-bezier(0.4, 0, 0.2, 1)';
-                mainLayout.style.gridTemplateColumns = '';  // CSS 기본값으로 복원
+                mainLayout.style.gridTemplateColumns = '220px 1fr';  // 구체적인 픽셀 값 사용
             }
             
             // Play 컨테이너 스타일 초기화 및 배경 투명도 원래대로
@@ -5007,6 +5007,7 @@ function startGame() {
                 playContainer.style.transition = '';
                 if (mainLayout) {
                     mainLayout.style.transition = '';
+                    mainLayout.style.gridTemplateColumns = '';  // CSS 기본값으로 최종 복원
                 }
                 if (capturedArea) {
                     capturedArea.style.transition = '';
