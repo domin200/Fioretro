@@ -7,44 +7,40 @@ let audioInitialized = false;
 function initAudio() {
     if (audioInitialized) return;
     
-    // OGG 지원 여부 확인
-    const audio = document.createElement('audio');
-    const canPlayOgg = audio.canPlayType('audio/ogg; codecs="vorbis"');
-    const canPlayMp3 = audio.canPlayType('audio/mpeg');
-    
-    console.log('Audio format support - OGG:', canPlayOgg, 'MP3:', canPlayMp3);
-    
-    // 지원하는 형식으로 오디오 생성 - MP3를 우선으로 (더 넓은 호환성)
-    if (canPlayMp3 && canPlayMp3 !== 'no') {
-        console.log('Using MP3 format for sound effects');
+    try {
+        // MP3 우선 사용
+        console.log('Initializing allow audio files...');
         allow1Audio = new Audio('se/allow1.mp3');
         allow2Audio = new Audio('se/allow2.mp3');
-    } else if (canPlayOgg && canPlayOgg !== 'no') {
-        console.log('Using OGG format for sound effects');
-        allow1Audio = new Audio('se/allow1.ogg');
-        allow2Audio = new Audio('se/allow2.ogg');
-    } else {
-        console.log('No audio format supported');
-        // 오디오를 지원하지 않는 경우
-        allow1Audio = { play: () => Promise.resolve(), currentTime: 0 };
-        allow2Audio = { play: () => Promise.resolve(), currentTime: 0 };
-    }
-    
-    if (allow1Audio instanceof Audio) {
-        allow1Audio.volume = 1.0;  // 100% 볼륨
+        
+        allow1Audio.volume = 1.0;
+        allow2Audio.volume = 0.5;
         allow1Audio.preload = 'auto';
+        allow2Audio.preload = 'auto';
+        
         // 에러 처리
         allow1Audio.addEventListener('error', (e) => {
-            console.error('Error loading allow1 audio:', e);
+            console.error('Error loading allow1.mp3, trying OGG...', e);
+            // MP3 실패시 OGG 시도
+            allow1Audio = new Audio('se/allow1.ogg');
+            allow1Audio.volume = 1.0;
+            allow1Audio.preload = 'auto';
         });
-    }
-    if (allow2Audio instanceof Audio) {
-        allow2Audio.volume = 0.5;  // 50% 볼륨
-        allow2Audio.preload = 'auto';
-        // 에러 처리
+        
         allow2Audio.addEventListener('error', (e) => {
-            console.error('Error loading allow2 audio:', e);
+            console.error('Error loading allow2.mp3, trying OGG...', e);
+            // MP3 실패시 OGG 시도
+            allow2Audio = new Audio('se/allow2.ogg');
+            allow2Audio.volume = 0.5;
+            allow2Audio.preload = 'auto';
         });
+        
+        console.log('Allow audio initialized successfully');
+    } catch (error) {
+        console.error('Failed to initialize audio:', error);
+        // 오디오를 지원하지 않는 경우
+        allow1Audio = { play: () => Promise.resolve(), currentTime: 0, pause: () => {} };
+        allow2Audio = { play: () => Promise.resolve(), currentTime: 0, pause: () => {} };
     }
     
     audioInitialized = true;
@@ -52,6 +48,8 @@ function initAudio() {
 
 // 사용자 상호작용 시 오디오 활성화
 function enableAudioOnInteraction() {
+    console.log('Enabling audio on interaction...');
+    
     if (!audioInitialized) {
         initAudio();
     }
@@ -64,7 +62,9 @@ function enableAudioOnInteraction() {
             allow1Audio.currentTime = 0;
             allow1Audio.volume = 1.0;
             console.log('Audio context activated for allow1');
-        }).catch(() => {});
+        }).catch((e) => {
+            console.error('Failed to activate allow1:', e);
+        });
     }
     if (allow2Audio instanceof Audio) {
         allow2Audio.volume = 0;
@@ -73,7 +73,9 @@ function enableAudioOnInteraction() {
             allow2Audio.currentTime = 0;
             allow2Audio.volume = 0.5;
             console.log('Audio context activated for allow2');
-        }).catch(() => {});
+        }).catch((e) => {
+            console.error('Failed to activate allow2:', e);
+        });
     }
 }
 
@@ -98,29 +100,39 @@ function playSound(soundFile) {
         
         // 프리로드된 오디오 사용 (OGG 또는 MP3 경로 모두 처리)
         if (soundFile.includes('allow1')) {
-            if (allow1Audio && allow1Audio instanceof Audio) {
-                // 재생 중이면 처음부터 다시 재생
-                allow1Audio.pause();
-                allow1Audio.currentTime = 0;
-                
-                const playPromise = allow1Audio.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(e => {
-                        console.log('allow1 play failed, will retry on next interaction:', e.message);
-                    });
+            if (allow1Audio) {
+                if (allow1Audio instanceof Audio) {
+                    // 재생 중이면 처음부터 다시 재생
+                    allow1Audio.pause();
+                    allow1Audio.currentTime = 0;
+                    
+                    const playPromise = allow1Audio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(e => {
+                            console.log('allow1 play failed, will retry on next interaction:', e.message);
+                        });
+                    }
+                } else {
+                    // 오디오가 지원되지 않는 경우
+                    console.log('allow1 audio not supported');
                 }
             }
         } else if (soundFile.includes('allow2')) {
-            if (allow2Audio && allow2Audio instanceof Audio) {
-                // 재생 중이면 처음부터 다시 재생
-                allow2Audio.pause();
-                allow2Audio.currentTime = 0;
-                
-                const playPromise = allow2Audio.play();
-                if (playPromise !== undefined) {
-                    playPromise.catch(e => {
-                        console.log('allow2 play failed, will retry on next interaction:', e.message);
-                    });
+            if (allow2Audio) {
+                if (allow2Audio instanceof Audio) {
+                    // 재생 중이면 처음부터 다시 재생
+                    allow2Audio.pause();
+                    allow2Audio.currentTime = 0;
+                    
+                    const playPromise = allow2Audio.play();
+                    if (playPromise !== undefined) {
+                        playPromise.catch(e => {
+                            console.log('allow2 play failed, will retry on next interaction:', e.message);
+                        });
+                    }
+                } else {
+                    // 오디오가 지원되지 않는 경우
+                    console.log('allow2 audio not supported');
                 }
             }
         } else {
@@ -4091,17 +4103,16 @@ function proceedToNextStage() {
 // 게임 시작
 window.onload = () => {
     // 오디오 초기화
+    console.log('Initializing audio system...');
     initAudio();
+    
+    // allow 오디오 상태 확인
+    console.log('allow1Audio:', allow1Audio);
+    console.log('allow2Audio:', allow2Audio);
     
     // BGM 초기화
     const gameBGM = document.getElementById('bgm');
-    const shopBGM = document.getElementById('shop-bgm');
     if (gameBGM) gameBGM.volume = 1;
-    if (shopBGM) {
-        shopBGM.volume = 0;
-        // 주막 BGM 미리 로드
-        shopBGM.load();
-    }
     
     // 게임 시작시 스테이지 1 색상 확실히 설정
     if (typeof updateBackgroundColors === 'function') {
