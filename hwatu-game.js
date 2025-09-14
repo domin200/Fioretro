@@ -609,17 +609,18 @@ function showDeckCardAnimation(card) {
     const deckRect = deckCard ? deckCard.getBoundingClientRect() : document.getElementById('deck-info').getBoundingClientRect();
     const floorRect = floorArea.getBoundingClientRect();
     
-    // 카드 컨테이너 생성 (3D 회전을 위해)
+    // 카드 컨테이너 생성 (3D 회전을 위해 + 크기 애니메이션)
     const cardContainer = document.createElement('div');
     cardContainer.style.cssText = `
         position: fixed;
-        left: ${deckRect.left + (deckRect.width - 100) / 2}px;
-        top: ${deckRect.top}px;
+        left: ${deckRect.left + (deckRect.width - 50) / 2}px;
+        top: ${deckRect.top + 25}px;
         width: 100px;
         height: 150px;
         z-index: 1000;
         transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         transform-style: preserve-3d;
+        transform: scale(0.5);
         perspective: 1000px;
     `;
     
@@ -650,11 +651,11 @@ function showDeckCardAnimation(card) {
     cardContainer.appendChild(frontCard);
     document.body.appendChild(cardContainer);
     
-    // 바닥으로 이동하면서 뒤집기
+    // 바닥으로 이동하면서 뒤집기 + 크기 100%로 확대
     setTimeout(() => {
         cardContainer.style.left = floorRect.left + floorRect.width / 2 - 50 + 'px';
         cardContainer.style.top = floorRect.top + floorRect.height / 2 - 75 + 'px';
-        cardContainer.style.transform = 'rotateY(180deg)';
+        cardContainer.style.transform = 'rotateY(180deg) scale(1)';
     }, 50);
     
     // 도착 사운드 재생 (0.1초 일찍)
@@ -926,17 +927,18 @@ function showDrawAnimation(card) {
     const deckRect = deckCard ? deckCard.getBoundingClientRect() : document.getElementById('deck-info').getBoundingClientRect();
     const handRect = handArea.getBoundingClientRect();
     
-    // 카드 컨테이너 생성 (3D 회전을 위해)
+    // 카드 컨테이너 생성 (3D 회전을 위해 + 크기 애니메이션)
     const cardContainer = document.createElement('div');
     cardContainer.style.cssText = `
         position: fixed;
-        left: ${deckRect.left + (deckRect.width - 100) / 2}px;
-        top: ${deckRect.top}px;
+        left: ${deckRect.left + (deckRect.width - 50) / 2}px;
+        top: ${deckRect.top + 25}px;
         width: 100px;
         height: 150px;
         z-index: 1000;
         transition: all 1s cubic-bezier(0.4, 0, 0.2, 1);
         transform-style: preserve-3d;
+        transform: scale(0.5);
         perspective: 1000px;
     `;
     
@@ -967,11 +969,11 @@ function showDrawAnimation(card) {
     cardContainer.appendChild(frontCard);
     document.body.appendChild(cardContainer);
     
-    // 손패로 이동하면서 뒤집기
+    // 손패로 이동하면서 뒤집기 + 크기 100%로 확대
     setTimeout(() => {
         cardContainer.style.left = handRect.left + handRect.width / 2 - 50 + 'px';
         cardContainer.style.top = handRect.top + handRect.height / 2 - 75 + 'px';
-        cardContainer.style.transform = 'rotateY(180deg)';
+        cardContainer.style.transform = 'rotateY(180deg) scale(1)';
     }, 50);
     
     // 애니메이션 후 제거 (손패 도착시 allow2 재생 안함)
@@ -1000,18 +1002,18 @@ function showInitialDealAnimation(card, destination, onComplete) {
     const deckRect = deckElement.getBoundingClientRect();
     const targetRect = targetArea.getBoundingClientRect();
     
-    // 카드 컨테이너 생성 (3D 회전 효과)
+    // 카드 컨테이너 생성 (3D 회전 효과 + 크기 애니메이션)
     const cardContainer = document.createElement('div');
     cardContainer.style.cssText = `
         position: fixed;
-        left: ${deckRect.left + (deckRect.width - 100) / 2}px;
-        top: ${deckRect.top}px;
+        left: ${deckRect.left + (deckRect.width - 50) / 2}px;
+        top: ${deckRect.top + 25}px;
         width: 100px;
         height: 150px;
         z-index: 2000;
         transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
         transform-style: preserve-3d;
-        transform: rotateY(0deg);
+        transform: rotateY(0deg) scale(0.5);
     `;
     
     // 카드 뒷면
@@ -1042,7 +1044,7 @@ function showInitialDealAnimation(card, destination, onComplete) {
     cardContainer.appendChild(frontCard);
     document.body.appendChild(cardContainer);
     
-    // 목적지로 이동하면서 뒤집기
+    // 목적지로 이동하면서 뒤집기 + 크기 100%로 확대
     setTimeout(() => {
         // 목적지 계산 (손패는 가운데, 바닥패도 가운데)
         const targetX = targetRect.left + targetRect.width / 2 - 50;
@@ -1050,7 +1052,7 @@ function showInitialDealAnimation(card, destination, onComplete) {
         
         cardContainer.style.left = `${targetX}px`;
         cardContainer.style.top = `${targetY}px`;
-        cardContainer.style.transform = 'rotateY(180deg)';
+        cardContainer.style.transform = 'rotateY(180deg) scale(1)';
     }, 50);
     
     // 도착 사운드 (바닥패로 갈 때만 allow2)
@@ -2878,22 +2880,13 @@ function showUpgradeSelection() {
             right: 20px;
             display: flex;
             gap: 10px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #ffd700;
-            border-radius: 10px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
         ">
-            <div style="
-                position: absolute;
-                top: -10px;
-                left: 10px;
-                background: #1a1a2e;
-                padding: 2px 8px;
-                border-radius: 4px;
-                font-size: 11px;
-                color: #ffd700;
-                font-weight: bold;
-            ">소모품</div>
             <div id="consumable-slot-1" class="consumable-slot" style="
                 width: 80px;
                 height: 110px;
@@ -4474,22 +4467,13 @@ function proceedToNextStage() {
             right: 20px;
             display: flex;
             gap: 10px;
-            padding: 10px;
-            background: rgba(0, 0, 0, 0.7);
-            border: 2px solid #ffd700;
-            border-radius: 10px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
         ">
-            <div style="
-                position: absolute;
-                top: -10px;
-                left: 10px;
-                background: #1a1a2e;
-                padding: 2px 8px;
-                border-radius: 4px;
-                font-size: 11px;
-                color: #ffd700;
-                font-weight: bold;
-            ">소모품</div>
             <div id="consumable-slot-1" class="consumable-slot" style="
                 width: 80px;
                 height: 110px;
