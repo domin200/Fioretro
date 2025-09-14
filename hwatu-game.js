@@ -246,7 +246,8 @@ const gameState = {
     shownCombinations: new Set(),  // 이미 표시한 족보 추적
     reincarnatedCards: 0,  // 윤회로 덱으로 돌아간 카드 수
     stageEnded: false,  // 스테이지 종료 여부
-    cardEnhancements: {}  // 카드 강화 정보 {cardId: 'blue'|'red'|'white'|'black'|'gold'}
+    cardEnhancements: {},  // 카드 강화 정보 {cardId: 'blue'|'red'|'white'|'black'|'gold'}
+    gold: 0  // 소지금
 };
 
 
@@ -1475,8 +1476,11 @@ function endRound() {
     gameState.stageEnded = true;
     
     if (gameState.totalScore >= gameState.targetScore) {
-        // 미션 성공
-        showMissionResult(true, gameState.totalScore);
+        // 미션 성공 - 획득한 점수를 소지금으로 변환
+        const earnedGold = gameState.totalScore;
+        gameState.gold += earnedGold;
+        
+        showMissionResult(true, gameState.totalScore, false, earnedGold);
         setTimeout(() => {
             // 업그레이드 선택 팝업 표시
             showUpgradeSelection();
@@ -1514,12 +1518,16 @@ function endRound() {
                 // 업그레이드 초기화
                 gameState.upgrades = [];
                 
+                // 소지금은 유지
+                const savedGold = gameState.gold;
+                
                 initGame();
                 
                 // initGame 후에 스테이지 값 설정
                 gameState.stage = 1;
                 gameState.targetScore = 25;  // 초기값 25
                 gameState.discardsLeft = 4;  // 버리기 횟수 초기화
+                gameState.gold = savedGold;  // 소지금 복원
                 updateDisplay();
             }, 2500);
         }
@@ -1527,7 +1535,7 @@ function endRound() {
 }
 
 // 미션 결과 표시
-function showMissionResult(success, score, usingTwoHearts = false) {
+function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 0) {
     const message = document.createElement('div');
     message.style.cssText = `
         position: fixed;
@@ -1559,6 +1567,10 @@ function showMissionResult(success, score, usingTwoHearts = false) {
         <div style="font-size: 20px; margin-top: 10px; opacity: 0.9;">
             목표 점수: ${gameState.targetScore}
         </div>
+        ${success && earnedGold > 0 ? 
+            `<div style="font-size: 24px; margin-top: 15px; color: #ffd700;">
+                <span style="font-weight: bold;">+${earnedGold} G</span> 획득!
+            </div>` : ''}
         ${success ? 
             `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">다음 스테이지로 진행합니다!</div>` : 
             (usingTwoHearts ? 
@@ -1635,6 +1647,16 @@ function updateDisplay() {
     
     // 버리기 카운트 업데이트
     document.getElementById('discards-left').textContent = gameState.discardsLeft;
+    
+    // 소지금 업데이트
+    const goldElement = document.getElementById('gold-amount');
+    if (goldElement) {
+        if (goldElement.textContent !== gameState.gold.toString()) {
+            goldElement.style.animation = 'pulse 0.5s ease';
+            goldElement.textContent = gameState.gold;
+            setTimeout(() => goldElement.style.animation = '', 500);
+        }
+    }
     
     // 덱 카운트 업데이트
     if (document.getElementById('deck-remaining')) {

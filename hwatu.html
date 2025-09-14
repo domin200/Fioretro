@@ -630,6 +630,20 @@
             to { opacity: 1; transform: translateY(0); }
         }
         
+        @keyframes goldShine {
+            0%, 100% { 
+                text-shadow: 0 0 5px rgba(255, 215, 0, 0.5);
+            }
+            50% { 
+                text-shadow: 0 0 15px rgba(255, 215, 0, 0.8), 
+                            0 0 25px rgba(255, 255, 0, 0.5);
+            }
+        }
+        
+        #gold-amount {
+            animation: goldShine 2s ease-in-out infinite;
+        }
+        
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -1367,6 +1381,13 @@
                         <div class="score-item-half" style="margin: 0 auto;">
                             <div class="score-label">버리기</div>
                             <div class="score-value" id="discards-left">4</div>
+                        </div>
+                    </div>
+                    <div class="score-item" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 255, 0, 0.05) 100%); border: 1px solid rgba(255, 215, 0, 0.3);">
+                        <div class="score-label" style="color: #ffd700;">소지금</div>
+                        <div class="score-value" style="color: #ffd700; font-size: 20px;">
+                            <span id="gold-amount">0</span>
+                            <span style="font-size: 14px; margin-left: 2px;">G</span>
                         </div>
                     </div>
                 </div>
