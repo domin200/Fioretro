@@ -2696,9 +2696,6 @@ function showUpgradeSelection() {
         <div class="shop-container" style="width: 100%; height: 100%; display: flex; flex-direction: column; padding: 20px;">
             <div class="shop-header" style="text-align: center; margin-bottom: 20px;">
                 <h2 style="color: #ffd700; font-size: 32px; margin-bottom: 10px;">🏪 주막</h2>
-                <div style="font-size: 24px; color: #ffd700;">
-                    <span id="shop-gold-amount" style="font-weight: bold;">${gameState.gold}</span>
-                </div>
             </div>
             <div class="upgrade-choices" id="upgrade-choices" style="
                 flex: 1;
@@ -2961,11 +2958,6 @@ function purchaseUpgrade(upgrade, cardElement) {
         priceElement.textContent = '구매완료';
     }
     
-    // 소지금 표시 업데이트
-    const shopGoldElement = document.getElementById('shop-gold-amount');
-    if (shopGoldElement) {
-        shopGoldElement.textContent = gameState.gold;
-    }
     
     // 다른 카드들의 구매 가능 여부 재확인
     updateShopAffordability();
@@ -2982,10 +2974,6 @@ function showCardEnhancementSelection(upgrade, shopCardElement) {
         alert('강화할 카드가 없습니다!');
         // 소지금 환불
         gameState.gold += upgrade.price;
-        const shopGoldElement = document.getElementById('shop-gold-amount');
-        if (shopGoldElement) {
-            shopGoldElement.textContent = gameState.gold;
-        }
         updateShopAffordability();
         return;
     }
@@ -3119,10 +3107,6 @@ function cancelEnhancement(upgradeId) {
         }
         
         // UI 업데이트
-        const shopGoldElement = document.getElementById('shop-gold-amount');
-        if (shopGoldElement) {
-            shopGoldElement.textContent = gameState.gold;
-        }
         
         updateShopAffordability();
     }
@@ -3146,10 +3130,6 @@ function showCardRemovalSelection(upgrade, shopCardElement) {
         alert('제거할 카드가 없습니다!');
         // 소지금 환불
         gameState.gold += upgrade.price;
-        const shopGoldElement = document.getElementById('shop-gold-amount');
-        if (shopGoldElement) {
-            shopGoldElement.textContent = gameState.gold;
-        }
         updateShopAffordability();
         return;
     }
@@ -3262,11 +3242,6 @@ function removeCardFromDeck(cardId, upgrade, shopCardElement, selectionOverlay) 
         priceElement.textContent = '구매완료';
     }
     
-    // 소지금 표시 업데이트
-    const shopGoldElement = document.getElementById('shop-gold-amount');
-    if (shopGoldElement) {
-        shopGoldElement.textContent = gameState.gold;
-    }
     
     // 선택 화면 닫기
     selectionOverlay.remove();
@@ -3286,10 +3261,6 @@ function showCardDuplicationSelection(upgrade, shopCardElement) {
         alert('복제할 카드가 없습니다!');
         // 소지금 환불
         gameState.gold += upgrade.price;
-        const shopGoldElement = document.getElementById('shop-gold-amount');
-        if (shopGoldElement) {
-            shopGoldElement.textContent = gameState.gold;
-        }
         updateShopAffordability();
         return;
     }
@@ -3402,11 +3373,6 @@ function duplicateCard(cardId, upgrade, shopCardElement, selectionOverlay) {
         priceElement.textContent = '구매완료';
     }
     
-    // 소지금 표시 업데이트
-    const shopGoldElement = document.getElementById('shop-gold-amount');
-    if (shopGoldElement) {
-        shopGoldElement.textContent = gameState.gold;
-    }
     
     // 선택 화면 닫기
     selectionOverlay.remove();
@@ -3450,11 +3416,6 @@ function applyEnhancementToCard(cardId, upgrade, shopCardElement, selectionOverl
         priceElement.textContent = '구매완료';
     }
     
-    // 소지금 표시 업데이트
-    const shopGoldElement = document.getElementById('shop-gold-amount');
-    if (shopGoldElement) {
-        shopGoldElement.textContent = gameState.gold;
-    }
     
     // 선택 화면 닫기
     selectionOverlay.remove();
