@@ -4741,6 +4741,12 @@ function showTitleScreen() {
     // Play 컨테이너를 화면 정중앙에 위치 (왼쪽 UI 공간 없이)
     const playContainer = document.getElementById('play-container');
     
+    // 게임 화면과 동일한 크기 설정
+    playContainer.style.width = '900px';  // 게임 화면에서의 실제 너비
+    playContainer.style.height = '600px'; // 게임 화면에서의 실제 높이
+    playContainer.style.maxWidth = 'calc(100vw - 40px)';
+    playContainer.style.maxHeight = 'calc(100vh - 200px)';
+    
     // 타이틀 화면용 스타일 설정 - 기존 박스 스타일 유지하면서 중앙 배치
     playContainer.style.position = 'absolute';
     playContainer.style.left = '50%';
@@ -4967,21 +4973,25 @@ function startGame() {
             updateBackgroundColors(1);
         }
         
-        // 게임 시작 애니메이션 - 중앙에서 우측으로 이동
+        // 게임 시작 애니메이션 - 크기 유지하며 중앙에서 우측으로 이동
         setTimeout(() => {
             playContainer.style.transition = 'left 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
             
             // 중앙에서 우측으로 이동 (좌측 UI 공간 확보)
-            playContainer.style.left = 'calc(50% + 120px)';
+            playContainer.style.left = 'calc(50% + 150px)';
             
             // 애니메이션 완료 후 원래 스타일로 복원
             setTimeout(() => {
                 playContainer.style.transition = '';
-                // 모든 인라인 스타일 제거하여 CSS 기본값 적용
+                // 크기와 위치 관련 스타일 제거하여 CSS 기본값 적용
                 playContainer.style.position = '';
                 playContainer.style.left = '';
                 playContainer.style.top = '';
                 playContainer.style.transform = '';
+                playContainer.style.width = '';
+                playContainer.style.height = '';
+                playContainer.style.maxWidth = '';
+                playContainer.style.maxHeight = '';
                 playContainer.style.display = '';
                 playContainer.style.flexDirection = '';
                 playContainer.style.justifyContent = '';
