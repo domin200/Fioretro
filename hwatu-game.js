@@ -1969,12 +1969,11 @@ function showEnhancementTooltip(event, enhancement, enhanceData) {
     `;
     
     tooltip.innerHTML = `
-        <div class="animated-gradient-text gradient-${enhancement}" style="margin-bottom: 8px;">
-            <div class="gradient-overlay"></div>
-            <div class="text-content">${enhancement} 강화</div>
+        <div style="margin-bottom: 8px;">
+            <span class="text-content gradient-${enhancement}" style="font-size: 14px; font-weight: bold; background-size: 300% 100%; background-clip: text; -webkit-background-clip: text; color: transparent; animation: gradient 4s linear infinite;">${enhancement} 강화</span>
         </div>
-        <div class="animated-gradient-text gradient-${enhancement}" style="padding: 4px 8px;">
-            <div class="text-content" style="font-size: 11px;">${enhanceData.effect}</div>
+        <div style="color: #fff; font-size: 11px;">
+            ${enhanceData.effect}
         </div>
     `;
     
