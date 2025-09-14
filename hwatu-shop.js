@@ -77,7 +77,7 @@ class ShopManager {
                     }
                     
                     // 소모품 카드 추가
-                    gameStateManager.state.consumableCards.push({
+                    const bonusCard = {
                         id: 'bonus_pi',
                         name: '보너스피',
                         type: 'consumable',
@@ -87,10 +87,18 @@ class ShopManager {
                             // gameState.score 직접 업데이트
                             if (typeof gameState !== 'undefined') {
                                 gameState.score += 3;
+                                // 점수 계산 및 화면 업데이트
+                                calculateScore();
+                                updateDisplay();
                             }
                             PopupComponent.showMessage('보너스피 효과 발동! 점수 +3', 'success');
                         }
-                    });
+                    };
+                    gameStateManager.state.consumableCards.push(bonusCard);
+                    // gameState에도 동기화
+                    if (typeof gameState !== 'undefined') {
+                        gameState.consumableCards.push(bonusCard);
+                    }
                     
                     PopupComponent.showMessage('보너스피 카드를 획득했습니다!', 'success');
                     return true;
@@ -114,7 +122,7 @@ class ShopManager {
                     }
                     
                     // 소모품 카드 추가
-                    gameStateManager.state.consumableCards.push({
+                    const trashCard = {
                         id: 'trash_can',
                         name: '쓰레기통',
                         type: 'consumable',
@@ -124,12 +132,137 @@ class ShopManager {
                             // gameState.discardsLeft 직접 업데이트
                             if (typeof gameState !== 'undefined') {
                                 gameState.discardsLeft++;
+                                // 화면 업데이트
+                                updateDisplay();
+                                // 버튼 상태 업데이트
+                                updateButtonStates();
                             }
                             PopupComponent.showMessage('쓰레기통 효과 발동! 버리기 횟수 +1', 'success');
                         }
-                    });
+                    };
+                    gameStateManager.state.consumableCards.push(trashCard);
+                    // gameState에도 동기화
+                    if (typeof gameState !== 'undefined') {
+                        gameState.consumableCards.push(trashCard);
+                    }
                     
                     PopupComponent.showMessage('쓰레기통 카드를 획득했습니다!', 'success');
+                    return true;
+                }
+            },
+            {
+                id: 'bomb_card',
+                name: '폭탄 카드',
+                category: 'consumable_card',
+                description: '소모품 카드 - 사용 시 바닥의 무작위 카드 1장 파괴',
+                price: 5,
+                rarity: 'rare',
+                icon: '💣',
+                effect: function() {
+                    // 소모품 카드 슬롯 확인
+                    if (gameStateManager.state.consumableCards.length >= 2) {
+                        PopupComponent.showMessage('소모품 카드는 최대 2장까지만 보유할 수 있습니다!', 'error');
+                        // 환불
+                        gameStateManager.updateGold(this.price);
+                        return false;
+                    }
+                    
+                    // 소모품 카드 추가
+                    const bombCard = {
+                        id: 'bomb',
+                        name: '폭탄',
+                        type: 'consumable',
+                        icon: '💣',
+                        effect: '사용 시 바닥 카드 1장 파괴',
+                        action: function() {
+                            // 바닥에 카드가 있는지 확인
+                            if (typeof gameState !== 'undefined' && gameState.floor.length > 0) {
+                                // 무작위 카드 선택
+                                const randomIndex = Math.floor(Math.random() * gameState.floor.length);
+                                const destroyedCard = gameState.floor[randomIndex];
+                                
+                                // 카드 제거
+                                gameState.floor.splice(randomIndex, 1);
+                                
+                                // 화면 업데이트
+                                updateDisplay();
+                                
+                                PopupComponent.showMessage(`폭탄 효과 발동! ${destroyedCard.month}월 ${destroyedCard.type} 카드 파괴!`, 'success');
+                            } else {
+                                PopupComponent.showMessage('바닥에 카드가 없습니다!', 'warning');
+                            }
+                        }
+                    };
+                    gameStateManager.state.consumableCards.push(bombCard);
+                    // gameState에도 동기화
+                    if (typeof gameState !== 'undefined') {
+                        gameState.consumableCards.push(bombCard);
+                    }
+                    
+                    PopupComponent.showMessage('폭탄 카드를 획득했습니다!', 'success');
+                    return true;
+                }
+            },
+            {
+                id: 'flip_table_card',
+                name: '판엎기 카드',
+                category: 'consumable_card',
+                description: '소모품 카드 - 손패 전부 버리고 새로 드로우',
+                price: 6,
+                rarity: 'rare',
+                icon: '🔄',
+                effect: function() {
+                    // 소모품 카드 슬롯 확인
+                    if (gameStateManager.state.consumableCards.length >= 2) {
+                        PopupComponent.showMessage('소모품 카드는 최대 2장까지만 보유할 수 있습니다!', 'error');
+                        // 환불
+                        gameStateManager.updateGold(this.price);
+                        return false;
+                    }
+                    
+                    // 소모품 카드 추가
+                    const flipCard = {
+                        id: 'flip_table',
+                        name: '판엎기',
+                        type: 'consumable',
+                        icon: '🔄',
+                        effect: '손패 전부 교체',
+                        action: function() {
+                            if (typeof gameState !== 'undefined') {
+                                const handCount = gameState.hand.length;
+                                
+                                // 덱에 충분한 카드가 있는지 확인
+                                if (gameState.deck.length < handCount) {
+                                    PopupComponent.showMessage('덱에 카드가 부족합니다!', 'warning');
+                                    return;
+                                }
+                                
+                                // 현재 손패를 덱에 다시 넣기
+                                gameState.deck.push(...gameState.hand);
+                                gameState.hand = [];
+                                
+                                // 덱 섞기
+                                shuffleDeck(gameState.deck);
+                                
+                                // 새로운 카드 드로우
+                                for (let i = 0; i < handCount; i++) {
+                                    gameState.hand.push(gameState.deck.pop());
+                                }
+                                
+                                // 화면 업데이트
+                                updateDisplay();
+                                
+                                PopupComponent.showMessage(`판엎기 효과 발동! ${handCount}장의 카드를 교체했습니다!`, 'success');
+                            }
+                        }
+                    };
+                    gameStateManager.state.consumableCards.push(flipCard);
+                    // gameState에도 동기화
+                    if (typeof gameState !== 'undefined') {
+                        gameState.consumableCards.push(flipCard);
+                    }
+                    
+                    PopupComponent.showMessage('판엎기 카드를 획득했습니다!', 'success');
                     return true;
                 }
             },
