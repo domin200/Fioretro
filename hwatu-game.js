@@ -393,13 +393,27 @@ function playCard() {
         return;
     }
     
+    // 카드를 놓기 전에 미리 바닥 슬롯 체크
+    const playedCard = gameState.hand[gameState.selectedCard];
+    const tempFloor = [...gameState.floor, playedCard];
+    const tempFloorSlots = getFloorSlotCountForCards(tempFloor);
+    
+    // 이 카드를 놓으면 5슬롯이 되는 경우 즉시 차단
+    if (tempFloorSlots >= 5) {
+        gameState.stageEnded = true;
+        console.log('This move will end the stage, blocking further actions');
+    }
+    
+    // 이 카드를 놓으면 손패가 비거나 덱이 충분하지 않은 경우도 체크
+    if (gameState.hand.length <= 1 || gameState.deck.length < 2) {
+        gameState.stageEnded = true;
+        console.log('Stage will end due to empty hand or deck');
+    }
+    
     // 애니메이션을 위해 선택된 카드 엘리먼트 가져오기
     const handArea = document.getElementById('hand-area');
     const selectedCardElement = handArea.children[gameState.selectedCard];
     const floorArea = document.getElementById('floor-area');
-    
-    // 카드 정보 저장
-    const playedCard = gameState.hand[gameState.selectedCard];
     
     // 손패 -> 바닥 애니메이션 표시
     showHandToFloorAnimation(selectedCardElement, playedCard);
@@ -593,6 +607,15 @@ function discardCards() {
     
     // 일타삼피 효과 확인
     const hasTripleDiscard = gameState.upgrades.some(u => u.id === 'triple_discard');
+    
+    // 버리기 후 덱이나 손패가 비는 경우 미리 차단
+    const discardCount = hasTripleDiscard ? 
+        Math.min(3, gameState.hand.length) : 1;
+    
+    if (gameState.hand.length <= discardCount || gameState.deck.length < discardCount) {
+        gameState.stageEnded = true;
+        console.log('Stage will end after discard, blocking further actions');
+    }
     
     // 버릴 카드들 결정
     const cardsToDiscard = [];
@@ -1285,6 +1308,15 @@ function calculateMultiplier(floorCards) {
 function getFloorSlotCount() {
     const uniqueMonths = new Set();
     gameState.floor.forEach(card => {
+        uniqueMonths.add(card.month);
+    });
+    return uniqueMonths.size;
+}
+
+// 특정 카드 배열의 바닥 슬롯 수 계산
+function getFloorSlotCountForCards(cards) {
+    const uniqueMonths = new Set();
+    cards.forEach(card => {
         uniqueMonths.add(card.month);
     });
     return uniqueMonths.size;
