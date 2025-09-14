@@ -176,7 +176,7 @@ const AudioUtils = {
 
     // 사운드 재생
     playSound(soundPath) {
-        const audio = new Audio(`se/${soundPath}`);
+        const audio = new Audio(`SE/${soundPath}`);
         audio.play().catch(e => console.log('Sound play failed:', e));
     }
 };

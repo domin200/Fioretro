@@ -802,7 +802,7 @@ class ShopManager {
             
             // 효과음 재생
             if (typeof playSound === 'function') {
-                playSound('se/allow1.mp3');
+                playSound('SE/allow1.mp3');
             }
         }, 2000);
 
@@ -966,7 +966,7 @@ class ShopManager {
         
         // 효과음 재생
         if (typeof playSound === 'function') {
-            playSound('se/powerup.mp3');
+            playSound('SE/powerup.mp3');
         }
         
         // 애니메이션 완료 후 처리

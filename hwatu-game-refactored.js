@@ -16,8 +16,8 @@ const GAME_CONFIG = {
         TOP_CARD_PREVIEW: 3000
     },
     SOUND_PATHS: {
-        CARD_START: 'se/allow1.ogg',
-        CARD_ARRIVE: 'se/allow2.ogg'
+        CARD_START: 'SE/allow1.ogg',
+        CARD_ARRIVE: 'SE/allow2.ogg'
     }
 };
 

@@ -10,8 +10,8 @@ function initAudio() {
     try {
         // MP3 우선 사용
         console.log('Initializing allow audio files...');
-        allow1Audio = new Audio('se/allow1.mp3');
-        allow2Audio = new Audio('se/allow2.mp3');
+        allow1Audio = new Audio('SE/allow1.mp3');
+        allow2Audio = new Audio('SE/allow2.mp3');
         
         allow1Audio.volume = 1.0;
         allow2Audio.volume = 0.5;
@@ -22,7 +22,7 @@ function initAudio() {
         allow1Audio.addEventListener('error', (e) => {
             console.error('Error loading allow1.mp3, trying OGG...', e);
             // MP3 실패시 OGG 시도
-            allow1Audio = new Audio('se/allow1.ogg');
+            allow1Audio = new Audio('SE/allow1.ogg');
             allow1Audio.volume = 1.0;
             allow1Audio.preload = 'auto';
         });
@@ -30,7 +30,7 @@ function initAudio() {
         allow2Audio.addEventListener('error', (e) => {
             console.error('Error loading allow2.mp3, trying OGG...', e);
             // MP3 실패시 OGG 시도
-            allow2Audio = new Audio('se/allow2.ogg');
+            allow2Audio = new Audio('SE/allow2.ogg');
             allow2Audio.volume = 0.5;
             allow2Audio.preload = 'auto';
         });
@@ -647,7 +647,7 @@ function playCard() {
 // 덱 카드 애니메이션 표시
 function showDeckCardAnimation(card) {
     // 애니메이션 시작 즉시 사운드 재생
-    playSound('se/allow1.ogg');
+    playSound('SE/allow1.ogg');
     
     const floorArea = document.getElementById('floor-area');
     const deckCard = document.querySelector('.deck-card');
@@ -707,7 +707,7 @@ function showDeckCardAnimation(card) {
     
     // 도착 사운드 재생 (0.1초 일찍)
     setTimeout(() => {
-        playSound('se/allow2.ogg');
+        playSound('SE/allow2.ogg');
     }, 750);
     
     // 애니메이션 후 제거
@@ -858,7 +858,7 @@ function discardCards() {
     gameState.selectedCard = null;
     
     // 버리기 사운드 즉시 재생
-    playSound('se/allow1.ogg');
+    playSound('SE/allow1.ogg');
     
     // 즉시 화면 업데이트 (버린 카드 제거)
     updateDisplay();
@@ -930,7 +930,7 @@ function discardCards() {
 // 손패 -> 바닥 애니메이션
 function showHandToFloorAnimation(cardElement, card) {
     // 애니메이션 시작 즉시 사운드 재생
-    playSound('se/allow1.ogg');
+    playSound('SE/allow1.ogg');
     
     const floorArea = document.getElementById('floor-area');
     
@@ -961,7 +961,7 @@ function showHandToFloorAnimation(cardElement, card) {
     
     // 도착 사운드 재생 (0.1초 일찍)
     setTimeout(() => {
-        playSound('se/allow2.ogg');
+        playSound('SE/allow2.ogg');
     }, 450);
     
     // 애니메이션 후 제거
@@ -973,7 +973,7 @@ function showHandToFloorAnimation(cardElement, card) {
 // 카드 드로우 애니메이션
 function showDrawAnimation(card) {
     // 애니메이션 시작 즉시 사운드 재생
-    playSound('se/allow1.ogg');
+    playSound('SE/allow1.ogg');
     
     const handArea = document.getElementById('hand-area');
     const deckCard = document.querySelector('.deck-card');
@@ -1041,7 +1041,7 @@ function showDrawAnimation(card) {
 function showInitialDealAnimation(card, destination, onComplete) {
     // 시작 사운드 재생 (손패로 갈 때만 allow1)
     if (destination === 'hand') {
-        playSound('se/allow1.ogg');
+        playSound('SE/allow1.ogg');
     }
     
     const deckElement = document.querySelector('.deck-card') || document.getElementById('deck-info');
@@ -1113,7 +1113,7 @@ function showInitialDealAnimation(card, destination, onComplete) {
     // 도착 사운드 (바닥패로 갈 때만 allow2)
     if (destination === 'floor') {
         setTimeout(() => {
-            playSound('se/allow2.ogg');
+            playSound('SE/allow2.ogg');
         }, 550);
     }
     
@@ -1761,7 +1761,7 @@ function endRound() {
 // 미션 결과 표시
 function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 0, interestGold = 0, clearGold = 0, goldEnhancementBonus = 0) {
     // 승리/패배 효과음 재생
-    const soundEffect = new Audio(success ? 'se/397_win.mp3' : 'se/405_lose.mp3');
+    const soundEffect = new Audio(success ? 'SE/397_win.mp3' : 'SE/405_lose.mp3');
     soundEffect.play().catch(e => console.log('효과음 재생 실패:', e));
     
     const message = document.createElement('div');
@@ -4544,7 +4544,7 @@ function useConsumableCard(index) {
         document.body.appendChild(animCard);
         
         // 효과음 재생
-        playSound('se/allow1.mp3');
+        playSound('SE/allow1.mp3');
         
         // 바닥 중앙으로 이동 애니메이션
         setTimeout(() => {
