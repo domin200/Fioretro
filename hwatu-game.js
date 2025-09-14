@@ -2734,7 +2734,6 @@ function showUpgradeSelection() {
             <div class="upgrade-rarity rarity-${upgrade.rarity}">${upgrade.rarity.toUpperCase()}</div>
             <div class="upgrade-icon">${upgrade.icon}</div>
             <div class="upgrade-name">${upgrade.name}</div>
-            <div class="upgrade-description">${enhancedDescription}</div>
             <div class="upgrade-price">${upgrade.price}</div>
         `;
         
