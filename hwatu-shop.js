@@ -338,16 +338,7 @@ class ShopManager {
 
         // 즉시 효과 적용
         if (item.effect) {
-            const result = item.effect.call(this);
-            // 소모품 카드가 슬롯이 꽉 차서 실패한 경우
-            if (result === false) {
-                // 구매 취소 처리
-                gameStateManager.updateGold(item.price);
-                if (item.category === 'treasure') {
-                    gameStateManager.state.purchasedItems.delete(itemId);
-                }
-                return false;
-            }
+            item.effect.call(this);
         }
 
         return true;

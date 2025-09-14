@@ -3123,8 +3123,26 @@ function showPurchaseTooltip(upgrade, cardElement) {
     // 카드 위치 가져오기
     const rect = cardElement.getBoundingClientRect();
     
-    // 소지금 부족 여부 확인
-    const canAfford = gameState.gold >= upgrade.price;
+    // 구매 가능 여부 확인
+    let canPurchase = gameState.gold >= upgrade.price;
+    let purchaseMessage = '';
+    
+    // 소모품 카드의 경우 슬롯 체크
+    if (upgrade.category === 'consumable_card' || upgrade.category === 'consumable') {
+        const consumableSlotsFull = gameStateManager.state.consumableCards.length >= 2;
+        if (consumableSlotsFull) {
+            canPurchase = false;
+            purchaseMessage = '(소모품 슬롯 가득참)';
+        }
+    }
+    
+    // 소지금 부족 체크
+    if (gameState.gold < upgrade.price) {
+        canPurchase = false;
+        purchaseMessage = '(소지금 부족)';
+    }
+    
+    const canAfford = canPurchase; // 기존 변수명 호환성 유지
     
     // 툴팁 생성
     const tooltip = document.createElement('div');
@@ -3170,7 +3188,7 @@ function showPurchaseTooltip(upgrade, cardElement) {
                 ${upgrade.description}
             </div>
             <div style="font-size: 16px; color: ${canAfford ? '#ffd700' : '#ff4444'};">
-                가격: ${upgrade.price} ${!canAfford ? '(소지금 부족)' : ''}
+                가격: ${upgrade.price} ${purchaseMessage}
             </div>
         </div>
         <button ${!canAfford ? 'disabled' : ''} onclick="${canAfford ? `confirmPurchase('${upgrade.id}')` : ''}" style="
@@ -3185,7 +3203,7 @@ function showPurchaseTooltip(upgrade, cardElement) {
             cursor: ${canAfford ? 'pointer' : 'not-allowed'};
             transition: all 0.3s ease;
         " ${canAfford ? `onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'"` : ''}>
-            ${canAfford ? '구매하기' : '소지금 부족'}
+            ${canAfford ? '구매하기' : purchaseMessage.replace(/[()]/g, '')}
         </button>
     `;
     

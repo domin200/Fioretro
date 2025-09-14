@@ -282,6 +282,12 @@ class PopupComponent {
     }
 
     static showMessage(message, type = 'info', duration = 3000) {
+        // 기존 메시지 팝업이 있으면 제거
+        const existingPopup = document.querySelector('.message-popup');
+        if (existingPopup) {
+            existingPopup.remove();
+        }
+        
         const colors = {
             info: '#2196F3',
             success: '#4CAF50',
@@ -311,7 +317,11 @@ class PopupComponent {
 
         setTimeout(() => {
             messageDiv.style.animation = 'slideUp 0.3s ease';
-            setTimeout(() => messageDiv.remove(), 300);
+            setTimeout(() => {
+                if (messageDiv && messageDiv.parentNode) {
+                    messageDiv.remove();
+                }
+            }, 300);
         }, duration);
     }
 }
