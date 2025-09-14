@@ -2801,15 +2801,35 @@ function showUpgradeSelection() {
     
     const choicesContainer = document.getElementById('upgrade-choices');
     
-    // 보물, 보주, 소모품 분리
-    const treasures = upgradePool.filter(u => 
-        (!u.type || (u.type !== 'enhancement' && u.type !== 'remove' && u.type !== 'duplicate')) 
-        && u.category !== 'consumable' && u.category !== 'orb'
-    );
-    const orbs = upgradePool.filter(u => 
-        u.type === 'enhancement' || u.type === 'remove' || u.type === 'duplicate' || u.category === 'orb'
-    );
-    const consumables = upgradePool.filter(u => u.category === 'consumable');
+    // shopManager의 아이템과 upgradePool을 합치기
+    const allItems = [];
+    
+    // upgradePool의 아이템들 추가
+    upgradePool.forEach(item => {
+        if (!item.category) {
+            // 기존 upgradePool 아이템 분류
+            if (item.type === 'enhancement' || item.type === 'remove' || item.type === 'duplicate') {
+                item.category = 'orb';
+            } else {
+                item.category = 'treasure';
+            }
+        }
+        allItems.push(item);
+    });
+    
+    // shopManager의 아이템들 추가 (중복 방지)
+    if (typeof shopManager !== 'undefined') {
+        shopManager.items.forEach(item => {
+            if (!allItems.find(i => i.id === item.id)) {
+                allItems.push(item);
+            }
+        });
+    }
+    
+    // 카테고리별로 분리
+    const treasures = allItems.filter(u => u.category === 'treasure');
+    const orbs = allItems.filter(u => u.category === 'orb');
+    const consumables = allItems.filter(u => u.category === 'consumable');
     
     shopUpgrades = [];
     
@@ -3092,6 +3112,20 @@ function purchaseUpgrade(upgrade, cardElement) {
     
     // 이미 구매한 업그레이드인지 확인
     if (purchasedUpgrades.some(u => u.id === upgrade.id)) {
+        return;
+    }
+    
+    // shopManager가 있고 해당 아이템이 shopManager에 있는 경우
+    if (typeof shopManager !== 'undefined' && shopManager.items.find(i => i.id === upgrade.id)) {
+        // shopManager를 통해 구매 처리
+        const success = shopManager.purchaseItem(upgrade.id);
+        if (success) {
+            purchasedUpgrades.push(upgrade);
+            cardElement.classList.add('purchased');
+            cardElement.style.opacity = '0.5';
+            cardElement.style.pointerEvents = 'none';
+            updateDisplay();
+        }
         return;
     }
     
