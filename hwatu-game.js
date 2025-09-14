@@ -4629,6 +4629,15 @@ window.onload = () => {
     }
     initFullGame();
     
+    // 초기 스테이지 값 설정
+    gameState.stage = 1;
+    gameState.targetScore = 25;
+    gameState.discardsLeft = 4;
+    gameState.gold = 0;
+    
+    // 화면 업데이트
+    updateDisplay();
+    
     // 테스트용 강화 제거됨
     
     // 테스트용 키보드 이벤트 (q 키로 소지금 +1)
