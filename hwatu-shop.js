@@ -509,6 +509,15 @@ class ShopManager {
 
         gameStateManager.updateGold(-item.price);
         
+        // 구매 효과음 재생 (가격에 따라 다른 효과음)
+        if (typeof playSound === 'function') {
+            if (item.price >= 10) {
+                playSound('SE/gold_big.mp3');
+            } else {
+                playSound('SE/gold_small.mp3');
+            }
+        }
+        
         // 보물만 구매 기록에 추가 (재구매 방지)
         if (item.category === 'treasure') {
             gameStateManager.purchaseItem(itemId);
