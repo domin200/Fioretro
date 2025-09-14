@@ -2687,8 +2687,20 @@ const upgradePool = [
 let shopUpgrades = []; // 상점에 표시된 업그레이드들
 let purchasedUpgrades = []; // 이번 상점에서 구매한 업그레이드들
 
+// BGM 변경 함수
+function changeBGM(filename) {
+    const bgmAudio = document.getElementById('bgm');
+    if (bgmAudio) {
+        bgmAudio.src = `bgm/${filename}`;
+        bgmAudio.play().catch(e => console.log('BGM 재생 실패:', e));
+    }
+}
+
 // 업그레이드 상점 표시
 function showUpgradeSelection() {
+    // 주막 BGM으로 변경
+    changeBGM('Card Shark Serenade.mp3');
+    
     // play 컨테이너를 상점으로 변환
     const playContainer = document.getElementById('play-container');
     
@@ -3698,6 +3710,9 @@ function applyUpgrade(upgrade) {
 
 // 다음 스테이지 진행
 function proceedToNextStage() {
+    // 게임 BGM으로 복원
+    changeBGM('Card Chaos.mp3');
+    
     // play 컨테이너를 게임 화면으로 복원
     const playContainer = document.getElementById('play-container');
     playContainer.innerHTML = `
