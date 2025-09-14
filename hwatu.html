@@ -253,7 +253,6 @@
         #captured-area {
             background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
             padding: 15px;
-            padding-top: 20px;
             border-radius: 12px;
             display: flex;
             flex-direction: column;
@@ -261,11 +260,9 @@
             border: 2px solid rgba(255, 215, 0, 0.3);
             box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
             overflow-y: auto;
-            overflow-x: visible;
             grid-column: 1;
             grid-row: 1;
             position: relative;
-            margin-top: 10px;
         }
         
         .captured-cards-container {
@@ -1470,20 +1467,6 @@
     <div id="game-container">
         <div id="main-game-layout">
             <div id="captured-area">
-                    <div style="
-                        position: absolute;
-                        top: -10px;
-                        left: 10px;
-                        background: linear-gradient(135deg, #1a1a2e 0%, #2d2d3e 100%);
-                        padding: 3px 10px;
-                        border-radius: 6px;
-                        font-size: 12px;
-                        color: #ffd700;
-                        font-weight: bold;
-                        border: 1px solid rgba(255, 215, 0, 0.3);
-                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-                        z-index: 1;
-                    ">획득한 패</div>
                     <div class="captured-cards-container">
                         <div class="captured-section">
                             <div class="captured-title">광 (<span id="gwang-count">0</span>)</div>
@@ -1544,19 +1527,6 @@
                     box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
                     backdrop-filter: blur(5px);
                 ">
-                    <div style="
-                        position: absolute;
-                        top: -10px;
-                        left: 10px;
-                        background: linear-gradient(135deg, #1a1a2e 0%, #2d2d3e 100%);
-                        padding: 3px 10px;
-                        border-radius: 6px;
-                        font-size: 12px;
-                        color: #ffd700;
-                        font-weight: bold;
-                        border: 1px solid rgba(255, 215, 0, 0.3);
-                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-                    ">소모품</div>
                     <div id="consumable-slot-1" class="consumable-slot" style="
                         width: 80px;
                         height: 110px;
@@ -1592,21 +1562,7 @@
             </div>
             
             <div id="score-board">
-                    <div style="
-                        position: absolute;
-                        top: -10px;
-                        left: 10px;
-                        background: linear-gradient(135deg, #1a1a2e 0%, #2d2d3e 100%);
-                        padding: 3px 10px;
-                        border-radius: 6px;
-                        font-size: 12px;
-                        color: #ffd700;
-                        font-weight: bold;
-                        border: 1px solid rgba(255, 215, 0, 0.3);
-                        box-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
-                        z-index: 1;
-                    ">점수판</div>
-                    <div class="score-item" style="margin-top: 10px;">
+                    <div class="score-item">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                             <div class="score-label" style="flex: 1;">스테이지 <span id="stage-num">1</span></div>
                             <div class="score-label" style="flex: 2; text-align: center;">목표점수</div>
