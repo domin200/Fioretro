@@ -1669,8 +1669,11 @@ function endRound() {
     
     if (gameState.totalScore >= gameState.targetScore) {
         // 미션 성공
-        // 1. 먼저 보유 소지금에 대한 이자 계산 (5당 1 지급, 최대 5)
-        const interestGold = Math.min(5, Math.floor(gameState.gold / 5));
+        // 1. 먼저 보유 소지금에 대한 이자 계산 (5당 1 지급)
+        // 돼지저금통이 있으면 최대 10, 없으면 최대 5
+        const hasPiggyBank = gameState.upgrades.some(u => u.id === 'piggy_bank');
+        const maxInterest = hasPiggyBank ? 10 : 5;
+        const interestGold = Math.min(maxInterest, Math.floor(gameState.gold / 5));
         gameState.gold += interestGold;
         
         // 2. 황 강화 카드 보너스 계산 (바닥과 손패에 있는 황 강화 카드당 1 소지금)
@@ -1798,7 +1801,7 @@ function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 
         ${success && earnedGold > 0 ? 
             `<div style="margin-top: 15px; color: #ffd700;">
                 ${interestGold > 0 ? `<div style="font-size: 20px; margin-bottom: 5px;">
-                    이자: <span style="font-weight: bold;">+${interestGold}</span>
+                    이자: <span style="font-weight: bold;">+${interestGold}</span>${gameState.upgrades.some(u => u.id === 'piggy_bank') ? ' 🐷' : ''}
                 </div>` : ''}
                 ${goldEnhancementBonus > 0 ? `<div style="font-size: 20px; margin-bottom: 5px;">
                     황 강화 보너스: <span style="font-weight: bold;">+${goldEnhancementBonus}</span>
@@ -2876,6 +2879,7 @@ const upgradePool = [
     { id: 'reincarnation', name: '윤회', icon: '♻️', description: '버린 카드가 덱으로 돌아가고, 버리기당 +2점', rarity: 'epic', price: 14 },
     { id: 'two_hearts', name: '두개의 심장', icon: '💕', description: '한 번 패배해도 게임이 끝나지 않음 (1회용)', rarity: 'legendary', price: 20 },
     { id: 'nolbu_treasure', name: '놀부심보', icon: '💰', description: '첫 턴에 카드 2장 추가 드로우, 이후 추가 드로우 불가', rarity: 'epic', price: 15 },
+    { id: 'piggy_bank', name: '돼지저금통', icon: '🐷', description: '최대 이자 제한이 10으로 증가 (기본 5)', rarity: 'rare', price: 8 },
     
     // 카드 강화 아이템 - 사신수 보주 (구버전 - hwatu-shop.js로 이전됨)
     // { id: 'enhance_blue', name: '청룡의 보주', icon: '🔵', description: '덱에서 무작위 5장 중 1장을 선택하여 청 강화 부여', rarity: 'common', price: 6, type: 'enhancement', enhanceType: '청' },
