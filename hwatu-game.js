@@ -275,7 +275,7 @@ function initGame() {
         '피': []
     };
     gameState.score = 0;
-    gameState.multiplier = 1;
+    gameState.multiplier = 1;  // 매 스테이지마다 배수 초기화 (적 강화 효과 리셋)
     gameState.totalScore = 0;
     gameState.turn = 0;
     gameState.selectedCard = null;
@@ -662,13 +662,20 @@ function discardCards() {
     gameState.discardsLeft--; // 버리기 카운트 감소
     
     // 적 강화 효과: 버려지는 카드가 적 강화를 가지고 있으면 배수 +0.5
+    let redEnhancementActivated = false;
     cardsToDiscard.forEach(card => {
         const enhancement = gameState.cardEnhancements[card.id];
         if (enhancement === '적') {
             gameState.multiplier += 0.5;
+            redEnhancementActivated = true;
             console.log(`Red enhancement activated! Multiplier +0.5 (Total: ${gameState.multiplier})`);
         }
     });
+    
+    // 적 강화 효과 시각적 표시
+    if (redEnhancementActivated) {
+        showEnhancementEffect('적 강화 발동! 배수 +0.5', '#ff4444');
+    }
     
     // 버릴 카드들의 애니메이션
     const handArea = document.getElementById('hand-area');
@@ -1141,6 +1148,11 @@ function calculateScore() {
     // 기본 배수 강화 업그레이드 적용
     const baseMultiplierUpgrades = gameState.upgrades.filter(u => u.id === 'base_multiplier').length;
     multiplier += baseMultiplierUpgrades * 0.5;  // 각 기본 배수 업그레이드당 +0.5
+    
+    // 적 강화로 인한 추가 배수 적용 (discardCards에서 누적된 값)
+    if (gameState.multiplier > 1) {
+        multiplier += (gameState.multiplier - 1);  // 적 강화로 추가된 배수만큼 더하기
+    }
     
     // 특수 조합 배수 추가
     const gwangCount = cardsByType['광'].length;
@@ -2091,6 +2103,66 @@ function hideEnhancementTooltip() {
     if (tooltip) {
         tooltip.remove();
     }
+}
+
+// 강화 효과 시각적 표시
+function showEnhancementEffect(text, color) {
+    const effect = document.createElement('div');
+    effect.style.cssText = `
+        position: fixed;
+        left: 50%;
+        top: 30%;
+        transform: translateX(-50%);
+        background: linear-gradient(135deg, ${color}88 0%, ${color}cc 100%);
+        color: white;
+        padding: 20px 40px;
+        border-radius: 15px;
+        font-size: 24px;
+        font-weight: bold;
+        z-index: 2500;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
+        animation: enhancementPop 1.5s ease;
+        border: 2px solid ${color};
+    `;
+    
+    effect.innerHTML = `
+        <span style="
+            background: linear-gradient(to right, #ffffff, ${color}, #ffffff);
+            background-size: 300% 100%;
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            animation: gradient 2s linear infinite;
+        ">${text}</span>
+    `;
+    
+    // 애니메이션 CSS 추가
+    if (!document.getElementById('enhancement-effect-style')) {
+        const style = document.createElement('style');
+        style.id = 'enhancement-effect-style';
+        style.textContent = `
+            @keyframes enhancementPop {
+                0% { 
+                    opacity: 0; 
+                    transform: translateX(-50%) translateY(20px) scale(0.8);
+                }
+                50% { 
+                    opacity: 1; 
+                    transform: translateX(-50%) translateY(0) scale(1.05);
+                }
+                100% { 
+                    opacity: 0; 
+                    transform: translateX(-50%) translateY(-20px) scale(0.95);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    document.body.appendChild(effect);
+    
+    // 1.5초 후 제거
+    setTimeout(() => effect.remove(), 1500);
 }
 
 
