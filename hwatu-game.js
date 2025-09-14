@@ -4721,14 +4721,14 @@ function proceedToNextStage() {
 // 타이틀 화면 표시
 function showTitleScreen() {
     // 좌측 UI들을 화면 밖으로 이동
-    const capturedSection = document.getElementById('captured-section');
+    const capturedArea = document.getElementById('captured-area');
     const scoreBoard = document.getElementById('score-board');
     
-    // 보유패 전체 섹션을 화면 밖으로
-    if (capturedSection) {
-        capturedSection.style.transition = 'none';
-        capturedSection.style.transform = 'translateX(-120%)';
-        capturedSection.style.opacity = '0';
+    // 보유패 전체 영역을 화면 밖으로
+    if (capturedArea) {
+        capturedArea.style.transition = 'none';
+        capturedArea.style.transform = 'translateX(-120%)';
+        capturedArea.style.opacity = '0';
     }
     
     // 점수판도 화면 밖으로
@@ -4971,14 +4971,14 @@ function startGame() {
         
         // 잠시 후 좌측 UI들을 슬라이드인
         setTimeout(() => {
-            const capturedSection = document.getElementById('captured-section');
+            const capturedArea = document.getElementById('captured-area');
             const scoreBoard = document.getElementById('score-board');
             
-            // 보유패 전체 컨테이너 슬라이드인
-            if (capturedSection) {
-                capturedSection.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
-                capturedSection.style.transform = 'translateX(0)';
-                capturedSection.style.opacity = '1';
+            // 보유패 전체 영역 슬라이드인
+            if (capturedArea) {
+                capturedArea.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
+                capturedArea.style.transform = 'translateX(0)';
+                capturedArea.style.opacity = '1';
             }
             
             // 점수판 슬라이드인 (약간 늦게)
