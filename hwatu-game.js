@@ -4720,7 +4720,26 @@ function proceedToNextStage() {
 
 // 타이틀 화면 표시
 function showTitleScreen() {
-    // 좌측 UI들은 그대로 유지 (화면 밖으로 보내지 않음)
+    // 좌측 UI의 grid 열 크기를 0으로 설정
+    const mainLayout = document.getElementById('main-game-layout');
+    if (mainLayout) {
+        mainLayout.style.transition = 'none';
+        mainLayout.style.gridTemplateColumns = '0 minmax(400px, 3fr)';
+    }
+    
+    // 좌측 UI들 overflow 숨기기
+    const capturedArea = document.getElementById('captured-area');
+    const scoreBoard = document.getElementById('score-board');
+    
+    if (capturedArea) {
+        capturedArea.style.overflow = 'hidden';
+        capturedArea.style.opacity = '0';
+    }
+    
+    if (scoreBoard) {
+        scoreBoard.style.overflow = 'hidden';
+        scoreBoard.style.opacity = '0';
+    }
     
     // Play 컨테이너를 화면 정중앙에 위치 (왼쪽 UI 공간 없이)
     const playContainer = document.getElementById('play-container');
@@ -4948,21 +4967,51 @@ function startGame() {
             updateBackgroundColors(1);
         }
         
-        // 게임 시작 애니메이션 - 스타일 초기화만
+        // 게임 시작 애니메이션
         setTimeout(() => {
-            // 트랜지션 설정
-            playContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            const mainLayout = document.getElementById('main-game-layout');
+            const capturedArea = document.getElementById('captured-area');
+            const scoreBoard = document.getElementById('score-board');
             
-            // 인라인 스타일 제거하여 CSS 기본값 적용
+            // Grid 열 크기를 서서히 원래대로 복원
+            if (mainLayout) {
+                mainLayout.style.transition = 'grid-template-columns 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                mainLayout.style.gridTemplateColumns = '';  // CSS 기본값으로 복원
+            }
+            
+            // Play 컨테이너 스타일 초기화
+            playContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
             playContainer.style.flex = '';
             playContainer.style.display = '';
             playContainer.style.flexDirection = '';
             playContainer.style.justifyContent = '';
             playContainer.style.alignItems = '';
             
+            // 좌측 UI들 페이드인
+            if (capturedArea) {
+                capturedArea.style.transition = 'opacity 0.8s ease';
+                capturedArea.style.opacity = '1';
+            }
+            
+            if (scoreBoard) {
+                scoreBoard.style.transition = 'opacity 0.8s ease';
+                scoreBoard.style.opacity = '1';
+            }
+            
             // 애니메이션 완료 후 트랜지션 제거
             setTimeout(() => {
                 playContainer.style.transition = '';
+                if (mainLayout) {
+                    mainLayout.style.transition = '';
+                }
+                if (capturedArea) {
+                    capturedArea.style.transition = '';
+                    capturedArea.style.overflow = '';
+                }
+                if (scoreBoard) {
+                    scoreBoard.style.transition = '';
+                    scoreBoard.style.overflow = '';
+                }
             }, 850);
         }, 50);
         
