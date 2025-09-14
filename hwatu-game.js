@@ -3916,7 +3916,7 @@ function updateConsumableCards() {
         if (gameState.consumableCards[0]) {
             const card = gameState.consumableCards[0];
             slot1.innerHTML = `
-                <div style="
+                <div class="consumable-card-inner" style="
                     width: 100%;
                     height: 100%;
                     background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
@@ -3933,10 +3933,14 @@ function updateConsumableCards() {
                 </div>
             `;
             slot1.onclick = () => selectConsumableCard(0);
+            slot1.onmouseenter = (e) => showConsumableTooltip(card, e);
+            slot1.onmouseleave = hideConsumableTooltip;
             slot1.style.cursor = 'pointer';
         } else {
             slot1.innerHTML = '';
             slot1.onclick = null;
+            slot1.onmouseenter = null;
+            slot1.onmouseleave = null;
         }
     }
     
@@ -3946,7 +3950,7 @@ function updateConsumableCards() {
         if (gameState.consumableCards[1]) {
             const card = gameState.consumableCards[1];
             slot2.innerHTML = `
-                <div style="
+                <div class="consumable-card-inner" style="
                     width: 100%;
                     height: 100%;
                     background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
@@ -3963,11 +3967,126 @@ function updateConsumableCards() {
                 </div>
             `;
             slot2.onclick = () => selectConsumableCard(1);
+            slot2.onmouseenter = (e) => showConsumableTooltip(card, e);
+            slot2.onmouseleave = hideConsumableTooltip;
             slot2.style.cursor = 'pointer';
         } else {
             slot2.innerHTML = '';
             slot2.onclick = null;
+            slot2.onmouseenter = null;
+            slot2.onmouseleave = null;
         }
+    }
+}
+
+// 효과 메시지 표시
+function showEffectMessage(message, color = '#ffd700') {
+    const msg = document.createElement('div');
+    msg.style.cssText = `
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        padding: 20px 40px;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(20, 20, 20, 0.9) 100%);
+        border: 2px solid ${color};
+        border-radius: 10px;
+        color: ${color};
+        font-size: 24px;
+        font-weight: bold;
+        z-index: 10000;
+        pointer-events: none;
+        animation: effectMessage 1.5s ease;
+        box-shadow: 0 0 30px rgba(255, 215, 0, 0.5);
+    `;
+    
+    // 애니메이션 스타일 추가
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes effectMessage {
+            0% {
+                opacity: 0;
+                transform: translate(-50%, -50%) scale(0.5);
+            }
+            20% {
+                opacity: 1;
+                transform: translate(-50%, -50%) scale(1.1);
+            }
+            40% {
+                transform: translate(-50%, -50%) scale(1);
+            }
+            100% {
+                opacity: 0;
+                transform: translate(-50%, -60%) scale(0.9);
+            }
+        }
+    `;
+    document.head.appendChild(style);
+    
+    msg.textContent = message;
+    document.body.appendChild(msg);
+    
+    // 1.5초 후 제거
+    setTimeout(() => {
+        msg.remove();
+        style.remove();
+    }, 1500);
+}
+
+// 소모품 카드 툴팁 표시
+function showConsumableTooltip(card, event) {
+    hideConsumableTooltip(); // 기존 툴팁 제거
+    
+    const tooltip = document.createElement('div');
+    tooltip.id = 'consumable-tooltip';
+    tooltip.style.cssText = `
+        position: fixed;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
+        border: 2px solid #ffd700;
+        border-radius: 8px;
+        padding: 10px;
+        z-index: 10000;
+        pointer-events: none;
+        min-width: 150px;
+        box-shadow: 0 5px 15px rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.2s ease;
+    `;
+    
+    tooltip.innerHTML = `
+        <div style="text-align: center;">
+            <div style="font-size: 24px; margin-bottom: 5px;">${card.icon}</div>
+            <div style="font-size: 14px; font-weight: bold; color: #ffd700; margin-bottom: 5px;">${card.name}</div>
+            <div style="font-size: 12px; color: #aaa;">${card.effect}</div>
+        </div>
+    `;
+    
+    document.body.appendChild(tooltip);
+    
+    // 위치 설정
+    const rect = event.target.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    
+    let left = rect.left + rect.width / 2 - tooltipRect.width / 2;
+    let top = rect.top - tooltipRect.height - 10;
+    
+    // 화면 벗어남 방지
+    if (left < 10) left = 10;
+    if (left + tooltipRect.width > window.innerWidth - 10) {
+        left = window.innerWidth - tooltipRect.width - 10;
+    }
+    if (top < 10) {
+        top = rect.bottom + 10;
+    }
+    
+    tooltip.style.left = left + 'px';
+    tooltip.style.top = top + 'px';
+}
+
+// 소모품 카드 툴팁 숨기기
+function hideConsumableTooltip() {
+    const tooltip = document.getElementById('consumable-tooltip');
+    if (tooltip) {
+        tooltip.remove();
     }
 }
 
@@ -4023,10 +4142,77 @@ function useConsumableCard(index) {
     if (!gameState.consumableCards[index]) return;
     
     const card = gameState.consumableCards[index];
+    const slot = document.getElementById(`consumable-slot-${index + 1}`);
     
-    // 효과 발동
-    if (card.action) {
-        card.action();
+    // 애니메이션을 위한 카드 복사본 생성
+    if (slot) {
+        const slotRect = slot.getBoundingClientRect();
+        const floorArea = document.getElementById('floor-area');
+        const floorRect = floorArea.getBoundingClientRect();
+        
+        // 애니메이션용 카드 생성
+        const animCard = document.createElement('div');
+        animCard.style.cssText = `
+            position: fixed;
+            left: ${slotRect.left}px;
+            top: ${slotRect.top}px;
+            width: ${slotRect.width}px;
+            height: ${slotRect.height}px;
+            z-index: 5000;
+            pointer-events: none;
+            transition: all 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        `;
+        
+        animCard.innerHTML = `
+            <div style="
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
+                border: 2px solid #ffd700;
+                border-radius: 8px;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.5);
+            ">
+                <div style="font-size: 30px; margin-bottom: 5px;">${card.icon}</div>
+                <div style="font-size: 10px; color: #ffd700; text-align: center;">${card.name}</div>
+            </div>
+        `;
+        
+        document.body.appendChild(animCard);
+        
+        // 효과음 재생
+        playSound('se/allow1.mp3');
+        
+        // 바닥 중앙으로 이동 애니메이션
+        setTimeout(() => {
+            const targetX = floorRect.left + floorRect.width / 2 - slotRect.width / 2;
+            const targetY = floorRect.top + floorRect.height / 2 - slotRect.height / 2;
+            
+            animCard.style.transform = `translate(${targetX - slotRect.left}px, ${targetY - slotRect.top}px) scale(1.2)`;
+            animCard.style.opacity = '0.8';
+        }, 50);
+        
+        // 효과 발동 및 카드 제거
+        setTimeout(() => {
+            animCard.style.opacity = '0';
+            animCard.style.transform += ' scale(1.5)';
+            
+            // 효과 발동
+            if (card.action) {
+                card.action();
+            }
+            
+            // 효과 메시지 표시
+            showEffectMessage(card.name + ' 사용!', '#4ade80');
+            
+            // 애니메이션 카드 제거
+            setTimeout(() => {
+                animCard.remove();
+            }, 300);
+        }, 650);
     }
     
     // 카드 제거
