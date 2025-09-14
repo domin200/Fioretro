@@ -4738,7 +4738,7 @@ function showTitleScreen() {
         scoreBoard.style.opacity = '0';
     }
     
-    // Play 컨테이너를 화면 중앙에 위치
+    // Play 컨테이너를 화면 정중앙에 위치 (왼쪽 UI 공간 없이)
     const playContainer = document.getElementById('play-container');
     playContainer.style.display = 'flex';
     playContainer.style.flexDirection = 'column';
@@ -4746,6 +4746,11 @@ function showTitleScreen() {
     playContainer.style.alignItems = 'center';
     playContainer.style.height = 'auto';
     playContainer.style.minHeight = '400px';
+    playContainer.style.position = 'absolute';
+    playContainer.style.left = '50%';
+    playContainer.style.top = '50%';
+    playContainer.style.transform = 'translate(-50%, -50%)';
+    playContainer.style.width = '100%';
     
     // 타이틀 화면 내용
     playContainer.innerHTML = `
@@ -4874,6 +4879,16 @@ function startGame() {
     setTimeout(() => {
         // Play 컨테이너를 게임 화면으로 복원
         const playContainer = document.getElementById('play-container');
+        
+        // 먼저 게임 위치로 애니메이션 준비
+        playContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+        
+        // 스타일 초기화 (원래 위치로)
+        playContainer.style.position = '';
+        playContainer.style.left = '';
+        playContainer.style.top = '';
+        playContainer.style.transform = '';
+        playContainer.style.width = '';
         playContainer.style.display = '';
         playContainer.style.flexDirection = '';
         playContainer.style.justifyContent = '';
@@ -4968,6 +4983,11 @@ function startGame() {
         
         // 게임 초기화
         initFullGame();
+        
+        // 트랜지션 완료 후 제거
+        setTimeout(() => {
+            playContainer.style.transition = '';
+        }, 1000);
         
         // 잠시 후 좌측 UI들을 슬라이드인
         setTimeout(() => {
