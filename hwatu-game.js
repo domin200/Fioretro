@@ -4720,23 +4720,22 @@ function proceedToNextStage() {
 
 // 타이틀 화면 표시
 function showTitleScreen() {
-    // 좌측 UI의 grid 열 크기를 0으로 설정
-    const mainLayout = document.getElementById('main-game-layout');
-    if (mainLayout) {
-        mainLayout.style.transition = 'none';
-        mainLayout.style.gridTemplateColumns = '0px 1fr';
-    }
-    
-    // 좌측 UI들 overflow 숨기기
+    // 좌측 UI들의 width를 0으로 설정
     const capturedArea = document.getElementById('captured-area');
     const scoreBoard = document.getElementById('score-board');
     
     if (capturedArea) {
+        capturedArea.style.transition = 'none';
+        capturedArea.style.width = '0';
+        capturedArea.style.minWidth = '0';
         capturedArea.style.overflow = 'hidden';
         capturedArea.style.opacity = '0';
     }
     
     if (scoreBoard) {
+        scoreBoard.style.transition = 'none';
+        scoreBoard.style.width = '0';
+        scoreBoard.style.minWidth = '0';
         scoreBoard.style.overflow = 'hidden';
         scoreBoard.style.opacity = '0';
     }
@@ -4972,14 +4971,22 @@ function startGame() {
         
         // 게임 시작 애니메이션
         setTimeout(() => {
-            const mainLayout = document.getElementById('main-game-layout');
             const capturedArea = document.getElementById('captured-area');
             const scoreBoard = document.getElementById('score-board');
             
-            // Grid 열 크기를 서서히 원래대로 복원 (2초)
-            if (mainLayout) {
-                mainLayout.style.transition = 'grid-template-columns 2s cubic-bezier(0.4, 0, 0.2, 1)';
-                mainLayout.style.gridTemplateColumns = '220px 1fr';  // 구체적인 픽셀 값 사용
+            // 좌측 UI들 width를 서서히 원래대로 복원 (2초)
+            if (capturedArea) {
+                capturedArea.style.transition = 'width 2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
+                capturedArea.style.width = '';  // CSS 기본값으로 복원
+                capturedArea.style.minWidth = '';
+                capturedArea.style.opacity = '1';
+            }
+            
+            if (scoreBoard) {
+                scoreBoard.style.transition = 'width 2s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
+                scoreBoard.style.width = '';  // CSS 기본값으로 복원
+                scoreBoard.style.minWidth = '';
+                scoreBoard.style.opacity = '1';
             }
             
             // Play 컨테이너 스타일 초기화 및 배경 투명도 원래대로
@@ -4991,24 +4998,9 @@ function startGame() {
             playContainer.style.justifyContent = '';
             playContainer.style.alignItems = '';
             
-            // 좌측 UI들 페이드인
-            if (capturedArea) {
-                capturedArea.style.transition = 'opacity 0.8s ease';
-                capturedArea.style.opacity = '1';
-            }
-            
-            if (scoreBoard) {
-                scoreBoard.style.transition = 'opacity 0.8s ease';
-                scoreBoard.style.opacity = '1';
-            }
-            
             // 애니메이션 완료 후 트랜지션 제거 (2초 후)
             setTimeout(() => {
                 playContainer.style.transition = '';
-                if (mainLayout) {
-                    mainLayout.style.transition = '';
-                    mainLayout.style.gridTemplateColumns = '';  // CSS 기본값으로 최종 복원
-                }
                 if (capturedArea) {
                     capturedArea.style.transition = '';
                     capturedArea.style.overflow = '';
