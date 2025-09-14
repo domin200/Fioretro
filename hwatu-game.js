@@ -1389,6 +1389,13 @@ function calculateMultiplier(floorCards) {
             // 기본은 ×1 (배수 변화 없음)
         } else if (count === 4) {
             multiplier *= 5;  // 같은 월 4장 → ×5
+        } else if (count === 5) {
+            multiplier *= 10;  // 같은 월 5장 → ×10
+        } else if (count === 6) {
+            multiplier *= 20;  // 같은 월 6장 → ×20
+        } else if (count > 6) {
+            // 6장 이상은 장수마다 2배씩 증가
+            multiplier *= 20 * Math.pow(2, count - 6);
         }
     });
     
