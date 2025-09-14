@@ -2796,11 +2796,10 @@ function showUpgradeSelection() {
             <div class="upgrade-category" style="
                 position: absolute;
                 left: 10px;
-                top: 50%;
-                transform: translateY(-50%) rotate(-90deg);
-                font-size: 12px;
+                top: 10px;
+                font-size: 11px;
                 color: #aaa;
-                letter-spacing: 2px;
+                font-weight: bold;
                 text-transform: uppercase;
             ">${category}</div>
             <div class="upgrade-icon">${upgrade.icon}</div>
@@ -3068,15 +3067,6 @@ function showCardEnhancementSelection(upgrade, shopCardElement) {
                     cursor: not-allowed;
                     display: none;
                 " disabled>적용</button>
-                <button onclick="cancelEnhancement('${upgrade.id}')" style="
-                    padding: 10px 30px;
-                    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                    font-size: 16px;
-                    cursor: pointer;
-                ">취소 (환불)</button>
             </div>
         </div>
     `;
@@ -3126,12 +3116,16 @@ function showCardEnhancementSelection(upgrade, shopCardElement) {
             if (prevSelected) {
                 prevSelected.classList.remove('selected-card');
                 prevSelected.style.border = '';
+                prevSelected.style.boxShadow = '';
+                prevSelected.style.transform = '';
             }
             
             // 현재 카드 선택
             selectedCardId = card.id;
             cardDiv.classList.add('selected-card');
-            cardDiv.style.border = '3px solid #ffd700';
+            cardDiv.style.border = '4px solid #ffd700';
+            cardDiv.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.8)';
+            cardDiv.style.transform = 'scale(1.1)';
             
             // 적용 버튼 활성화
             const applyBtn = document.getElementById('apply-enhancement-btn');
@@ -3285,15 +3279,6 @@ function showCardRemovalSelection(upgrade, shopCardElement) {
                     cursor: not-allowed;
                     display: none;
                 " disabled>적용</button>
-                <button onclick="cancelEnhancement('${upgrade.id}')" style="
-                    padding: 10px 30px;
-                    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                    font-size: 16px;
-                    cursor: pointer;
-                ">취소 (환불)</button>
             </div>
         </div>
     `;
@@ -3312,12 +3297,16 @@ function showCardRemovalSelection(upgrade, shopCardElement) {
             if (prevSelected) {
                 prevSelected.classList.remove('selected-card');
                 prevSelected.style.border = '';
+                prevSelected.style.boxShadow = '';
+                prevSelected.style.transform = '';
             }
             
             // 현재 카드 선택
             selectedCardId = card.id;
             cardDiv.classList.add('selected-card');
-            cardDiv.style.border = '3px solid #ff0000';
+            cardDiv.style.border = '4px solid #ff0000';
+            cardDiv.style.boxShadow = '0 0 20px rgba(255, 0, 0, 0.8)';
+            cardDiv.style.transform = 'scale(1.1)';
             
             // 적용 버튼 활성화
             const applyBtn = document.getElementById('apply-removal-btn');
@@ -3472,15 +3461,6 @@ function showCardDuplicationSelection(upgrade, shopCardElement) {
                     cursor: not-allowed;
                     display: none;
                 " disabled>적용</button>
-                <button onclick="cancelEnhancement('${upgrade.id}')" style="
-                    padding: 10px 30px;
-                    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-                    color: white;
-                    border: none;
-                    border-radius: 5px;
-                    font-size: 16px;
-                    cursor: pointer;
-                ">취소 (환불)</button>
             </div>
         </div>
     `;
@@ -3499,12 +3479,16 @@ function showCardDuplicationSelection(upgrade, shopCardElement) {
             if (prevSelected) {
                 prevSelected.classList.remove('selected-card');
                 prevSelected.style.border = '';
+                prevSelected.style.boxShadow = '';
+                prevSelected.style.transform = '';
             }
             
             // 현재 카드 선택
             selectedCardId = card.id;
             cardDiv.classList.add('selected-card');
-            cardDiv.style.border = '3px solid #00d7ff';
+            cardDiv.style.border = '4px solid #00d7ff';
+            cardDiv.style.boxShadow = '0 0 20px rgba(0, 215, 255, 0.8)';
+            cardDiv.style.transform = 'scale(1.1)';
             
             // 적용 버튼 활성화
             const applyBtn = document.getElementById('apply-duplication-btn');
