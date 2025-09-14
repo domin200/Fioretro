@@ -1710,6 +1710,9 @@ function updateDisplay() {
     // 업그레이드 표시 업데이트
     updateUpgradesDisplay();
     
+    // 소모품 카드 표시 업데이트
+    updateConsumableCards();
+    
     // 점수 정보 (숫자 변경 시 애니메이션 효과) - 배수 적용 전 점수 표시
     const scoreElement = document.getElementById('score');
     const targetElement = document.getElementById('target');
@@ -2828,6 +2831,7 @@ function showUpgradeSelection() {
     const treasures = allItems.filter(u => u.category === 'treasure');
     const orbs = allItems.filter(u => u.category === 'orb');
     const consumables = allItems.filter(u => u.category === 'consumable');
+    const consumableCards = allItems.filter(u => u.category === 'consumable_card');
     
     shopUpgrades = [];
     
@@ -2839,8 +2843,8 @@ function showUpgradeSelection() {
         availableTreasures.splice(index, 1);
     }
     
-    // 보주와 소모품을 섞어서 3개 선택
-    const mixedItems = [...orbs, ...consumables];
+    // 보주, 소모품, 소모품 카드를 섞어서 3개 선택
+    const mixedItems = [...orbs, ...consumables, ...consumableCards];
     const shuffledMixed = mixedItems.sort(() => Math.random() - 0.5);
     for (let i = 0; i < 3 && i < shuffledMixed.length; i++) {
         shopUpgrades.push(shuffledMixed[i]);
@@ -2905,6 +2909,8 @@ function showUpgradeSelection() {
             category = '보주';
         } else if (upgrade.category === 'consumable') {
             category = '소모';
+        } else if (upgrade.category === 'consumable_card') {
+            category = '소모카드';
         } else if (upgrade.category === 'orb') {
             category = '보주';
         }
@@ -3831,6 +3837,147 @@ function applyUpgrade(upgrade) {
     updateDisplay();
 }
 
+// 소모품 카드 표시 업데이트
+function updateConsumableCards() {
+    if (!gameState.consumableCards) {
+        gameState.consumableCards = [];
+    }
+    
+    // 소모품 슬롯 1
+    const slot1 = document.getElementById('consumable-slot-1');
+    if (slot1) {
+        if (gameState.consumableCards[0]) {
+            const card = gameState.consumableCards[0];
+            slot1.innerHTML = `
+                <div style="
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
+                    border: 2px solid #ffd700;
+                    border-radius: 8px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                ">
+                    <div style="font-size: 30px; margin-bottom: 5px;">${card.icon}</div>
+                    <div style="font-size: 10px; color: #ffd700; text-align: center;">${card.name}</div>
+                </div>
+            `;
+            slot1.onclick = () => selectConsumableCard(0);
+            slot1.style.cursor = 'pointer';
+        } else {
+            slot1.innerHTML = '';
+            slot1.onclick = null;
+        }
+    }
+    
+    // 소모품 슬롯 2
+    const slot2 = document.getElementById('consumable-slot-2');
+    if (slot2) {
+        if (gameState.consumableCards[1]) {
+            const card = gameState.consumableCards[1];
+            slot2.innerHTML = `
+                <div style="
+                    width: 100%;
+                    height: 100%;
+                    background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
+                    border: 2px solid #ffd700;
+                    border-radius: 8px;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    justify-content: center;
+                    position: relative;
+                ">
+                    <div style="font-size: 30px; margin-bottom: 5px;">${card.icon}</div>
+                    <div style="font-size: 10px; color: #ffd700; text-align: center;">${card.name}</div>
+                </div>
+            `;
+            slot2.onclick = () => selectConsumableCard(1);
+            slot2.style.cursor = 'pointer';
+        } else {
+            slot2.innerHTML = '';
+            slot2.onclick = null;
+        }
+    }
+}
+
+// 소모품 카드 선택
+function selectConsumableCard(index) {
+    if (!gameState.consumableCards[index]) return;
+    
+    const card = gameState.consumableCards[index];
+    
+    // 선택 확인 팝업
+    const popup = PopupComponent.create('소모품 카드 사용', `
+        <div style="text-align: center;">
+            <div style="font-size: 50px; margin: 20px;">${card.icon}</div>
+            <h3 style="color: #ffd700;">${card.name}</h3>
+            <p style="color: #aaa; margin: 15px 0;">${card.effect}</p>
+            <p style="color: #fff;">이 카드를 사용하시겠습니까?</p>
+        </div>
+    `, {
+        buttons: [
+            {
+                text: '바닥에 내기 (사용)',
+                type: 'success',
+                gradient: true,
+                onClick: () => {
+                    useConsumableCard(index);
+                }
+            },
+            {
+                text: '버리기',
+                type: 'danger',
+                gradient: true,
+                onClick: () => {
+                    discardConsumableCard(index);
+                }
+            },
+            {
+                text: '취소',
+                type: 'secondary',
+                onClick: () => {}
+            }
+        ]
+    });
+}
+
+// 소모품 카드 사용
+function useConsumableCard(index) {
+    if (!gameState.consumableCards[index]) return;
+    
+    const card = gameState.consumableCards[index];
+    
+    // 효과 발동
+    if (card.action) {
+        card.action();
+    }
+    
+    // 카드 제거
+    gameState.consumableCards.splice(index, 1);
+    
+    // 화면 업데이트
+    updateDisplay();
+}
+
+// 소모품 카드 버리기
+function discardConsumableCard(index) {
+    if (!gameState.consumableCards[index]) return;
+    
+    const card = gameState.consumableCards[index];
+    
+    // 카드 제거
+    gameState.consumableCards.splice(index, 1);
+    
+    PopupComponent.showMessage(`${card.name} 카드를 버렸습니다.`, 'info');
+    
+    // 화면 업데이트
+    updateDisplay();
+}
+
 // 다음 스테이지 진행
 function proceedToNextStage() {
     // 게임 BGM으로 전환
@@ -3862,6 +4009,53 @@ function proceedToNextStage() {
                     <button class="btn btn-secondary" id="discard-btn" onclick="discardCards()">버리기</button>
                 </div>
             </div>
+        </div>
+        
+        <!-- 소모품 카드 영역 -->
+        <div id="consumable-area" style="
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ffd700;
+            border-radius: 10px;
+        ">
+            <div style="
+                position: absolute;
+                top: -10px;
+                left: 10px;
+                background: #1a1a2e;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 11px;
+                color: #ffd700;
+                font-weight: bold;
+            ">소모품</div>
+            <div id="consumable-slot-1" class="consumable-slot" style="
+                width: 80px;
+                height: 110px;
+                border: 2px dashed rgba(255, 215, 0, 0.3);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            "></div>
+            <div id="consumable-slot-2" class="consumable-slot" style="
+                width: 80px;
+                height: 110px;
+                border: 2px dashed rgba(255, 215, 0, 0.3);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            "></div>
         </div>
         
         <div id="deck-info">

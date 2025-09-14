@@ -35,7 +35,8 @@ class GameStateManager {
             purchasedItems: new Set(),
             selectedCard: null,
             selectedFloorCard: null,
-            isProcessingAction: false
+            isProcessingAction: false,
+            consumableCards: []  // 소모품 카드 (최대 2장)
         };
     }
 

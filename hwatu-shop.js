@@ -85,6 +85,75 @@ class ShopManager {
                     shopManager.addSeasonalCard([10, 11, 12], '겨울');
                 }
             },
+            // 소모품 카드 (Consumable Cards)
+            {
+                id: 'bonus_pi_card',
+                name: '보너스피 카드',
+                category: 'consumable_card',
+                description: '소모품 카드 - 사용 시 현재 점수 +3',
+                price: 4,
+                rarity: 'common',
+                icon: '🎯',
+                effect: function() {
+                    // 소모품 카드 슬롯 확인
+                    if (gameStateManager.state.consumableCards.length >= 2) {
+                        PopupComponent.showMessage('소모품 카드는 최대 2장까지만 보유할 수 있습니다!', 'error');
+                        // 환불
+                        gameStateManager.updateGold(this.price);
+                        return false;
+                    }
+                    
+                    // 소모품 카드 추가
+                    gameStateManager.state.consumableCards.push({
+                        id: 'bonus_pi',
+                        name: '보너스피',
+                        type: 'consumable',
+                        icon: '🎯',
+                        effect: '사용 시 점수 +3',
+                        action: function() {
+                            gameStateManager.updateScore('player', 3);
+                            PopupComponent.showMessage('보너스피 효과 발동! 점수 +3', 'success');
+                        }
+                    });
+                    
+                    PopupComponent.showMessage('보너스피 카드를 획득했습니다!', 'success');
+                    return true;
+                }
+            },
+            {
+                id: 'trash_can_card',
+                name: '쓰레기통 카드',
+                category: 'consumable_card',
+                description: '소모품 카드 - 사용 시 버리기 횟수 +1',
+                price: 3,
+                rarity: 'common',
+                icon: '🗑️',
+                effect: function() {
+                    // 소모품 카드 슬롯 확인
+                    if (gameStateManager.state.consumableCards.length >= 2) {
+                        PopupComponent.showMessage('소모품 카드는 최대 2장까지만 보유할 수 있습니다!', 'error');
+                        // 환불
+                        gameStateManager.updateGold(this.price);
+                        return false;
+                    }
+                    
+                    // 소모품 카드 추가
+                    gameStateManager.state.consumableCards.push({
+                        id: 'trash_can',
+                        name: '쓰레기통',
+                        type: 'consumable',
+                        icon: '🗑️',
+                        effect: '사용 시 버리기 횟수 +1',
+                        action: function() {
+                            gameStateManager.state.discardsRemaining++;
+                            PopupComponent.showMessage('쓰레기통 효과 발동! 버리기 횟수 +1', 'success');
+                        }
+                    });
+                    
+                    PopupComponent.showMessage('쓰레기통 카드를 획득했습니다!', 'success');
+                    return true;
+                }
+            },
             // 보주 (Orbs)
             {
                 id: 'blue_orb',
