@@ -1673,6 +1673,10 @@ function endRound() {
 
 // 미션 결과 표시
 function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 0, interestGold = 0, clearGold = 0, goldEnhancementBonus = 0) {
+    // 승리/패배 효과음 재생
+    const soundEffect = new Audio(success ? 'se/397_win.mp3' : 'se/405_lose.mp3');
+    soundEffect.play().catch(e => console.log('효과음 재생 실패:', e));
+    
     const message = document.createElement('div');
     message.style.cssText = `
         position: fixed;
