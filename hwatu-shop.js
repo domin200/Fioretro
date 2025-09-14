@@ -331,6 +331,10 @@ class ShopManager {
         // 보물만 구매 기록에 추가 (재구매 방지)
         if (item.category === 'treasure') {
             gameStateManager.purchaseItem(itemId);
+            // gameState.upgrades에도 추가하여 아이콘 표시
+            if (typeof gameState !== 'undefined') {
+                gameState.upgrades.push(item);
+            }
         }
 
         // 카드 선택이 필요한 경우

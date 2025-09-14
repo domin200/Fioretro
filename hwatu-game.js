@@ -2828,6 +2828,12 @@ function showUpgradeSelection() {
     
     // play 컨테이너 내용을 상점으로 교체 (소모품 카드 영역과 덱 정보는 유지)
     playContainer.innerHTML = `
+        <div id="upgrades-info">
+            <div id="upgrades-list">
+                <!-- 동적으로 생성됨 -->
+            </div>
+        </div>
+        
         <div class="shop-container" style="width: 100%; height: 100%; display: flex; flex-direction: column; padding: 20px; position: relative;">
             <div class="shop-header" style="text-align: center; margin-bottom: 15px;">
                 <h3 style="color: #ffd700; font-size: 20px; margin: 0;">🏪 주막</h3>
@@ -3108,6 +3114,34 @@ function showUpgradeSelection() {
     
     // 덱 카운트 업데이트
     updateDeckCount();
+    
+    // 업그레이드 표시 업데이트
+    updateUpgradesDisplay();
+}
+
+// 상점 버튼 상태 새로고침
+function refreshShopButtons() {
+    const shopCards = document.querySelectorAll('.upgrade-card');
+    shopCards.forEach(card => {
+        const upgradeId = card.dataset.upgradeId;
+        if (!upgradeId) return;
+        
+        const upgrade = shopUpgrades.find(u => u.id === upgradeId);
+        if (!upgrade) return;
+        
+        // 보물 아이템이고 이미 구매했으면 비활성화
+        if (upgrade.category === 'treasure' && gameStateManager.state.purchasedItems.has(upgradeId)) {
+            card.classList.add('purchased');
+            card.style.opacity = '0.5';
+            card.style.pointerEvents = 'none';
+        }
+        
+        // 구매 가능 여부 체크
+        const canPurchase = shopManager.canPurchase(upgradeId);
+        if (!canPurchase) {
+            card.style.opacity = '0.7';
+        }
+    });
 }
 
 // 덱 카운트 업데이트
@@ -3338,6 +3372,7 @@ function purchaseUpgrade(upgrade, cardElement) {
             updateDisplay();
             updateConsumableCards();  // 소모품 카드 영역 업데이트
             updateDeckCount();  // 덱 카운트 업데이트
+            refreshShopButtons();  // 상점 버튼 상태 업데이트
         }
         return;
     }
