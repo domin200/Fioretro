@@ -5106,7 +5106,7 @@ function showOpening() {
         'new card/12_비광.png', 'new card/12_끗.png', 'new card/12_띠.png', 'new card/12_쌍피.png'
     ];
     
-    // 20개 정도의 카드 생성
+    // 20개 정도의 카드 생성 (일반 회전)
     for (let i = 0; i < 20; i++) {
         const card = document.createElement('img');
         card.src = cardImages[Math.floor(Math.random() * cardImages.length)];
@@ -5134,27 +5134,56 @@ function showOpening() {
         openingContainer.appendChild(card);
     }
     
-    // 오프닝용 타이틀 텍스트 생성 (타이틀 화면과 별개)
-    setTimeout(() => {
-        const openingTitle = document.createElement('h1');
-        openingTitle.textContent = '화라투로';
-        openingTitle.style.cssText = `
-            position: fixed;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            font-family: 'YiSunShin', sans-serif;
-            font-size: 80px;
-            font-weight: bold;
-            color: white;
-            text-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
-            z-index: 10001;
+    // 5개의 Y축 회전(뒤집기) 카드 추가
+    for (let i = 0; i < 5; i++) {
+        const flipCard = document.createElement('div');
+        flipCard.style.cssText = `
+            position: absolute;
+            width: 120px;
+            height: 180px;
+            transform-style: preserve-3d;
             opacity: 0;
-            animation: titleFadeIn 2s ease forwards;
         `;
-        openingTitle.id = 'opening-title';
-        document.body.appendChild(openingTitle);
-    }, 1500);
+        
+        // 앞면 (뒷면 이미지로 시작)
+        const front = document.createElement('img');
+        front.src = 'new card/back.png';
+        front.style.cssText = `
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+        `;
+        
+        // 뒷면 (실제 카드 이미지)
+        const back = document.createElement('img');
+        back.src = cardImages[Math.floor(Math.random() * cardImages.length)];
+        back.style.cssText = `
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            transform: rotateY(180deg);
+        `;
+        
+        flipCard.appendChild(front);
+        flipCard.appendChild(back);
+        
+        // 무작위 딜레이 (0.5 ~ 2.5초 사이)
+        const randomDelay = 0.5 + Math.random() * 2;
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 800 + Math.random() * 400;
+        const startX = Math.cos(angle) * distance;
+        const startY = Math.sin(angle) * distance;
+        
+        flipCard.style.setProperty('--start-x', `${startX}px`);
+        flipCard.style.setProperty('--start-y', `${startY}px`);
+        flipCard.style.animation = `flipAndFly 3s ease-out ${randomDelay}s forwards`;
+        
+        openingContainer.appendChild(flipCard);
+    }
+    
+    // 오프닝용 타이틀 텍스트 제거
     
     // 애니메이션 스타일 추가
     const style = document.createElement('style');
@@ -5164,12 +5193,33 @@ function showOpening() {
                 transform: translate(var(--start-x), var(--start-y)) rotate(0deg) scale(1);  /* 2배 크기에서 시작 (이미 width/height가 2배) */
                 opacity: 0;
             }
-            20% {
+            10% {
                 opacity: 1;
+            }
+            50% {
+                opacity: 0.7;  /* 중간부터 투명해지기 시작 */
             }
             100% {
                 transform: translate(0, 0) rotate(var(--rotation)) scale(0.5);  /* 1배로 축소 (120px -> 60px) */
+                opacity: 0;  /* 중앙에 도착하면서 투명해짐 */
+            }
+        }
+        
+        @keyframes flipAndFly {
+            0% {
+                transform: translate(var(--start-x), var(--start-y)) rotateY(0deg) scale(1);
+                opacity: 0;
+            }
+            10% {
                 opacity: 1;
+            }
+            50% {
+                transform: translate(calc(var(--start-x) * 0.3), calc(var(--start-y) * 0.3)) rotateY(720deg) scale(0.8);
+                opacity: 0.7;  /* 중간부터 투명해지기 시작 */
+            }
+            100% {
+                transform: translate(0, 0) rotateY(1440deg) scale(0.5);
+                opacity: 0;
             }
         }
         
@@ -5195,27 +5245,14 @@ function showOpening() {
     `;
     document.head.appendChild(style);
     
-    // 3초 후 카드와 배경 페이드아웃 (타이틀 텍스트 제외)
+    // 3.5초 후 배경 페이드아웃 (카드는 이미 애니메이션으로 투명해짐)
     setTimeout(() => {
-        // 카드들과 배경 페이드아웃
-        const cards = openingContainer.querySelectorAll('img');
-        cards.forEach(card => {
-            card.style.transition = 'opacity 2s ease';
-            card.style.opacity = '0';
-        });
-        
         // 배경 페이드아웃
         openingContainer.style.transition = 'background 2s ease';
         openingContainer.style.background = 'transparent';
         
         // 2초 후 오프닝 컨테이너 제거
         setTimeout(() => {
-            // 오프닝 타이틀 제거
-            const openingTitle = document.getElementById('opening-title');
-            if (openingTitle) {
-                openingTitle.remove();
-            }
-            
             openingContainer.remove();
             style.remove();
         }, 2000);
