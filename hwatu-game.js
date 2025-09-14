@@ -4718,6 +4718,156 @@ function proceedToNextStage() {
     // updateDisplay는 initGame 내부의 카드 분배 애니메이션에서 호출됨
 }
 
+// 타이틀 화면 표시
+function showTitleScreen() {
+    // 좌측 UI들을 화면 밖으로 이동
+    const capturedSection = document.getElementById('captured-section');
+    const scoreBoard = document.getElementById('score-board');
+    
+    if (capturedSection) {
+        capturedSection.style.transition = 'none';
+        capturedSection.style.transform = 'translateX(-100%)';
+        capturedSection.style.opacity = '0';
+    }
+    
+    if (scoreBoard) {
+        scoreBoard.style.transition = 'none';
+        scoreBoard.style.transform = 'translateX(-100%)';
+        scoreBoard.style.opacity = '0';
+    }
+    
+    // Play 컨테이너를 화면 중앙에 위치
+    const playContainer = document.getElementById('play-container');
+    playContainer.style.display = 'flex';
+    playContainer.style.flexDirection = 'column';
+    playContainer.style.justifyContent = 'center';
+    playContainer.style.alignItems = 'center';
+    playContainer.style.height = '100vh';
+    
+    // 타이틀 화면 내용
+    playContainer.innerHTML = `
+        <div id="title-screen" style="
+            text-align: center;
+            animation: fadeIn 1s ease;
+        ">
+            <h1 style="
+                font-size: 72px;
+                font-weight: bold;
+                margin-bottom: 20px;
+                background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6B6B 100%);
+                -webkit-background-clip: text;
+                -webkit-text-fill-color: transparent;
+                background-clip: text;
+                text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+                animation: titleGlow 2s ease-in-out infinite;
+            ">화라투로</h1>
+            
+            <div style="
+                font-size: 24px;
+                color: rgba(255, 255, 255, 0.8);
+                margin-bottom: 50px;
+                animation: fadeIn 1.5s ease;
+            ">Korean Poker Roguelike</div>
+            
+            <button id="play-button" style="
+                padding: 20px 60px;
+                font-size: 28px;
+                font-weight: bold;
+                background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+                color: white;
+                border: none;
+                border-radius: 50px;
+                cursor: pointer;
+                box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+                transition: all 0.3s ease;
+                animation: fadeIn 2s ease, buttonPulse 2s ease-in-out infinite;
+            " onmouseover="this.style.transform='scale(1.1)'" onmouseout="this.style.transform='scale(1)'">
+                플레이
+            </button>
+        </div>
+        
+        <style>
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            
+            @keyframes titleGlow {
+                0%, 100% { filter: brightness(1) drop-shadow(0 0 20px rgba(255, 215, 0, 0.5)); }
+                50% { filter: brightness(1.2) drop-shadow(0 0 30px rgba(255, 215, 0, 0.8)); }
+            }
+            
+            @keyframes buttonPulse {
+                0%, 100% { box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3); }
+                50% { box-shadow: 0 10px 40px rgba(76, 175, 80, 0.4); }
+            }
+        </style>
+    `;
+    
+    // 플레이 버튼 이벤트
+    document.getElementById('play-button').onclick = startGame;
+}
+
+// 게임 시작 (타이틀에서 전환)
+function startGame() {
+    // 타이틀 화면 페이드아웃
+    const titleScreen = document.getElementById('title-screen');
+    if (titleScreen) {
+        titleScreen.style.transition = 'opacity 0.5s ease';
+        titleScreen.style.opacity = '0';
+    }
+    
+    // 초기 스테이지 값 설정
+    gameState.stage = 1;
+    gameState.targetScore = 25;
+    gameState.discardsLeft = 4;
+    gameState.gold = 0;
+    gameState.upgrades = [];
+    
+    // 게임 시작시 스테이지 1 색상 설정
+    if (typeof updateBackgroundColors === 'function') {
+        updateBackgroundColors(1);
+    }
+    
+    // 게임 초기화
+    initFullGame();
+    
+    // 잠시 후 좌측 UI들을 슬라이드인
+    setTimeout(() => {
+        const capturedSection = document.getElementById('captured-section');
+        const scoreBoard = document.getElementById('score-board');
+        
+        if (capturedSection) {
+            capturedSection.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
+            capturedSection.style.transform = 'translateX(0)';
+            capturedSection.style.opacity = '1';
+        }
+        
+        if (scoreBoard) {
+            scoreBoard.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1) 0.2s, opacity 0.8s ease 0.2s';
+            scoreBoard.style.transform = 'translateX(0)';
+            scoreBoard.style.opacity = '1';
+        }
+        
+        // BGM 시작
+        const gameBGM = document.getElementById('bgm');
+        if (gameBGM) {
+            gameBGM.volume = 0;
+            gameBGM.play().catch(e => console.log('BGM 재생 실패:', e));
+            // 페이드인
+            let volume = 0;
+            const fadeInterval = setInterval(() => {
+                volume += 0.05;
+                if (volume >= 1) {
+                    volume = 1;
+                    clearInterval(fadeInterval);
+                }
+                gameBGM.volume = volume;
+            }, 50);
+        }
+    }, 500);
+}
+
 // 게임 시작
 window.onload = () => {
     // 오디오 초기화
@@ -4730,22 +4880,13 @@ window.onload = () => {
     
     // BGM 초기화
     const gameBGM = document.getElementById('bgm');
-    if (gameBGM) gameBGM.volume = 1;
-    
-    // 초기 스테이지 값 설정 (initFullGame 전에 설정해야 함)
-    gameState.stage = 1;
-    gameState.targetScore = 25;
-    gameState.discardsLeft = 4;
-    gameState.gold = 0;
-    gameState.upgrades = [];  // 초기에는 업그레이드 없음
-    
-    // 게임 시작시 스테이지 1 색상 확실히 설정
-    if (typeof updateBackgroundColors === 'function') {
-        updateBackgroundColors(1);
+    if (gameBGM) {
+        gameBGM.volume = 0;  // 타이틀에서는 음소거
+        gameBGM.pause();
     }
     
-    // 게임 초기화
-    initFullGame();
+    // 타이틀 화면 표시
+    showTitleScreen();
     
     // 테스트용 강화 제거됨
     
