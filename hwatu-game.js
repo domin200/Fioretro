@@ -1549,10 +1549,14 @@ function endRound() {
         const totalEarnedGold = interestGold + goldEnhancementBonus + clearGold;
         
         showMissionResult(true, gameState.totalScore, false, totalEarnedGold, interestGold, clearGold, goldEnhancementBonus);
+        
+        // 소지금 UI 업데이트를 먼저 완료
+        updateDisplay();
+        
         setTimeout(() => {
-            // 업그레이드 선택 팝업 표시
+            // 소지금 계산이 완료된 후 상점 표시
             showUpgradeSelection();
-        }, 2500);
+        }, 3000);
     } else {
         // 두개의 심장 확인
         const twoHeartsIndex = gameState.upgrades.findIndex(u => u.id === 'two_hearts');
