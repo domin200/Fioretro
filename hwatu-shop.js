@@ -635,7 +635,6 @@ class ShopManager {
         
         // 보주 아이템인지 확인 (category가 'orb'인 모든 아이템)
         const isOrbItem = item.category === 'orb';
-        console.log(`Showing popup for ${item.name}, category: ${item.category}, isOrbItem: ${isOrbItem}`);
         
         // 카드 선택 컴포넌트 생성
         CardSelectionComponent.create(cards, {

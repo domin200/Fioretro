@@ -320,7 +320,6 @@ class PopupComponent {
 // 보주 아이템용 카드 선택 컴포넌트
 class OrbCardSelectionComponent {
     static create(cards, options = {}) {
-        console.log('OrbCardSelectionComponent.create called with:', options.title);
         
         const {
             title = '카드 선택',
@@ -594,11 +593,9 @@ class CardSelectionComponent {
     static create(cards, options = {}) {
         // 보주 아이템인 경우 새로운 컴포넌트 사용 (isOrbItem이 명시적으로 true인 경우)
         if (options.isOrbItem === true) {
-            console.log('Using OrbCardSelectionComponent for:', options.title);
             return OrbCardSelectionComponent.create(cards, options);
         }
 
-        console.log('Using default CardSelectionComponent for:', options.title);
         
         const {
             title = '카드 선택',
