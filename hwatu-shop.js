@@ -334,18 +334,32 @@ class ShopManager {
 
     // 카드 선택 처리
     handleCardSelection(item) {
+        console.log('handleCardSelection called for:', item.name, item);
+        
         if (item.requiresRandomHandSelection) {
-            // 무작위 5장 선택
+            // 무작위 5장 선택 (쌍생의 보주)
             const allCards = this.getAllDeckCards();
+            console.log('requiresRandomHandSelection - all cards:', allCards.length);
             const randomCards = ArrayUtils.randomSelect(allCards, 5);
+            console.log('Selected random cards:', randomCards);
             this.showCardSelectionPopup(randomCards, item);
         } else if (item.requiresDeckCard) {
-            // 덱 카드에서 무작위 5장 선택
+            // 덱 카드에서 무작위 5장 선택 (무극의 보주)
             const deckCards = this.getAllDeckCards();
+            console.log('requiresDeckCard - deck cards:', deckCards.length);
             const randomCards = ArrayUtils.randomSelect(deckCards, Math.min(5, deckCards.length));
+            console.log('Selected random cards:', randomCards);
+            this.showCardSelectionPopup(randomCards, item);
+        } else if (item.requiresCardSelection) {
+            // 일반 카드 선택 (강화 보주들)
+            const allCards = this.getAllDeckCards();
+            console.log('requiresCardSelection - all cards:', allCards.length);
+            const randomCards = ArrayUtils.randomSelect(allCards, Math.min(5, allCards.length));
+            console.log('Selected random cards:', randomCards);
             this.showCardSelectionPopup(randomCards, item);
         } else {
             // 현재 패 카드 선택
+            console.log('Using player hand:', gameStateManager.state.playerHand);
             this.showCardSelectionPopup(gameStateManager.state.playerHand, item);
         }
         return true;
@@ -353,10 +367,12 @@ class ShopManager {
 
     // 모든 덱 카드 가져오기
     getAllDeckCards() {
-        // HWATU_CARDS가 전역에 없으면 gameState.deck 사용
         let allCards = [];
         
-        if (typeof HWATU_CARDS !== 'undefined') {
+        // window.HWATU_CARDS 확인 (hwatu-game.js에서 정의)
+        if (typeof window.HWATU_CARDS !== 'undefined') {
+            allCards = [...window.HWATU_CARDS];
+        } else if (typeof HWATU_CARDS !== 'undefined') {
             allCards = [...HWATU_CARDS];
         } else if (typeof gameState !== 'undefined' && gameState.deck) {
             // gameState.deck와 hand, floor, captures에서 모든 카드 수집
@@ -368,6 +384,12 @@ class ShopManager {
                 ...gameState.opponentHand,
                 ...gameState.opponentCaptures
             ];
+        }
+        
+        // 카드가 없으면 에러 로그
+        if (allCards.length === 0) {
+            console.error('getAllDeckCards: No cards found!');
+            return [];
         }
         
         // 제거된 카드 필터링
@@ -615,6 +637,16 @@ class ShopManager {
 
     // 카드 선택 팝업 표시
     showCardSelectionPopup(cards, item) {
+        console.log('showCardSelectionPopup - cards to show:', cards.length, cards);
+        console.log('showCardSelectionPopup - item:', item);
+        
+        // 카드가 없으면 에러
+        if (!cards || cards.length === 0) {
+            console.error('No cards to show in selection popup!');
+            PopupComponent.showMessage('카드를 불러올 수 없습니다.', 'error');
+            return;
+        }
+        
         // 보주 아이템용 새로운 컴포넌트 사용
         CardSelectionComponent.create(cards, {
             title: item.name,
