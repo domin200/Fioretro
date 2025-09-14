@@ -235,7 +235,8 @@ const gameState = {
     discardsLeft: 4,    // 남은 버리기 횟수
     upgrades: [],        // 획득한 업그레이드 목록
     shownCombinations: new Set(),  // 이미 표시한 족보 추적
-    reincarnatedCards: 0  // 윤회로 덱으로 돌아간 카드 수
+    reincarnatedCards: 0,  // 윤회로 덱으로 돌아간 카드 수
+    stageEnded: false  // 스테이지 종료 여부
 };
 
 
@@ -270,6 +271,7 @@ function initGame() {
     gameState.selectedCard = null;
     gameState.shownCombinations = new Set();  // 족보 표시 초기화
     gameState.reincarnatedCards = 0;  // 윤회 카운터 초기화
+    gameState.stageEnded = false;  // 스테이지 종료 플래그 초기화
     
     // 버리기 횟수 계산 (기본 4 + 업그레이드)
     const extraDiscards = gameState.upgrades.filter(u => u.id === 'extra_discard').length;
@@ -345,6 +347,12 @@ function shuffleDeck() {
 
 // 카드 선택
 function selectHandCard(index) {
+    // 스테이지가 종료되었으면 선택 불가
+    if (gameState.stageEnded) {
+        console.log('Stage has ended, cannot select cards');
+        return;
+    }
+    
     // 모든 카드에서 selected 클래스 제거 및 스타일 초기화
     document.querySelectorAll('.card.selected').forEach(card => {
         card.classList.remove('selected');
@@ -373,13 +381,17 @@ function selectHandCard(index) {
     }
     
     // 버튼 상태만 업데이트
-    document.getElementById('play-btn').disabled = gameState.selectedCard === null;
-    document.getElementById('discard-btn').disabled = gameState.selectedCard === null || gameState.discardsLeft <= 0;
+    document.getElementById('play-btn').disabled = gameState.selectedCard === null || gameState.stageEnded;
+    document.getElementById('discard-btn').disabled = gameState.selectedCard === null || gameState.discardsLeft <= 0 || gameState.stageEnded;
 }
 
 // 카드를 바닥에 내기
 function playCard() {
     if (gameState.selectedCard === null) return;
+    if (gameState.stageEnded) {
+        console.log('Stage has ended, cannot play cards');
+        return;
+    }
     
     // 애니메이션을 위해 선택된 카드 엘리먼트 가져오기
     const handArea = document.getElementById('hand-area');
@@ -445,6 +457,8 @@ function playCard() {
             // 바닥 슬롯이 5개 차면 라운드 종료 (같은 월은 1슬롯으로 계산)
             const floorSlots = getFloorSlotCount();
             if (floorSlots >= 5) {
+                // 스테이지 종료 설정
+                gameState.stageEnded = true;
                 setTimeout(() => {
                     calculateScore();  // 최종 점수 계산
                     endRound();  // 라운드 종료 및 스테이지 진행
@@ -561,6 +575,10 @@ function captureCard(card) {
 // 선택한 카드 버리기
 function discardCards() {
     if (gameState.selectedCard === null) return;
+    if (gameState.stageEnded) {
+        console.log('Stage has ended, cannot discard cards');
+        return;
+    }
     if (gameState.discardsLeft <= 0) {
         alert('더 이상 버리기를 사용할 수 없습니다!');
         return;
@@ -1353,12 +1371,17 @@ function showScoreCalculationMessage() {
 function checkRoundEnd() {
     // 덱이 비거나 손패가 비면 라운드 종료
     if (gameState.deck.length === 0 || gameState.hand.length === 0) {
+        // 스테이지 종료 설정
+        gameState.stageEnded = true;
         endRound();
     }
 }
 
 // 라운드 종료
 function endRound() {
+    // 스테이지 종료 설정
+    gameState.stageEnded = true;
+    
     if (gameState.totalScore >= gameState.targetScore) {
         // 미션 성공
         showMissionResult(true, gameState.totalScore);
@@ -1686,8 +1709,8 @@ function updateDisplay() {
     });
     
     // 버튼 상태
-    document.getElementById('play-btn').disabled = gameState.selectedCard === null;
-    document.getElementById('discard-btn').disabled = gameState.selectedCard === null || gameState.discardsLeft <= 0;
+    document.getElementById('play-btn').disabled = gameState.selectedCard === null || gameState.stageEnded;
+    document.getElementById('discard-btn').disabled = gameState.selectedCard === null || gameState.discardsLeft <= 0 || gameState.stageEnded;
 }
 
 // 카드 엘리먼트 생성
