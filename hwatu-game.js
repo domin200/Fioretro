@@ -1566,7 +1566,7 @@ function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 
         </div>
         ${success && earnedGold > 0 ? 
             `<div style="font-size: 24px; margin-top: 15px; color: #ffd700;">
-                <span style="font-weight: bold;">+${earnedGold} G</span> 획득!
+                <span style="font-weight: bold;">+${earnedGold}</span> 획득!
             </div>` : ''}
         ${success ? 
             `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">다음 스테이지로 진행합니다!</div>` : 
