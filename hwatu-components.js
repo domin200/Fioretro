@@ -386,6 +386,32 @@ class CardSelectionComponent {
         let selectedCard = null;
         let selectedWrapper = null;
 
+        // 적용 버튼 먼저 생성 (나중에 참조하기 위해)
+        const applyBtn = DOMUtils.createElement('button', {
+            id: 'apply-btn',
+            textContent: '적용',
+            disabled: true,
+            style: {
+                padding: '10px 30px',
+                background: 'linear-gradient(135deg, #666 0%, #444 100%)',
+                color: '#999',
+                border: 'none',
+                borderRadius: '5px',
+                fontSize: '16px',
+                fontWeight: 'bold',
+                cursor: 'not-allowed',
+                transition: 'all 0.3s ease'
+            }
+        });
+
+        // 적용 버튼 클릭 이벤트
+        applyBtn.onclick = () => {
+            if (selectedCard && onSelect) {
+                onSelect(selectedCard);
+                overlay.remove();
+            }
+        };
+
         // 카드 생성
         displayCards.forEach(card => {
             const cardWrapper = DOMUtils.createElement('div', {
@@ -439,20 +465,26 @@ class CardSelectionComponent {
             cardWrapper.onclick = () => {
                 // 이전 선택 해제
                 if (selectedWrapper) {
-                    selectedWrapper.style.border = '';
-                    selectedWrapper.style.boxShadow = '';
                     selectedWrapper.style.transform = '';
+                    const prevCard = selectedWrapper.querySelector('.card');
+                    if (prevCard) {
+                        prevCard.style.border = '';
+                        prevCard.style.boxShadow = '';
+                    }
                 }
                 
                 // 새 카드 선택
                 selectedCard = card;
                 selectedWrapper = cardWrapper;
-                cardWrapper.style.border = '3px solid #ffd700';
-                cardWrapper.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.8)';
                 cardWrapper.style.transform = 'scale(1.1)';
                 
+                // 카드 엘리먼트에 테두리 적용
+                if (cardElement) {
+                    cardElement.style.border = '3px solid #ffd700';
+                    cardElement.style.boxShadow = '0 0 20px rgba(255, 215, 0, 0.8)';
+                }
+                
                 // 적용 버튼 활성화
-                const applyBtn = container.querySelector('#apply-btn');
                 if (applyBtn) {
                     applyBtn.disabled = false;
                     applyBtn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
@@ -473,30 +505,7 @@ class CardSelectionComponent {
             }
         });
 
-        // 적용 버튼 (항상 표시, 초기에는 비활성화)
-        const applyBtn = DOMUtils.createElement('button', {
-            id: 'apply-btn',
-            textContent: '적용',
-            disabled: true,
-            style: {
-                padding: '10px 30px',
-                background: 'linear-gradient(135deg, #666 0%, #444 100%)',
-                color: '#999',
-                border: 'none',
-                borderRadius: '5px',
-                fontSize: '16px',
-                fontWeight: 'bold',
-                cursor: 'not-allowed',
-                transition: 'all 0.3s ease'
-            },
-            onclick: () => {
-                if (selectedCard && onSelect) {
-                    onSelect(selectedCard);
-                    overlay.remove();
-                }
-            }
-        });
-
+        // 적용 버튼 추가
         buttonArea.appendChild(applyBtn);
 
         // 조립
