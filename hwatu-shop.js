@@ -46,7 +46,7 @@ class ShopManager {
                 rarity: 'rare',
                 icon: '🌸',
                 effect: function() {
-                    shopManager.addSeasonalCard([1, 2, 3], '봄');
+                    this.addSeasonalCard([1, 2, 3], '봄');
                 }
             },
             {
@@ -58,7 +58,7 @@ class ShopManager {
                 rarity: 'rare',
                 icon: '☀️',
                 effect: function() {
-                    shopManager.addSeasonalCard([4, 5, 6], '여름');
+                    this.addSeasonalCard([4, 5, 6], '여름');
                 }
             },
             {
@@ -70,7 +70,7 @@ class ShopManager {
                 rarity: 'rare',
                 icon: '🍁',
                 effect: function() {
-                    shopManager.addSeasonalCard([7, 8, 9], '가을');
+                    this.addSeasonalCard([7, 8, 9], '가을');
                 }
             },
             {
@@ -82,7 +82,7 @@ class ShopManager {
                 rarity: 'rare',
                 icon: '❄️',
                 effect: function() {
-                    shopManager.addSeasonalCard([10, 11, 12], '겨울');
+                    this.addSeasonalCard([10, 11, 12], '겨울');
                 }
             },
             // 소모품 카드 (Consumable Cards)
@@ -313,7 +313,14 @@ class ShopManager {
 
         // 즉시 효과 적용
         if (item.effect) {
-            item.effect();
+            const result = item.effect.call(this);
+            // 소모품 카드가 슬롯이 꽉 차서 실패한 경우
+            if (result === false) {
+                // 구매 취소 처리
+                gameStateManager.updateGold(item.price);
+                gameStateManager.state.purchasedItems.delete(itemId);
+                return false;
+            }
         }
 
         return true;
