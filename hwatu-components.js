@@ -282,10 +282,10 @@ class PopupComponent {
     }
 
     static showMessage(message, type = 'info', duration = 3000) {
-        // 기존 메시지 팝업이 있으면 제거
-        const existingPopup = document.querySelector('.message-popup');
-        if (existingPopup) {
-            existingPopup.remove();
+        // 기존 메시지 팝업 컨테이너가 있으면 제거
+        const existingContainer = document.querySelector('.message-popup-container');
+        if (existingContainer) {
+            existingContainer.remove();
         }
         
         const colors = {
@@ -295,31 +295,44 @@ class PopupComponent {
             error: '#F44336'
         };
 
-        const messageDiv = DOMUtils.createElement('div', {
-            className: `message-popup message-${type}`,
+        // 컨테이너 생성 (위치 고정용)
+        const container = DOMUtils.createElement('div', {
+            className: 'message-popup-container',
             style: {
                 position: 'fixed',
                 top: '20px',
-                left: '50%',
-                transform: 'translateX(-50%)',
+                left: '0',
+                right: '0',
+                width: '100%',
+                display: 'flex',
+                justifyContent: 'center',
+                zIndex: 99999,
+                pointerEvents: 'none'
+            }
+        });
+
+        const messageDiv = DOMUtils.createElement('div', {
+            className: `message-popup message-${type}`,
+            style: {
                 background: colors[type],
                 color: 'white',
                 padding: '15px 30px',
                 borderRadius: '10px',
                 boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
-                zIndex: 10001,
-                animation: 'slideDown 0.3s ease'
+                animation: 'slideDown 0.3s ease',
+                display: 'inline-block'
             },
             textContent: message
         });
 
-        document.body.appendChild(messageDiv);
+        container.appendChild(messageDiv);
+        document.body.appendChild(container);
 
         setTimeout(() => {
             messageDiv.style.animation = 'slideUp 0.3s ease';
             setTimeout(() => {
-                if (messageDiv && messageDiv.parentNode) {
-                    messageDiv.remove();
+                if (container && container.parentNode) {
+                    container.remove();
                 }
             }, 300);
         }, duration);
