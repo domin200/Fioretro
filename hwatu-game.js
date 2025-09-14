@@ -252,23 +252,36 @@ const gameState = {
 };
 
 
-// 게임 초기화
-function initGame() {
+// 전체 게임 초기화 (게임 시작 또는 실패 후 재시작)
+function initFullGame() {
     // 덱 준비 및 섞기
     gameState.deck = [...HWATU_CARDS];
+    gameState.removedCards = [];  // 제거된 카드 목록 초기화
+    gameState.duplicatedCards = [];  // 복제된 카드 목록 초기화
+    gameState.cardEnhancements = {};  // 카드 강화 초기화
+    
+    initStage();
+}
+
+// 스테이지 초기화 (매 스테이지마다)
+function initStage() {
+    // 현재 덱 준비 (제거/복제 카드 반영)
+    const tempDeck = [...HWATU_CARDS];
     
     // 제거된 카드 처리
     if (gameState.removedCards && gameState.removedCards.length > 0) {
-        gameState.deck = gameState.deck.filter(card => !gameState.removedCards.includes(card.id));
+        gameState.deck = tempDeck.filter(card => !gameState.removedCards.includes(card.id));
+    } else {
+        gameState.deck = tempDeck;
     }
     
     // 복제된 카드 추가
     if (gameState.duplicatedCards && gameState.duplicatedCards.length > 0) {
-        gameState.duplicatedCards.forEach(cardId => {
+        gameState.duplicatedCards.forEach((cardId, index) => {
             const originalCard = HWATU_CARDS.find(c => c.id === cardId);
             if (originalCard) {
                 // 복제 카드 생성 (ID는 다르게 설정)
-                const duplicatedCard = {...originalCard, id: cardId + '_dup_' + Date.now()};
+                const duplicatedCard = {...originalCard, id: cardId + '_dup_' + index};
                 gameState.deck.push(duplicatedCard);
             }
         });
@@ -283,6 +296,13 @@ function initGame() {
     }
     
     shuffleDeck();
+    
+    // 스테이지 설정 초기화 계속
+    initGame();
+}
+
+// 게임 초기화
+function initGame() {
     
     // 상태 초기화
     gameState.hand = [];
@@ -1566,7 +1586,7 @@ function endRound() {
                 // 업그레이드 초기화
                 gameState.upgrades = [];
                 
-                initGame();
+                initFullGame();
                 
                 // initGame 후에 스테이지 값 설정
                 gameState.stage = 1;
@@ -3498,7 +3518,7 @@ function proceedToNextStage() {
         updateBackgroundColors(nextStage);
     }
     
-    initGame();
+    initStage();
     
     // 스테이지 값 업데이트
     gameState.stage = nextStage;
@@ -3515,7 +3535,7 @@ window.onload = () => {
     if (typeof updateBackgroundColors === 'function') {
         updateBackgroundColors(1);
     }
-    initGame();
+    initFullGame();
     
     // 테스트용 카드 강화 적용
     testEnhancements();
