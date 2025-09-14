@@ -4967,26 +4967,30 @@ function startGame() {
             updateBackgroundColors(1);
         }
         
+        // 중앙 위치 유지하면서 컨테이너 스타일만 변경
+        playContainer.style.transition = 'none';
+        playContainer.style.display = '';
+        playContainer.style.flexDirection = '';
+        playContainer.style.justifyContent = '';
+        playContainer.style.alignItems = '';
+        
         // HTML 설정 후 위치 애니메이션 (중앙에서 오른쪽으로만 이동)
         setTimeout(() => {
-            playContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            playContainer.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
             
-            // 스타일 초기화 (원래 위치로)
-            playContainer.style.position = '';
-            playContainer.style.left = '';
-            playContainer.style.top = '';
-            playContainer.style.transform = '';
-            playContainer.style.width = '';
-            playContainer.style.display = '';
-            playContainer.style.flexDirection = '';
-            playContainer.style.justifyContent = '';
-            playContainer.style.alignItems = '';
-            playContainer.style.height = '';
+            // 중앙에서 오른쪽으로 이동 (transform만 변경)
+            playContainer.style.transform = 'translateX(0)';
             
-            // 트랜지션 완료 후 제거
+            // 애니메이션 완료 후 스타일 정리
             setTimeout(() => {
                 playContainer.style.transition = '';
-            }, 1000);
+                playContainer.style.position = '';
+                playContainer.style.left = '';
+                playContainer.style.top = '';
+                playContainer.style.transform = '';
+                playContainer.style.width = '';
+                playContainer.style.height = '';
+            }, 850);
         }, 50);
         
         // 잠시 후 좌측 UI들을 슬라이드인
