@@ -247,7 +247,8 @@ const gameState = {
     reincarnatedCards: 0,  // 윤회로 덱으로 돌아간 카드 수
     stageEnded: false,  // 스테이지 종료 여부
     cardEnhancements: {},  // 카드 강화 정보 {cardId: 'blue'|'red'|'white'|'black'|'gold'}
-    gold: 0  // 소지금
+    gold: 0,  // 소지금
+    redEnhancementBonus: 0  // 적 강화로 인한 추가 배수 (스테이지당 누적)
 };
 
 
@@ -276,8 +277,9 @@ function initGame() {
         '피': []
     };
     gameState.score = 0;
-    gameState.multiplier = 1;  // 매 스테이지마다 배수 초기화 (적 강화 효과 리셋)
+    gameState.multiplier = 1;
     gameState.totalScore = 0;
+    gameState.redEnhancementBonus = 0;  // 적 강화 보너스 초기화
     gameState.turn = 0;
     gameState.selectedCard = null;
     gameState.shownCombinations = new Set();  // 족보 표시 초기화
@@ -667,9 +669,9 @@ function discardCards() {
     cardsToDiscard.forEach(card => {
         const enhancement = gameState.cardEnhancements[card.id];
         if (enhancement === '적') {
-            gameState.multiplier += 0.5;
+            gameState.redEnhancementBonus += 0.5;
             redEnhancementActivated = true;
-            console.log(`Red enhancement activated! Multiplier +0.5 (Total: ${gameState.multiplier})`);
+            console.log(`Red enhancement activated! Bonus +0.5 (Total bonus: ${gameState.redEnhancementBonus})`);
         }
     });
     
@@ -1150,8 +1152,8 @@ function calculateScore() {
     const baseMultiplierUpgrades = gameState.upgrades.filter(u => u.id === 'base_multiplier').length;
     multiplier += baseMultiplierUpgrades * 0.5;  // 각 기본 배수 업그레이드당 +0.5
     
-    // 적 강화로 인한 추가 배수는 gameState.multiplier에 이미 누적되어 있음
-    // calculateScore가 매번 호출되므로 중복 적용하지 않도록 주의
+    // 적 강화로 인한 추가 배수 적용
+    multiplier += gameState.redEnhancementBonus;
     
     // 특수 조합 배수 추가
     const gwangCount = cardsByType['광'].length;
@@ -1318,15 +1320,10 @@ function calculateScore() {
         }
     }
     
-    // 적 강화로 인한 추가 배수 적용
-    // gameState.multiplier에는 적 강화로 추가된 배수가 누적되어 있음 (초기값 1)
-    // 이번 턴에 계산된 multiplier와 합산
-    const finalMultiplier = multiplier + (gameState.multiplier - 1);
-    
     // 최종 점수 = 점수 × 배수
     gameState.score = points;
-    gameState.multiplier = finalMultiplier;
-    gameState.totalScore = points * finalMultiplier;
+    gameState.multiplier = multiplier;
+    gameState.totalScore = points * multiplier;
     
     // 달성한 족보 애니메이션 표시 (순차적으로)
     achievedCombinations.forEach((combination, index) => {
@@ -2686,7 +2683,7 @@ function showUpgradeSelection() {
         `;
         
         if (canAfford) {
-            card.onclick = () => purchaseUpgrade(upgrade, card);
+            card.onclick = () => showPurchaseTooltip(upgrade, card);
         }
         
         choicesContainer.appendChild(card);
@@ -2694,6 +2691,121 @@ function showUpgradeSelection() {
     
     // 팝업 표시
     popup.style.display = 'flex';
+}
+
+// 구매 툴팁 표시
+function showPurchaseTooltip(upgrade, cardElement) {
+    // 기존 툴팁 제거
+    hidePurchaseTooltip();
+    
+    // 카드 위치 가져오기
+    const rect = cardElement.getBoundingClientRect();
+    
+    // 툴팁 생성
+    const tooltip = document.createElement('div');
+    tooltip.id = 'purchase-tooltip';
+    tooltip.style.cssText = `
+        position: fixed;
+        background: linear-gradient(135deg, rgba(0, 0, 0, 0.95) 0%, rgba(20, 20, 20, 0.95) 100%);
+        border: 2px solid #ffd700;
+        border-radius: 10px;
+        padding: 15px;
+        z-index: 10000;
+        min-width: 200px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+        animation: fadeIn 0.2s ease;
+    `;
+    
+    tooltip.innerHTML = `
+        <div style="text-align: center; margin-bottom: 10px;">
+            <div style="font-size: 18px; font-weight: bold; color: #ffd700; margin-bottom: 5px;">
+                ${upgrade.name}
+            </div>
+            <div style="font-size: 14px; color: #fff; opacity: 0.9; margin-bottom: 10px;">
+                ${upgrade.description}
+            </div>
+            <div style="font-size: 16px; color: #ffd700;">
+                가격: ${upgrade.price}
+            </div>
+        </div>
+        <button onclick="confirmPurchase('${upgrade.id}')" style="
+            width: 100%;
+            padding: 10px;
+            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+            color: white;
+            border: none;
+            border-radius: 5px;
+            font-size: 16px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+            구매하기
+        </button>
+    `;
+    
+    document.body.appendChild(tooltip);
+    
+    // 위치 설정 (카드 위에 표시)
+    const left = rect.left + rect.width / 2 - 100;
+    const top = rect.top - tooltip.offsetHeight - 10;
+    
+    // 화면 벗어남 방지
+    const adjustedLeft = Math.max(10, Math.min(left, window.innerWidth - tooltip.offsetWidth - 10));
+    const adjustedTop = top < 10 ? rect.bottom + 10 : top;
+    
+    tooltip.style.left = adjustedLeft + 'px';
+    tooltip.style.top = adjustedTop + 'px';
+    
+    // 카드 클릭 이벤트 임시 변경 (툴팁 닫기)
+    cardElement.onclick = hidePurchaseTooltip;
+    
+    // 다른 곳 클릭 시 툴팁 닫기
+    setTimeout(() => {
+        document.addEventListener('click', hidePurchaseTooltipOnClickOutside);
+    }, 100);
+}
+
+// 구매 툴팁 숨기기
+function hidePurchaseTooltip() {
+    const tooltip = document.getElementById('purchase-tooltip');
+    if (tooltip) {
+        tooltip.remove();
+    }
+    
+    // 이벤트 리스너 제거
+    document.removeEventListener('click', hidePurchaseTooltipOnClickOutside);
+    
+    // 카드 클릭 이벤트 복원
+    const cards = document.querySelectorAll('.upgrade-card');
+    cards.forEach(card => {
+        if (card.classList.contains('purchased') || card.classList.contains('cant-afford')) return;
+        
+        const upgradeId = card.dataset.upgradeId;
+        const upgrade = shopUpgrades.find(u => u.id === upgradeId);
+        if (upgrade && gameState.gold >= upgrade.price) {
+            card.onclick = () => showPurchaseTooltip(upgrade, card);
+        }
+    });
+}
+
+// 툴팁 외부 클릭 시 닫기
+function hidePurchaseTooltipOnClickOutside(event) {
+    const tooltip = document.getElementById('purchase-tooltip');
+    if (tooltip && !tooltip.contains(event.target)) {
+        hidePurchaseTooltip();
+    }
+}
+
+// 구매 확인
+function confirmPurchase(upgradeId) {
+    const upgrade = shopUpgrades.find(u => u.id === upgradeId);
+    const cardElement = document.querySelector(`[data-upgrade-id="${upgradeId}"]`);
+    
+    if (upgrade && cardElement) {
+        hidePurchaseTooltip();
+        purchaseUpgrade(upgrade, cardElement);
+    }
 }
 
 // 업그레이드 구매
@@ -2752,7 +2864,7 @@ function updateShopAffordability() {
             card.onclick = null;
         } else {
             card.classList.remove('cant-afford');
-            card.onclick = () => purchaseUpgrade(upgrade, card);
+            card.onclick = () => showPurchaseTooltip(upgrade, card);
         }
     });
 }
