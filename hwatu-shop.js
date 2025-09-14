@@ -266,6 +266,89 @@ class ShopManager {
                     return true;
                 }
             },
+            {
+                id: 'sunrise_card',
+                name: '해돋이 카드',
+                category: 'consumable_card',
+                description: '소모품 카드 - 손패의 무작위 카드 1장을 광 카드로 변환',
+                price: 8,
+                rarity: 'epic',
+                icon: '🌅',
+                effect: function() {
+                    // 소모품 카드 슬롯 확인
+                    if (gameStateManager.state.consumableCards.length >= 2) {
+                        PopupComponent.showMessage('소모품 카드는 최대 2장까지만 보유할 수 있습니다!', 'error');
+                        // 환불
+                        gameStateManager.updateGold(this.price);
+                        return false;
+                    }
+                    
+                    // 소모품 카드 추가
+                    const sunriseCard = {
+                        id: 'sunrise',
+                        name: '해돋이',
+                        type: 'consumable',
+                        icon: '🌅',
+                        effect: '손패 1장을 광으로 변환',
+                        action: function() {
+                            if (typeof gameState !== 'undefined' && gameState.hand.length > 0) {
+                                // 무작위 손패 선택
+                                const randomHandIndex = Math.floor(Math.random() * gameState.hand.length);
+                                const oldCard = gameState.hand[randomHandIndex];
+                                
+                                // 사용 가능한 광 카드 목록 (1, 3, 8, 11, 12월)
+                                const gwangCards = [
+                                    { month: 1, type: '광', name: '송학', points: 20 },
+                                    { month: 3, type: '광', name: '벚꽃', points: 20 },
+                                    { month: 8, type: '광', name: '공산명월', points: 20 },
+                                    { month: 11, type: '광', name: '오동', points: 20 },
+                                    { month: 12, type: '광', name: '비', points: 10 }
+                                ];
+                                
+                                // 현재 손패와 바닥에 있는 광 카드 확인
+                                const existingGwang = [...gameState.hand, ...gameState.floor]
+                                    .filter(c => c.type === '광')
+                                    .map(c => c.month);
+                                
+                                // 아직 없는 광 카드만 선택 가능
+                                const availableGwang = gwangCards.filter(g => !existingGwang.includes(g.month));
+                                
+                                if (availableGwang.length === 0) {
+                                    // 모든 광 카드가 이미 있으면 중복 허용
+                                    availableGwang.push(...gwangCards);
+                                }
+                                
+                                // 무작위 광 카드 선택
+                                const newGwang = availableGwang[Math.floor(Math.random() * availableGwang.length)];
+                                
+                                // 카드 교체
+                                gameState.hand[randomHandIndex] = {
+                                    id: `${newGwang.month}-gwang`,
+                                    month: newGwang.month,
+                                    type: '광',
+                                    name: newGwang.name,
+                                    points: newGwang.points
+                                };
+                                
+                                // 화면 업데이트
+                                updateDisplay();
+                                
+                                PopupComponent.showMessage(`해돋이 효과 발동! ${oldCard.month}월 ${oldCard.type}이(가) ${newGwang.month}월 광(${newGwang.name})으로 변환!`, 'success');
+                            } else {
+                                PopupComponent.showMessage('손패에 카드가 없습니다!', 'warning');
+                            }
+                        }
+                    };
+                    gameStateManager.state.consumableCards.push(sunriseCard);
+                    // gameState에도 동기화
+                    if (typeof gameState !== 'undefined') {
+                        gameState.consumableCards.push(sunriseCard);
+                    }
+                    
+                    PopupComponent.showMessage('해돋이 카드를 획득했습니다!', 'success');
+                    return true;
+                }
+            },
             // 보주 (Orbs)
             {
                 id: 'blue_orb',
