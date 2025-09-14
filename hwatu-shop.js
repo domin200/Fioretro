@@ -137,7 +137,19 @@ class ShopManager {
                 requiresRandomHandSelection: true,
                 effect: (card) => {
                     gameStateManager.duplicateCard(card.id);
-                    PopupComponent.showMessage(`${card.name}가 복제되어 덱에 추가되었습니다!`, 'success');
+                    
+                    // 원본 카드의 강화 효과도 복제
+                    const originalEnhancement = gameStateManager.state.cardEnhancements[card.id];
+                    if (originalEnhancement) {
+                        // 복제된 카드의 ID 생성 (원본과 동일한 ID를 사용)
+                        gameStateManager.state.cardEnhancements[card.id] = originalEnhancement;
+                        PopupComponent.showMessage(
+                            `${card.name}가 ${originalEnhancement} 강화 효과와 함께 복제되었습니다!`, 
+                            'success'
+                        );
+                    } else {
+                        PopupComponent.showMessage(`${card.name}가 복제되어 덱에 추가되었습니다!`, 'success');
+                    }
                 }
             }
         ];
