@@ -316,6 +316,131 @@ class PopupComponent {
     }
 }
 
+// 카드 선택 컴포넌트
+class CardSelectionComponent {
+    static create(cards, options = {}) {
+        const {
+            title = '카드 선택',
+            description = '카드를 선택하세요',
+            onSelect = null,
+            onCancel = null,
+            maxCards = 5,
+            showEnhancement = true
+        } = options;
+
+        // 최대 카드 수 제한
+        const displayCards = cards.slice(0, maxCards);
+
+        // 오버레이 생성
+        const overlay = DOMUtils.createElement('div', {
+            style: {
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'rgba(0, 0, 0, 0.8)',
+                zIndex: 10000,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                animation: 'fadeIn 0.3s ease'
+            }
+        });
+
+        // 컨테이너 생성
+        const container = DOMUtils.createElement('div', {
+            style: {
+                background: 'linear-gradient(135deg, #1e3c72 0%, #2a5298 100%)',
+                borderRadius: '20px',
+                padding: '30px',
+                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+                maxWidth: '800px',
+                width: '90%'
+            }
+        });
+
+        // 헤더
+        const header = DOMUtils.createElement('div', {
+            style: {
+                textAlign: 'center',
+                marginBottom: '20px'
+            },
+            innerHTML: `
+                <h2 style="color: #ffd700; margin: 0 0 10px 0; font-size: 24px;">${title}</h2>
+                <p style="color: #fff; margin: 0; opacity: 0.9;">${description}</p>
+            `
+        });
+
+        // 카드 그리드
+        const grid = DOMUtils.createElement('div', {
+            style: {
+                display: 'grid',
+                gridTemplateColumns: `repeat(${Math.min(displayCards.length, 5)}, 1fr)`,
+                gap: '15px',
+                marginBottom: '20px'
+            }
+        });
+
+        // 카드 생성
+        displayCards.forEach(card => {
+            const cardWrapper = DOMUtils.createElement('div', {
+                className: 'selectable-card-wrapper',
+                style: {
+                    cursor: 'pointer',
+                    transition: 'transform 0.3s ease',
+                    position: 'relative'
+                }
+            });
+
+            // CardComponent를 사용하여 카드 생성
+            const cardElement = CardComponent.create(card, { 
+                size: 'medium', 
+                showEnhancement: showEnhancement 
+            });
+            
+            cardWrapper.appendChild(cardElement);
+
+            // 호버 효과
+            cardWrapper.onmouseenter = () => {
+                cardWrapper.style.transform = 'translateY(-10px) scale(1.05)';
+            };
+            cardWrapper.onmouseleave = () => {
+                cardWrapper.style.transform = '';
+            };
+
+            // 클릭 이벤트
+            cardWrapper.onclick = () => {
+                if (onSelect) {
+                    onSelect(card);
+                }
+                overlay.remove();
+            };
+
+            grid.appendChild(cardWrapper);
+        });
+
+        // 버튼 영역 (취소 버튼 제거)
+        const buttonArea = DOMUtils.createElement('div', {
+            style: {
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '10px'
+            }
+        });
+
+        // 조립
+        container.appendChild(header);
+        container.appendChild(grid);
+        container.appendChild(buttonArea);
+        overlay.appendChild(container);
+
+        document.body.appendChild(overlay);
+
+        return overlay;
+    }
+}
+
 // 툴팁 컴포넌트
 class TooltipComponent {
     static create(targetElement, content, options = {}) {

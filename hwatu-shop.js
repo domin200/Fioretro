@@ -517,42 +517,15 @@ class ShopManager {
 
     // 카드 선택 팝업 표시
     showCardSelectionPopup(cards, item) {
-        const content = `
-            <div class="card-selection-container">
-                <p style="color: #ffd700; margin-bottom: 20px;">${item.description}</p>
-                <div class="card-grid" style="display: grid; grid-template-columns: repeat(auto-fit, minmax(100px, 1fr)); gap: 10px;">
-                    ${cards.map(card => `
-                        <div class="selectable-card" data-card-id="${card.id}" 
-                             style="cursor: pointer; transition: transform 0.3s;">
-                            ${CardComponent.create(card, { size: 'small', showEnhancement: true }).outerHTML}
-                        </div>
-                    `).join('')}
-                </div>
-            </div>
-        `;
-
-        const popup = PopupComponent.create('카드 선택', content, {
-            buttons: [
-                {
-                    text: '취소',
-                    type: 'danger',
-                    onClick: () => {
-                        gameStateManager.updateGold(item.price); // 환불
-                        gameStateManager.state.purchasedItems.delete(item.id);
-                        PopupComponent.showMessage('구매가 취소되었습니다.', 'info');
-                    }
-                }
-            ]
-        });
-
-        // 카드 클릭 이벤트
-        popup.querySelectorAll('.selectable-card').forEach(cardDiv => {
-            cardDiv.onclick = () => {
-                const cardId = cardDiv.dataset.cardId;
-                const selectedCard = cards.find(c => c.id === cardId);
-                
+        // 새로운 CardSelectionComponent 사용
+        CardSelectionComponent.create(cards, {
+            title: item.name,
+            description: item.description,
+            maxCards: 5,
+            showEnhancement: true,
+            onSelect: (selectedCard) => {
                 if (item.enhancementType) {
-                    gameStateManager.applyEnhancement(cardId, item.enhancementType);
+                    gameStateManager.applyEnhancement(selectedCard.id, item.enhancementType);
                     PopupComponent.showMessage(
                         `${selectedCard.name}에 ${item.enhancementType} 강화가 부여되었습니다!`, 
                         'success'
@@ -561,8 +534,17 @@ class ShopManager {
                     item.effect(selectedCard);
                 }
                 
-                popup.remove();
-            };
+                // 상점 UI 업데이트
+                if (typeof updateDeckCount === 'function') {
+                    updateDeckCount();
+                }
+                if (typeof updateConsumableCards === 'function') {
+                    updateConsumableCards();
+                }
+            },
+            onCancel: () => {
+                // 취소 기능 제거 - 환불 없음
+            }
         });
     }
 }

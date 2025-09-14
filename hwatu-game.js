@@ -3351,23 +3351,27 @@ function showCardEnhancementSelection(upgrade, shopCardElement) {
         return;
     }
     
-    // 최대 5장 선택
-    const cardsToShow = [];
-    const numCards = Math.min(5, availableCards.length);
-    const selectedIndices = new Set();
+    // 무작위 5장 선택
+    const shuffled = availableCards.sort(() => Math.random() - 0.5);
+    const cardsToShow = shuffled.slice(0, Math.min(5, availableCards.length));
     
-    while (cardsToShow.length < numCards) {
-        const index = Math.floor(Math.random() * availableCards.length);
-        if (!selectedIndices.has(index)) {
-            selectedIndices.add(index);
-            cardsToShow.push(availableCards[index]);
+    // CardSelectionComponent 사용
+    CardSelectionComponent.create(cardsToShow, {
+        title: '강화할 카드 선택',
+        description: `${upgrade.name} - ${upgrade.enhanceType === 'random' ? '무작위' : upgrade.enhanceType} 강화`,
+        showEnhancement: true,
+        onSelect: (selectedCard) => {
+            applyEnhancementToCard(selectedCard.id, upgrade, shopCardElement, null);
+            updateDeckCount();
+        },
+        onCancel: () => {
+            // 취소 기능 제거 - 환불 없음
         }
-    }
+    });
     
-    // 선택된 카드 추적
-    let selectedCardId = null;
+    return;
     
-    // 선택 화면 생성
+    // 이하 기존 코드 (사용하지 않음)
     const selectionOverlay = document.createElement('div');
     selectionOverlay.id = 'enhancement-selection-overlay';
     selectionOverlay.style.cssText = `
