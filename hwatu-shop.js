@@ -95,10 +95,6 @@ class ShopManager {
                         }
                     };
                     gameStateManager.state.consumableCards.push(bonusCard);
-                    // gameState에도 동기화
-                    if (typeof gameState !== 'undefined') {
-                        gameState.consumableCards.push(bonusCard);
-                    }
                     
                     PopupComponent.showMessage('보너스피 카드를 획득했습니다!', 'success');
                     return true;
@@ -141,10 +137,6 @@ class ShopManager {
                         }
                     };
                     gameStateManager.state.consumableCards.push(trashCard);
-                    // gameState에도 동기화
-                    if (typeof gameState !== 'undefined') {
-                        gameState.consumableCards.push(trashCard);
-                    }
                     
                     PopupComponent.showMessage('쓰레기통 카드를 획득했습니다!', 'success');
                     return true;
@@ -194,10 +186,6 @@ class ShopManager {
                         }
                     };
                     gameStateManager.state.consumableCards.push(bombCard);
-                    // gameState에도 동기화
-                    if (typeof gameState !== 'undefined') {
-                        gameState.consumableCards.push(bombCard);
-                    }
                     
                     PopupComponent.showMessage('폭탄 카드를 획득했습니다!', 'success');
                     return true;
@@ -257,10 +245,6 @@ class ShopManager {
                         }
                     };
                     gameStateManager.state.consumableCards.push(flipCard);
-                    // gameState에도 동기화
-                    if (typeof gameState !== 'undefined') {
-                        gameState.consumableCards.push(flipCard);
-                    }
                     
                     PopupComponent.showMessage('판엎기 카드를 획득했습니다!', 'success');
                     return true;
@@ -340,10 +324,6 @@ class ShopManager {
                         }
                     };
                     gameStateManager.state.consumableCards.push(sunriseCard);
-                    // gameState에도 동기화
-                    if (typeof gameState !== 'undefined') {
-                        gameState.consumableCards.push(sunriseCard);
-                    }
                     
                     PopupComponent.showMessage('해돋이 카드를 획득했습니다!', 'success');
                     return true;
