@@ -4720,10 +4720,14 @@ function proceedToNextStage() {
 
 // 타이틀 화면 표시
 function showTitleScreen() {
-    // 좌측 UI들의 width를 0으로 설정
     const capturedArea = document.getElementById('captured-area');
     const scoreBoard = document.getElementById('score-board');
     
+    // 좌측 UI의 실제 너비를 먼저 계산 (0으로 설정하기 전에)
+    const capturedAreaOriginalWidth = capturedArea ? capturedArea.getBoundingClientRect().width : 180;
+    const leftShift = capturedAreaOriginalWidth / 2;
+    
+    // 좌측 UI들의 width를 0으로 설정
     if (capturedArea) {
         capturedArea.style.transition = 'none';
         capturedArea.style.width = '0';
@@ -4738,6 +4742,13 @@ function showTitleScreen() {
         scoreBoard.style.minWidth = '0';
         scoreBoard.style.overflow = 'hidden';
         scoreBoard.style.opacity = '0';
+    }
+    
+    // 전체 게임 컨테이너를 왼쪽으로 이동 (좌측 UI 너비의 50%만큼)
+    const gameContainer = document.getElementById('game-container');
+    if (gameContainer) {
+        gameContainer.style.transform = `translateX(-${leftShift}px)`;
+        gameContainer.style.transition = 'none';
     }
     
     // Play 컨테이너를 화면 정중앙에 위치 (왼쪽 UI 공간 없이)
@@ -4971,8 +4982,15 @@ function startGame() {
         
         // 게임 시작 애니메이션
         setTimeout(() => {
+            const gameContainer = document.getElementById('game-container');
             const capturedArea = document.getElementById('captured-area');
             const scoreBoard = document.getElementById('score-board');
+            
+            // 게임 컨테이너를 원위치로 복원
+            if (gameContainer) {
+                gameContainer.style.transition = 'transform 2s cubic-bezier(0.4, 0, 0.2, 1)';
+                gameContainer.style.transform = 'translateX(0)';
+            }
             
             // 좌측 UI들 width를 서서히 원래대로 복원 (2초)
             if (capturedArea) {
@@ -5001,6 +5019,10 @@ function startGame() {
             // 애니메이션 완료 후 트랜지션 제거 (2초 후)
             setTimeout(() => {
                 playContainer.style.transition = '';
+                if (gameContainer) {
+                    gameContainer.style.transition = '';
+                    gameContainer.style.transform = '';
+                }
                 if (capturedArea) {
                     capturedArea.style.transition = '';
                     capturedArea.style.overflow = '';
