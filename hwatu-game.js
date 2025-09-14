@@ -474,8 +474,8 @@ function updateButtonStates() {
     // 선택된 것이 있는지 확인 (손패 카드 또는 소모품 카드)
     const hasSelection = gameState.selectedCard !== null || gameState.selectedConsumable !== null;
     
-    // 바닥에 내기 버튼
-    playBtn.disabled = !hasSelection || gameState.stageEnded;
+    // 바닥에 내기 버튼 (바닥에 5개 이상 카드가 있으면 비활성화)
+    playBtn.disabled = !hasSelection || gameState.stageEnded || gameState.floor.length >= 5;
     
     // 버리기 버튼 - 소모품 카드는 버릴 수 없고, 손패 카드만 버리기 가능
     if (gameState.selectedConsumable !== null) {
@@ -499,6 +499,12 @@ function playCard() {
     if (gameState.selectedCard === null) return;
     if (gameState.stageEnded) {
         console.log('Stage has ended, cannot play cards');
+        return;
+    }
+    
+    // 바닥에 5개 이상 카드가 있으면 플레이 불가
+    if (gameState.floor.length >= 5) {
+        console.log('Cannot play card: floor already has 5 or more cards');
         return;
     }
     
@@ -1977,8 +1983,8 @@ function updateDisplay() {
         }
     });
     
-    // 버튼 상태
-    document.getElementById('play-btn').disabled = gameState.selectedCard === null || gameState.stageEnded;
+    // 버튼 상태 (바닥에 5개 이상 카드가 있으면 비활성화)
+    document.getElementById('play-btn').disabled = gameState.selectedCard === null || gameState.stageEnded || gameState.floor.length >= 5;
     // 호랑이굴 효과 확인
     const hasTigerCave = gameState.upgrades.some(u => u.id === 'tiger_cave');
     const tigerCaveBlock = hasTigerCave && gameState.turn === 0;
