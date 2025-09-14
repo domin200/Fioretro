@@ -4623,20 +4623,20 @@ window.onload = () => {
     const gameBGM = document.getElementById('bgm');
     if (gameBGM) gameBGM.volume = 1;
     
-    // 게임 시작시 스테이지 1 색상 확실히 설정
-    if (typeof updateBackgroundColors === 'function') {
-        updateBackgroundColors(1);
-    }
-    initFullGame();
-    
-    // 초기 스테이지 값 설정
+    // 초기 스테이지 값 설정 (initFullGame 전에 설정해야 함)
     gameState.stage = 1;
     gameState.targetScore = 25;
     gameState.discardsLeft = 4;
     gameState.gold = 0;
+    gameState.upgrades = [];  // 초기에는 업그레이드 없음
     
-    // 화면 업데이트
-    updateDisplay();
+    // 게임 시작시 스테이지 1 색상 확실히 설정
+    if (typeof updateBackgroundColors === 'function') {
+        updateBackgroundColors(1);
+    }
+    
+    // 게임 초기화
+    initFullGame();
     
     // 테스트용 강화 제거됨
     
