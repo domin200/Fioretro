@@ -3831,24 +3831,9 @@ window.onload = () => {
     }
     initFullGame();
     
-    // 테스트용 카드 강화 적용
-    testEnhancements();
+    // 테스트용 강화 제거됨
     
     // 업그레이드 확인 버튼 이벤트
     document.getElementById('confirm-upgrade').onclick = confirmUpgrade;
 };
 
-// 테스트용 강화 함수
-function testEnhancements() {
-    // 랜덤으로 몇 개 카드에 강화 적용
-    enhanceCard(1, '청');  // 1월 광
-    enhanceCard(5, '적');  // 2월 열끗
-    enhanceCard(10, '백'); // 3월 광
-    enhanceCard(15, '흑'); // 4월 피
-    enhanceCard(20, '황'); // 5월 피
-    enhanceCard(25, '청'); // 7월 열끗
-    enhanceCard(30, '적'); // 8월 열끗
-    enhanceCard(35, '백'); // 9월 피
-    enhanceCard(40, '흑'); // 10월 피
-    enhanceCard(45, '황'); // 12월 광
-}
