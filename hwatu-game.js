@@ -4751,6 +4751,9 @@ function showTitleScreen() {
     playContainer.style.justifyContent = 'center';
     playContainer.style.alignItems = 'center';
     
+    // 타이틀 화면에서 배경 투명도 2배로 (0.08 -> 0.16)
+    playContainer.style.background = 'rgba(0, 255, 0, 0.16)';
+    
     // 타이틀 화면 내용
     playContainer.innerHTML = `
         <div id="title-screen" style="
@@ -4973,14 +4976,15 @@ function startGame() {
             const capturedArea = document.getElementById('captured-area');
             const scoreBoard = document.getElementById('score-board');
             
-            // Grid 열 크기를 서서히 원래대로 복원
+            // Grid 열 크기를 서서히 원래대로 복원 (2초)
             if (mainLayout) {
-                mainLayout.style.transition = 'grid-template-columns 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                mainLayout.style.transition = 'grid-template-columns 2s cubic-bezier(0.4, 0, 0.2, 1)';
                 mainLayout.style.gridTemplateColumns = '';  // CSS 기본값으로 복원
             }
             
-            // Play 컨테이너 스타일 초기화
+            // Play 컨테이너 스타일 초기화 및 배경 투명도 원래대로
             playContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            playContainer.style.background = '';  // CSS 기본값(0.08)으로 복원
             playContainer.style.flex = '';
             playContainer.style.display = '';
             playContainer.style.flexDirection = '';
@@ -4998,7 +5002,7 @@ function startGame() {
                 scoreBoard.style.opacity = '1';
             }
             
-            // 애니메이션 완료 후 트랜지션 제거
+            // 애니메이션 완료 후 트랜지션 제거 (2초 후)
             setTimeout(() => {
                 playContainer.style.transition = '';
                 if (mainLayout) {
@@ -5012,7 +5016,7 @@ function startGame() {
                     scoreBoard.style.transition = '';
                     scoreBoard.style.overflow = '';
                 }
-            }, 850);
+            }, 2100);
         }, 50);
         
         // 게임 초기화 타이밍 조정
