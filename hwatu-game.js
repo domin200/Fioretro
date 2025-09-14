@@ -4742,7 +4742,8 @@ function showTitleScreen() {
     playContainer.style.flexDirection = 'column';
     playContainer.style.justifyContent = 'center';
     playContainer.style.alignItems = 'center';
-    playContainer.style.height = '100vh';
+    playContainer.style.height = 'auto';
+    playContainer.style.minHeight = '400px';
     
     // 타이틀 화면 내용
     playContainer.innerHTML = `
@@ -4751,9 +4752,9 @@ function showTitleScreen() {
             animation: fadeIn 1s ease;
         ">
             <h1 style="
-                font-size: 72px;
+                font-size: 56px;
                 font-weight: bold;
-                margin-bottom: 20px;
+                margin-bottom: 15px;
                 background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6B6B 100%);
                 -webkit-background-clip: text;
                 -webkit-text-fill-color: transparent;
@@ -4763,15 +4764,15 @@ function showTitleScreen() {
             ">화라투로</h1>
             
             <div style="
-                font-size: 24px;
+                font-size: 20px;
                 color: rgba(255, 255, 255, 0.8);
-                margin-bottom: 50px;
+                margin-bottom: 35px;
                 animation: fadeIn 1.5s ease;
             ">Korean Poker Roguelike</div>
             
             <button id="play-button" style="
-                padding: 20px 60px;
-                font-size: 28px;
+                padding: 15px 50px;
+                font-size: 24px;
                 font-weight: bold;
                 background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
                 color: white;
