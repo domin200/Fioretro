@@ -4967,9 +4967,6 @@ function startGame() {
             updateBackgroundColors(1);
         }
         
-        // 게임 초기화
-        initFullGame();
-        
         // HTML 설정 후 위치 애니메이션 (중앙에서 오른쪽으로만 이동)
         setTimeout(() => {
             playContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -5010,6 +5007,12 @@ function startGame() {
                     scoreBoard.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
                     scoreBoard.style.transform = 'translateX(0)';
                     scoreBoard.style.opacity = '1';
+                    
+                    // 모든 UI 애니메이션이 완료된 후 게임 초기화 (점수판 애니메이션 완료 후)
+                    setTimeout(() => {
+                        // 게임 초기화 및 카드 배분
+                        initFullGame();
+                    }, 800);  // 점수판 애니메이션이 끝난 후
                 }, 200);
             }
             
