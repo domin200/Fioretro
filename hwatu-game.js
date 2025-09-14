@@ -4976,10 +4976,10 @@ function startGame() {
         
         // HTML 설정 후 위치 애니메이션 (중앙에서 오른쪽으로만 이동)
         setTimeout(() => {
-            playContainer.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            playContainer.style.transition = 'left 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
             
-            // 중앙에서 오른쪽으로 이동 (transform만 변경)
-            playContainer.style.transform = 'translateX(0)';
+            // 중앙에서 게임 위치로 이동 (좌측 UI 공간 확보)
+            playContainer.style.left = 'calc(50% + 150px)';  // 우측으로 150px 이동
             
             // 애니메이션 완료 후 스타일 정리
             setTimeout(() => {
