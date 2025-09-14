@@ -9,33 +9,6 @@ class ShopManager {
 
     initializeItems() {
         return [
-            // 보물 (Treasures)
-            {
-                id: 'hand_size',
-                name: '황금 파우치',
-                category: 'treasure',
-                description: '핸드 크기 +2',
-                price: 15,
-                rarity: 'legendary',
-                icon: '👛',
-                effect: () => {
-                    gameStateManager.state.handSize += 2;
-                    PopupComponent.showMessage('핸드 크기가 2 증가했습니다!', 'success');
-                }
-            },
-            {
-                id: 'target_score',
-                name: '은빛 목표',
-                category: 'treasure',
-                description: '목표 점수 -5',
-                price: 12,
-                rarity: 'epic',
-                icon: '🎯',
-                effect: () => {
-                    gameStateManager.state.targetScore = Math.max(10, gameStateManager.state.targetScore - 5);
-                    PopupComponent.showMessage('목표 점수가 5 감소했습니다!', 'success');
-                }
-            },
             // 계절 패 (Seasonal Cards - Consumables)
             {
                 id: 'spring_pack',
