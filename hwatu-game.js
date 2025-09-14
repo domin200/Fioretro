@@ -1201,27 +1201,14 @@ function calculateScore() {
     const chodan = dan.filter(c => c.type === '초단').length;
     
     // 광 배수 (원래 점수만큼 배수 적용)
-    if (gwangCount >= 7) {
-        // 7광 이상: 6광의 10배에서 광 하나당 2배씩 증가
-        multiplier *= 10 * Math.pow(2, gwangCount - 6);
-        if (!gameState.shownCombinations.has(`${gwangCount}광`)) {
-            achievedCombinations.push(`${gwangCount}광!`);
-            gameState.shownCombinations.add(`${gwangCount}광`);
-        }
-    } else if (gwangCount === 6) {
-        multiplier *= 10;  // 육광 (10배)
-        if (!gameState.shownCombinations.has('육광')) {
-            achievedCombinations.push('육광!');
-            gameState.shownCombinations.add('육광');
-        }
-    } else if (gwangCount === 5) {
-        multiplier *= 5;  // 오광 (5배)
+    if (gwangCount === 5) {
+        multiplier *= 15;  // 오광 (원래 15점)
         if (!gameState.shownCombinations.has('오광')) {
             achievedCombinations.push('오광!');
             gameState.shownCombinations.add('오광');
         }
     } else if (gwangCount === 4) {
-        multiplier *= 4;  // 사광 (원래 4점)
+        multiplier *= 10;  // 사광 (원래 10점)
         if (!gameState.shownCombinations.has('사광')) {
             achievedCombinations.push('사광!');
             gameState.shownCombinations.add('사광');
@@ -1229,13 +1216,13 @@ function calculateScore() {
     } else if (gwangCount === 3) {
         const hasRain = cardsByType['광'].some(c => c.month === 12);
         if (hasRain) {
-            multiplier *= 2;  // 비광삼광(2점)
+            multiplier *= 5;  // 비광 (원래 5점)
             if (!gameState.shownCombinations.has('비광')) {
                 achievedCombinations.push('비광!');
                 gameState.shownCombinations.add('비광');
             }
         } else {
-            multiplier *= 3;  // 삼광(3점)
+            multiplier *= 5;  // 삼광 (원래 5점)
             if (!gameState.shownCombinations.has('삼광')) {
                 achievedCombinations.push('삼광!');
                 gameState.shownCombinations.add('삼광');
