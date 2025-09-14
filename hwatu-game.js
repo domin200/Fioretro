@@ -4741,34 +4741,15 @@ function showTitleScreen() {
     // Play 컨테이너를 화면 정중앙에 위치 (왼쪽 UI 공간 없이)
     const playContainer = document.getElementById('play-container');
     
-    // 원래 게임 스타일 저장
-    const originalStyles = {
-        background: playContainer.style.background,
-        padding: playContainer.style.padding,
-        borderRadius: playContainer.style.borderRadius,
-        border: playContainer.style.border,
-        backdropFilter: playContainer.style.backdropFilter
-    };
-    
-    // 타이틀 화면용 스타일 설정
-    playContainer.style.display = 'flex';
-    playContainer.style.flexDirection = 'column';
-    playContainer.style.justifyContent = 'center';
-    playContainer.style.alignItems = 'center';
+    // 타이틀 화면용 스타일 설정 - 기존 박스 스타일 유지하면서 중앙 배치
     playContainer.style.position = 'absolute';
     playContainer.style.left = '50%';
     playContainer.style.top = '50%';
     playContainer.style.transform = 'translate(-50%, -50%)';
-    playContainer.style.width = 'auto';
-    playContainer.style.height = 'auto';
-    playContainer.style.minWidth = '600px';
-    playContainer.style.minHeight = '400px';
-    
-    // 타이틀용 임시 스타일
-    playContainer.style.background = 'transparent';
-    playContainer.style.padding = '40px';
-    playContainer.style.border = 'none';
-    playContainer.style.backdropFilter = 'none';
+    playContainer.style.display = 'flex';
+    playContainer.style.flexDirection = 'column';
+    playContainer.style.justifyContent = 'center';
+    playContainer.style.alignItems = 'center';
     
     // 타이틀 화면 내용
     playContainer.innerHTML = `
@@ -4986,35 +4967,25 @@ function startGame() {
             updateBackgroundColors(1);
         }
         
-        // 게임 스타일 복원 준비
-        playContainer.style.transition = 'none';
-        
-        // HTML 설정 후 위치 애니메이션 (중앙에서 오른쪽으로만 이동)
+        // 게임 시작 애니메이션 - 중앙에서 우측으로 이동
         setTimeout(() => {
-            // 게임 스타일 적용
-            playContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            playContainer.style.transition = 'left 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
             
-            // 모든 스타일 초기화 (CSS 기본값으로 복원)
-            playContainer.style.position = '';
-            playContainer.style.left = '';
-            playContainer.style.top = '';
-            playContainer.style.transform = '';
-            playContainer.style.width = '';
-            playContainer.style.height = '';
-            playContainer.style.minWidth = '';
-            playContainer.style.minHeight = '';
-            playContainer.style.display = '';
-            playContainer.style.flexDirection = '';
-            playContainer.style.justifyContent = '';
-            playContainer.style.alignItems = '';
-            playContainer.style.background = '';
-            playContainer.style.padding = '';
-            playContainer.style.border = '';
-            playContainer.style.backdropFilter = '';
+            // 중앙에서 우측으로 이동 (좌측 UI 공간 확보)
+            playContainer.style.left = 'calc(50% + 120px)';
             
-            // 애니메이션 완료 후 트랜지션 제거
+            // 애니메이션 완료 후 원래 스타일로 복원
             setTimeout(() => {
                 playContainer.style.transition = '';
+                // 모든 인라인 스타일 제거하여 CSS 기본값 적용
+                playContainer.style.position = '';
+                playContainer.style.left = '';
+                playContainer.style.top = '';
+                playContainer.style.transform = '';
+                playContainer.style.display = '';
+                playContainer.style.flexDirection = '';
+                playContainer.style.justifyContent = '';
+                playContainer.style.alignItems = '';
             }, 850);
         }, 50);
         
