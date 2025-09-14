@@ -15,7 +15,7 @@ class ShopManager {
                 name: '봄의 패',
                 category: 'consumable',
                 description: '1~3월 패 중 무작위 한 장을 덱에 추가',
-                price: 5,
+                price: 3,
                 rarity: 'rare',
                 icon: '🌸',
                 effect: function() {
@@ -27,7 +27,7 @@ class ShopManager {
                 name: '여름의 패',
                 category: 'consumable',
                 description: '4~6월 패 중 무작위 한 장을 덱에 추가',
-                price: 5,
+                price: 3,
                 rarity: 'rare',
                 icon: '☀️',
                 effect: function() {
@@ -39,7 +39,7 @@ class ShopManager {
                 name: '가을의 패',
                 category: 'consumable',
                 description: '7~9월 패 중 무작위 한 장을 덱에 추가',
-                price: 5,
+                price: 3,
                 rarity: 'rare',
                 icon: '🍁',
                 effect: function() {
@@ -51,7 +51,7 @@ class ShopManager {
                 name: '겨울의 패',
                 category: 'consumable',
                 description: '10~12월 패 중 무작위 한 장을 덱에 추가',
-                price: 5,
+                price: 3,
                 rarity: 'rare',
                 icon: '❄️',
                 effect: function() {
