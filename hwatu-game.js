@@ -139,14 +139,7 @@ function playSound(soundFile) {
     }
 }
 
-// 카드 강화 타입 정의
-const ENHANCEMENT_TYPES = {
-    BLUE: { name: '청', color: '#00bfff', rgb: '0, 191, 255', effect: '점수 +1' },
-    RED: { name: '적', color: '#ff4444', rgb: '255, 68, 68', effect: '버려질 때 배수 +0.5' },
-    WHITE: { name: '백', color: '#ffffff', rgb: '255, 255, 255', effect: '바닥에 있을 때 점수 +2' },
-    BLACK: { name: '흑', color: '#8b00ff', rgb: '139, 0, 255', effect: '핸드에 있을 때 점수 +2' },
-    GOLD: { name: '황', color: '#ffd700', rgb: '255, 215, 0', effect: '스테이지 종료 시 소지금 +1' }
-};
+// 카드 강화 타입은 hwatu-config.js에서 가져옴
 
 // 화투 카드 정의 (48장)
 const HWATU_CARDS = [
