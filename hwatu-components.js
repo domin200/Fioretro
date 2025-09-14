@@ -295,44 +295,33 @@ class PopupComponent {
             error: '#F44336'
         };
 
-        // 컨테이너 생성 (위치 고정용)
-        const container = DOMUtils.createElement('div', {
-            className: 'message-popup-container',
+        // 메시지 div를 직접 body에 추가 (컨테이너 없이)
+        const messageDiv = DOMUtils.createElement('div', {
+            className: `message-popup-container message-${type}`,
             style: {
                 position: 'fixed',
                 top: '20px',
-                left: '0',
-                right: '0',
-                width: '100%',
-                display: 'flex',
-                justifyContent: 'center',
-                zIndex: 99999,
-                pointerEvents: 'none'
-            }
-        });
-
-        const messageDiv = DOMUtils.createElement('div', {
-            className: `message-popup message-${type}`,
-            style: {
+                left: '50%',
+                transform: 'translateX(-50%)',
                 background: colors[type],
                 color: 'white',
                 padding: '15px 30px',
                 borderRadius: '10px',
                 boxShadow: '0 5px 15px rgba(0,0,0,0.3)',
-                animation: 'slideDown 0.3s ease',
-                display: 'inline-block'
+                zIndex: 99999,
+                pointerEvents: 'none',
+                animation: 'slideDown 0.3s ease forwards'
             },
             textContent: message
         });
 
-        container.appendChild(messageDiv);
-        document.body.appendChild(container);
+        document.body.appendChild(messageDiv);
 
         setTimeout(() => {
-            messageDiv.style.animation = 'slideUp 0.3s ease';
+            messageDiv.style.animation = 'slideUp 0.3s ease forwards';
             setTimeout(() => {
-                if (container && container.parentNode) {
-                    container.remove();
+                if (messageDiv && messageDiv.parentNode) {
+                    messageDiv.remove();
                 }
             }, 300);
         }, duration);

@@ -908,14 +908,25 @@
             to { opacity: 1; }
         }
         
-        @keyframes slideUp {
+        @keyframes slideDown {
             from { 
-                transform: translateY(50px);
+                transform: translateY(-20px);
                 opacity: 0;
             }
             to { 
                 transform: translateY(0);
                 opacity: 1;
+            }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+            to { 
+                transform: translateY(-20px);
+                opacity: 0;
             }
         }
         
