@@ -299,9 +299,24 @@ class ShopManager {
     // 아이템 구매 가능 여부
     canPurchase(itemId) {
         const item = this.items.find(i => i.id === itemId);
-        return item && 
-               gameStateManager.state.gold >= item.price && 
-               !gameStateManager.state.purchasedItems.has(itemId);
+        if (!item) return false;
+        
+        // 소지금 체크
+        if (gameStateManager.state.gold < item.price) return false;
+        
+        // 보물(treasure)만 1회 구매 제한
+        // 소모품(consumable)과 보주(orb)는 여러 번 구매 가능
+        if (item.category === 'treasure') {
+            return !gameStateManager.state.purchasedItems.has(itemId);
+        }
+        
+        // 소모품은 슬롯 체크 (최대 2개)
+        if (item.category === 'consumable') {
+            return gameStateManager.state.consumableCards.length < 2;
+        }
+        
+        // 보주는 제한 없음
+        return true;
     }
 
     // 아이템 구매 처리
@@ -310,7 +325,11 @@ class ShopManager {
         if (!item || !this.canPurchase(itemId)) return false;
 
         gameStateManager.updateGold(-item.price);
-        gameStateManager.purchaseItem(itemId);
+        
+        // 보물만 구매 기록에 추가 (재구매 방지)
+        if (item.category === 'treasure') {
+            gameStateManager.purchaseItem(itemId);
+        }
 
         // 카드 선택이 필요한 경우
         if (item.requiresCardSelection || item.requiresDeckCard || item.requiresRandomHandSelection) {
@@ -324,7 +343,9 @@ class ShopManager {
             if (result === false) {
                 // 구매 취소 처리
                 gameStateManager.updateGold(item.price);
-                gameStateManager.state.purchasedItems.delete(itemId);
+                if (item.category === 'treasure') {
+                    gameStateManager.state.purchasedItems.delete(itemId);
+                }
                 return false;
             }
         }
