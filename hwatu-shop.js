@@ -334,32 +334,23 @@ class ShopManager {
 
     // 카드 선택 처리
     handleCardSelection(item) {
-        console.log('handleCardSelection called for:', item.name, item);
-        
         if (item.requiresRandomHandSelection) {
             // 무작위 5장 선택 (쌍생의 보주)
             const allCards = this.getAllDeckCards();
-            console.log('requiresRandomHandSelection - all cards:', allCards.length);
             const randomCards = ArrayUtils.randomSelect(allCards, 5);
-            console.log('Selected random cards:', randomCards);
             this.showCardSelectionPopup(randomCards, item);
         } else if (item.requiresDeckCard) {
             // 덱 카드에서 무작위 5장 선택 (무극의 보주)
             const deckCards = this.getAllDeckCards();
-            console.log('requiresDeckCard - deck cards:', deckCards.length);
             const randomCards = ArrayUtils.randomSelect(deckCards, Math.min(5, deckCards.length));
-            console.log('Selected random cards:', randomCards);
             this.showCardSelectionPopup(randomCards, item);
         } else if (item.requiresCardSelection) {
             // 일반 카드 선택 (강화 보주들)
             const allCards = this.getAllDeckCards();
-            console.log('requiresCardSelection - all cards:', allCards.length);
             const randomCards = ArrayUtils.randomSelect(allCards, Math.min(5, allCards.length));
-            console.log('Selected random cards:', randomCards);
             this.showCardSelectionPopup(randomCards, item);
         } else {
             // 현재 패 카드 선택
-            console.log('Using player hand:', gameStateManager.state.playerHand);
             this.showCardSelectionPopup(gameStateManager.state.playerHand, item);
         }
         return true;
@@ -386,9 +377,8 @@ class ShopManager {
             ];
         }
         
-        // 카드가 없으면 에러 로그
+        // 카드가 없으면 빈 배열 반환
         if (allCards.length === 0) {
-            console.error('getAllDeckCards: No cards found!');
             return [];
         }
         
@@ -637,23 +627,19 @@ class ShopManager {
 
     // 카드 선택 팝업 표시
     showCardSelectionPopup(cards, item) {
-        console.log('showCardSelectionPopup - cards to show:', cards.length, cards);
-        console.log('showCardSelectionPopup - item:', item);
-        
         // 카드가 없으면 에러
         if (!cards || cards.length === 0) {
-            console.error('No cards to show in selection popup!');
             PopupComponent.showMessage('카드를 불러올 수 없습니다.', 'error');
             return;
         }
         
-        // 보주 아이템용 새로운 컴포넌트 사용
+        // 모든 보주 아이템은 새로운 OrbCardSelectionComponent 사용
         CardSelectionComponent.create(cards, {
             title: item.name,
             description: item.description,
             maxCards: 5,
             showEnhancement: true,
-            isOrbItem: item.category === 'orb',  // 보주 아이템 플래그
+            isOrbItem: true,  // 모든 보주는 새로운 UI 사용
             itemIcon: item.icon || '',  // 아이템 아이콘 전달
             onSelect: (selectedCard) => {
                 if (item.enhancementType) {
