@@ -936,11 +936,26 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(ellipse at center, 
-                        rgba(0, 191, 255, 0.15) 0%, 
-                        transparent 70%);
+            background: linear-gradient(135deg, 
+                        rgba(0, 191, 255, 0.25) 0%, 
+                        rgba(0, 191, 255, 0.1) 30%,
+                        transparent 60%);
             border-radius: inherit;
             animation: enhancedPulse 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .card.enhanced-청::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at top left, 
+                        rgba(0, 191, 255, 0.2) 0%, 
+                        transparent 50%);
+            border-radius: inherit;
             pointer-events: none;
         }
         
@@ -958,11 +973,26 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(ellipse at center, 
-                        rgba(255, 68, 68, 0.15) 0%, 
-                        transparent 70%);
+            background: linear-gradient(135deg, 
+                        rgba(255, 68, 68, 0.25) 0%, 
+                        rgba(255, 68, 68, 0.1) 30%,
+                        transparent 60%);
             border-radius: inherit;
             animation: enhancedPulse 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .card.enhanced-적::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at top left, 
+                        rgba(255, 68, 68, 0.2) 0%, 
+                        transparent 50%);
+            border-radius: inherit;
             pointer-events: none;
         }
         
@@ -980,11 +1010,27 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(ellipse at center, 
-                        rgba(255, 255, 255, 0.2) 0%, 
-                        transparent 70%);
+            background: linear-gradient(135deg, 
+                        rgba(255, 255, 255, 0.3) 0%, 
+                        rgba(255, 255, 255, 0.15) 30%,
+                        rgba(255, 255, 255, 0.05) 60%,
+                        transparent 100%);
             border-radius: inherit;
             animation: enhancedPulse 2s ease-in-out infinite;
+            pointer-events: none;
+        }
+        
+        .card.enhanced-백::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at top left, 
+                        rgba(255, 255, 255, 0.25) 0%, 
+                        transparent 50%);
+            border-radius: inherit;
             pointer-events: none;
         }
         
@@ -1002,12 +1048,48 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(ellipse at center, 
-                        rgba(139, 0, 255, 0.15) 0%, 
-                        transparent 70%);
-            border-radius: inherit;
-            animation: enhancedPulse 2s ease-in-out infinite;
+            background: linear-gradient(
+                135deg,
+                rgba(139, 0, 255, 0.3) 0%,
+                rgba(139, 0, 255, 0.1) 50%,
+                rgba(139, 0, 255, 0.3) 100%
+            );
             pointer-events: none;
+            border-radius: inherit;
+            animation: blackGradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes blackGradientShift {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+
+        .card.enhanced-흑::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(
+                circle at center,
+                rgba(139, 0, 255, 0.4) 0%,
+                transparent 70%
+            );
+            pointer-events: none;
+            animation: blackPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes blackPulse {
+            0%, 100% { 
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.3;
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 0.6;
+            }
         }
         
         .card.enhanced-황 {
@@ -1024,12 +1106,61 @@
             left: 0;
             right: 0;
             bottom: 0;
-            background: radial-gradient(ellipse at center, 
-                        rgba(255, 215, 0, 0.15) 0%, 
-                        transparent 70%);
-            border-radius: inherit;
-            animation: enhancedPulse 2s ease-in-out infinite;
+            background: linear-gradient(
+                45deg,
+                rgba(255, 215, 0, 0.4) 0%,
+                rgba(255, 255, 100, 0.2) 25%,
+                rgba(255, 215, 0, 0.4) 50%,
+                rgba(255, 255, 100, 0.2) 75%,
+                rgba(255, 215, 0, 0.4) 100%
+            );
             pointer-events: none;
+            border-radius: inherit;
+            animation: goldShimmer 2.5s linear infinite;
+        }
+
+        @keyframes goldShimmer {
+            0% { 
+                background-position: 0% 50%;
+                opacity: 0.6;
+            }
+            50% {
+                background-position: 100% 50%;
+                opacity: 0.9;
+            }
+            100% { 
+                background-position: 0% 50%;
+                opacity: 0.6;
+            }
+        }
+
+        .card.enhanced-황::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120%;
+            height: 120%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(
+                circle at center,
+                rgba(255, 215, 0, 0.5) 0%,
+                rgba(255, 255, 100, 0.3) 30%,
+                transparent 60%
+            );
+            pointer-events: none;
+            animation: goldGlow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes goldGlow {
+            0%, 100% { 
+                transform: translate(-50%, -50%) scale(0.9) rotate(0deg);
+                opacity: 0.4;
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.2) rotate(180deg);
+                opacity: 0.8;
+            }
         }
     </style>
 </head>
