@@ -615,12 +615,14 @@ class ShopManager {
 
     // 카드 선택 팝업 표시
     showCardSelectionPopup(cards, item) {
-        // 새로운 CardSelectionComponent 사용
+        // 보주 아이템용 새로운 컴포넌트 사용
         CardSelectionComponent.create(cards, {
             title: item.name,
             description: item.description,
             maxCards: 5,
             showEnhancement: true,
+            isOrbItem: item.category === 'orb',  // 보주 아이템 플래그
+            itemIcon: item.icon || '',  // 아이템 아이콘 전달
             onSelect: (selectedCard) => {
                 if (item.enhancementType) {
                     gameStateManager.applyEnhancement(selectedCard.id, item.enhancementType);

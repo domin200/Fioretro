@@ -317,8 +317,284 @@ class PopupComponent {
 }
 
 // 카드 선택 컴포넌트
+// 보주 아이템용 카드 선택 컴포넌트
+class OrbCardSelectionComponent {
+    static create(cards, options = {}) {
+        const {
+            title = '카드 선택',
+            description = '카드를 선택하세요',
+            onSelect = null,
+            onCancel = null,
+            maxCards = 5,
+            showEnhancement = true,
+            itemIcon = ''
+        } = options;
+
+        // 최대 카드 수 제한
+        const displayCards = cards.slice(0, maxCards);
+
+        // 오버레이 생성
+        const overlay = DOMUtils.createElement('div', {
+            style: {
+                position: 'fixed',
+                top: 0,
+                left: 0,
+                width: '100%',
+                height: '100%',
+                background: 'rgba(0, 0, 0, 0.85)',
+                backdropFilter: 'blur(5px)',
+                zIndex: 10000,
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center',
+                animation: 'fadeIn 0.3s ease'
+            }
+        });
+
+        // 컨테이너 생성
+        const container = DOMUtils.createElement('div', {
+            style: {
+                background: 'linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)',
+                borderRadius: '25px',
+                padding: '35px',
+                boxShadow: '0 25px 70px rgba(0, 0, 0, 0.7), inset 0 1px 0 rgba(255,255,255,0.1)',
+                maxWidth: '850px',
+                width: '90%',
+                border: '2px solid rgba(255, 215, 0, 0.3)'
+            }
+        });
+
+        // 헤더
+        const header = DOMUtils.createElement('div', {
+            style: {
+                textAlign: 'center',
+                marginBottom: '25px'
+            },
+            innerHTML: `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 10px; margin-bottom: 15px;">
+                    ${itemIcon ? `<span style="font-size: 28px;">${itemIcon}</span>` : ''}
+                    <h2 style="color: #ffd700; margin: 0; font-size: 28px; text-shadow: 0 0 10px rgba(255,215,0,0.5);">${title}</h2>
+                </div>
+                <p style="color: #fff; margin: 0; opacity: 0.95; font-size: 16px;">${description}</p>
+            `
+        });
+
+        // 카드 그리드
+        const grid = DOMUtils.createElement('div', {
+            style: {
+                display: 'grid',
+                gridTemplateColumns: `repeat(${Math.min(displayCards.length, 5)}, 1fr)`,
+                gap: '20px',
+                marginBottom: '25px',
+                padding: '10px'
+            }
+        });
+
+        // 선택된 카드 추적
+        let selectedCard = null;
+        let selectedElement = null;
+
+        // 적용 버튼 생성
+        const applyBtn = DOMUtils.createElement('button', {
+            textContent: '적용',
+            disabled: true,
+            style: {
+                padding: '12px 40px',
+                background: 'linear-gradient(135deg, #555 0%, #333 100%)',
+                color: '#888',
+                border: '2px solid #444',
+                borderRadius: '8px',
+                fontSize: '18px',
+                fontWeight: 'bold',
+                cursor: 'not-allowed',
+                transition: 'all 0.3s ease',
+                boxShadow: 'inset 0 1px 0 rgba(255,255,255,0.1)'
+            }
+        });
+
+        // 적용 버튼 클릭 이벤트
+        applyBtn.onclick = () => {
+            if (selectedCard && onSelect) {
+                onSelect(selectedCard);
+                overlay.remove();
+            }
+        };
+
+        // 카드 생성
+        displayCards.forEach((card, index) => {
+            const cardContainer = this.createCardElement(card, {
+                index,
+                showEnhancement,
+                onSelect: (cardEl) => {
+                    // 이전 선택 해제
+                    if (selectedElement) {
+                        selectedElement.classList.remove('selected');
+                        selectedElement.style.transform = '';
+                        selectedElement.style.border = '';
+                        selectedElement.style.boxShadow = '';
+                    }
+                    
+                    // 새 카드 선택
+                    selectedCard = card;
+                    selectedElement = cardEl;
+                    cardEl.classList.add('selected');
+                    cardEl.style.transform = 'scale(1.15) translateY(-10px)';
+                    cardEl.style.border = '3px solid #ffd700';
+                    cardEl.style.boxShadow = '0 0 30px rgba(255, 215, 0, 0.8), 0 10px 30px rgba(0,0,0,0.5)';
+                    
+                    // 적용 버튼 활성화
+                    applyBtn.disabled = false;
+                    applyBtn.style.background = 'linear-gradient(135deg, #4CAF50 0%, #45a049 100%)';
+                    applyBtn.style.color = 'white';
+                    applyBtn.style.border = '2px solid #4CAF50';
+                    applyBtn.style.cursor = 'pointer';
+                    applyBtn.style.boxShadow = '0 4px 15px rgba(76, 175, 80, 0.4), inset 0 1px 0 rgba(255,255,255,0.2)';
+                }
+            });
+
+            grid.appendChild(cardContainer);
+        });
+
+        // 버튼 영역
+        const buttonArea = DOMUtils.createElement('div', {
+            style: {
+                display: 'flex',
+                justifyContent: 'center',
+                gap: '15px'
+            }
+        });
+
+        buttonArea.appendChild(applyBtn);
+
+        // 조립
+        container.appendChild(header);
+        container.appendChild(grid);
+        container.appendChild(buttonArea);
+        overlay.appendChild(container);
+
+        // 애니메이션 효과
+        setTimeout(() => {
+            container.style.animation = 'slideIn 0.3s ease';
+        }, 50);
+
+        document.body.appendChild(overlay);
+        return overlay;
+    }
+
+    static createCardElement(card, options) {
+        const { index, showEnhancement, onSelect } = options;
+
+        const cardElement = DOMUtils.createElement('div', {
+            className: 'orb-selection-card',
+            style: {
+                width: '120px',
+                height: '160px',
+                borderRadius: '10px',
+                cursor: 'pointer',
+                transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
+                position: 'relative',
+                transform: 'scale(0)',
+                animation: `cardAppear 0.4s ${index * 0.05}s ease forwards`
+            }
+        });
+
+        // createCardElement 함수 사용
+        if (typeof window.createCardElement === 'function') {
+            const generatedCard = window.createCardElement(card);
+            generatedCard.style.width = '100%';
+            generatedCard.style.height = '100%';
+            generatedCard.style.margin = '0';
+            cardElement.appendChild(generatedCard);
+        } else {
+            // 폴백: 직접 카드 이미지 생성
+            cardElement.style.background = `url('cards/${card.id}.svg') center/cover`;
+            
+            // 카드 정보 오버레이
+            const infoOverlay = DOMUtils.createElement('div', {
+                style: {
+                    position: 'absolute',
+                    bottom: 0,
+                    left: 0,
+                    right: 0,
+                    background: 'linear-gradient(to top, rgba(0,0,0,0.8), transparent)',
+                    padding: '10px 5px 5px',
+                    borderRadius: '0 0 10px 10px',
+                    color: 'white',
+                    fontSize: '11px',
+                    textAlign: 'center',
+                    fontWeight: 'bold'
+                },
+                innerHTML: `${card.month}월 ${card.name}`
+            });
+            cardElement.appendChild(infoOverlay);
+        }
+
+        // 강화 효과 표시
+        if (showEnhancement && gameStateManager.state.cardEnhancements[card.id]) {
+            const enhanceType = gameStateManager.state.cardEnhancements[card.id];
+            const enhancement = ENHANCEMENT_TYPES[
+                Object.keys(ENHANCEMENT_TYPES).find(key => 
+                    ENHANCEMENT_TYPES[key].name === enhanceType
+                )
+            ];
+
+            if (enhancement) {
+                // 강화 배지
+                const badge = DOMUtils.createElement('div', {
+                    style: {
+                        position: 'absolute',
+                        top: '-8px',
+                        right: '-8px',
+                        background: enhancement.color,
+                        color: enhancement.name === '황' ? '#000' : '#fff',
+                        borderRadius: '50%',
+                        width: '24px',
+                        height: '24px',
+                        display: 'flex',
+                        alignItems: 'center',
+                        justifyContent: 'center',
+                        fontSize: '14px',
+                        fontWeight: 'bold',
+                        border: '2px solid white',
+                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+                        zIndex: 1
+                    },
+                    textContent: enhanceType
+                });
+                cardElement.appendChild(badge);
+            }
+        }
+
+        // 호버 효과
+        cardElement.onmouseenter = () => {
+            if (!cardElement.classList.contains('selected')) {
+                cardElement.style.transform = 'scale(1.08) translateY(-5px)';
+                cardElement.style.boxShadow = '0 10px 25px rgba(0,0,0,0.4)';
+            }
+        };
+
+        cardElement.onmouseleave = () => {
+            if (!cardElement.classList.contains('selected')) {
+                cardElement.style.transform = 'scale(1)';
+                cardElement.style.boxShadow = '';
+            }
+        };
+
+        // 클릭 이벤트
+        cardElement.onclick = () => onSelect(cardElement);
+
+        return cardElement;
+    }
+}
+
+// 기존 CardSelectionComponent는 유지 (다른 용도로 사용 중일 수 있음)
 class CardSelectionComponent {
     static create(cards, options = {}) {
+        // 보주 아이템인 경우 새로운 컴포넌트 사용
+        if (options.isOrbItem || options.itemIcon) {
+            return OrbCardSelectionComponent.create(cards, options);
+        }
+
         const {
             title = '카드 선택',
             description = '카드를 선택하세요',

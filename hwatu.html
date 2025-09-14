@@ -1255,6 +1255,36 @@
             50% { background-position: 100% 50%; }
             100% { background-position: 0% 50%; }
         }
+        
+        /* 보주 카드 선택 애니메이션 */
+        @keyframes cardAppear {
+            0% { 
+                transform: scale(0) rotateY(180deg);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1) rotateY(90deg);
+            }
+            100% { 
+                transform: scale(1) rotateY(0deg);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-30px) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .orb-selection-card.selected {
+            animation: none !important;
+        }
 
         .text-content {
             display: inline-block;
