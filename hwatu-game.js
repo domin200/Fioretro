@@ -1700,13 +1700,21 @@ function endRound() {
         
         // 3. 스테이지 클리어 보상 지급 (3, 4, 5 반복)
         const goldPattern = [3, 4, 5];
-        const clearGold = goldPattern[(gameState.stage - 1) % 3];
+        let clearGold = goldPattern[(gameState.stage - 1) % 3];
+        
+        // 목표 점수의 10배 이상 달성시 보상 2배
+        const isPerfectClear = gameState.totalScore >= gameState.targetScore * 10;
+        if (isPerfectClear) {
+            clearGold *= 2;
+            showEnhancementEffect(`완벽한 클리어! 보상 2배!`, '#ffd700');
+        }
+        
         gameState.gold += clearGold;
         
         // 총 획득 소지금 (이자 + 황 강화 보너스 + 클리어 보상)
         const totalEarnedGold = interestGold + goldEnhancementBonus + clearGold;
         
-        showMissionResult(true, gameState.totalScore, false, totalEarnedGold, interestGold, clearGold, goldEnhancementBonus);
+        showMissionResult(true, gameState.totalScore, isPerfectClear, totalEarnedGold, interestGold, clearGold, goldEnhancementBonus);
         
         // 소지금 UI 업데이트를 먼저 완료
         updateDisplay();
@@ -1721,7 +1729,7 @@ function endRound() {
         
         if (twoHeartsIndex !== -1) {
             // 두개의 심장 효과 발동
-            showMissionResult(false, gameState.totalScore, true); // 두개의 심장 사용 알림
+            showMissionResult(false, gameState.totalScore, false, 0, 0, 0, 0, true); // 두개의 심장 사용 알림
             
             // 두개의 심장 제거
             gameState.upgrades.splice(twoHeartsIndex, 1);
@@ -1762,7 +1770,7 @@ function endRound() {
 }
 
 // 미션 결과 표시
-function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 0, interestGold = 0, clearGold = 0, goldEnhancementBonus = 0) {
+function showMissionResult(success, score, isPerfectClear = false, earnedGold = 0, interestGold = 0, clearGold = 0, goldEnhancementBonus = 0, usingTwoHearts = false) {
     // 승리/패배 효과음 재생
     const soundEffect = new Audio(success ? 'SE/397_win.mp3' : 'SE/405_lose.mp3');
     soundEffect.play().catch(e => console.log('효과음 재생 실패:', e));
@@ -1807,7 +1815,7 @@ function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 
                     황 강화 보너스: <span style="font-weight: bold;">+${goldEnhancementBonus}</span>
                 </div>` : ''}
                 <div style="font-size: 20px; margin-bottom: 5px;">
-                    클리어 보상: <span style="font-weight: bold;">+${clearGold}</span>
+                    클리어 보상: <span style="font-weight: bold;">+${clearGold}</span>${isPerfectClear ? ' ⭐x2' : ''}
                 </div>
                 <div style="font-size: 24px; margin-top: 10px; border-top: 1px solid rgba(255, 215, 0, 0.5); padding-top: 10px;">
                     총 획득: <span style="font-weight: bold;">+${earnedGold}</span>
@@ -1900,9 +1908,26 @@ function updateDisplay() {
     const totalScoreElement = document.getElementById('total-score');
     if (totalScoreElement) {
         const totalScore = gameState.totalScore;
-        if (totalScoreElement.textContent !== totalScore.toString()) {
+        const targetScore = gameState.targetScore;
+        
+        // 10배 달성 여부 체크
+        const is10x = totalScore >= targetScore * 10;
+        const is8x = totalScore >= targetScore * 8;  // 80% 이상일 때 표시
+        
+        let displayText = totalScore.toString();
+        if (is10x) {
+            displayText += ' ⭐';  // 10배 달성
+            totalScoreElement.style.color = '#ffd700';  // 금색
+        } else if (is8x) {
+            displayText += ' ✨';  // 10배에 가까움
+            totalScoreElement.style.color = '#90ee90';  // 연두색
+        } else {
+            totalScoreElement.style.color = '#64ff64';  // 기본 녹색
+        }
+        
+        if (totalScoreElement.textContent !== displayText) {
             totalScoreElement.style.animation = 'pulse 0.5s ease';
-            totalScoreElement.textContent = totalScore;
+            totalScoreElement.textContent = displayText;
             setTimeout(() => totalScoreElement.style.animation = '', 500);
         }
     }
