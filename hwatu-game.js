@@ -338,6 +338,7 @@ function initGame() {
         '피': []
     };
     gameState.score = 0;
+    gameState.bonusPoints = 0;  // 보너스 포인트 (소모품 카드 등)
     gameState.multiplier = 1;
     gameState.totalScore = 0;
     gameState.redEnhancementBonus = 0;  // 적 강화 보너스 초기화
@@ -1432,10 +1433,10 @@ function calculateScore() {
         }
     }
     
-    // 최종 점수 = 점수 × 배수
-    gameState.score = points;
+    // 최종 점수 = (점수 + 보너스) × 배수
+    gameState.score = points + (gameState.bonusPoints || 0);
     gameState.multiplier = multiplier;
-    gameState.totalScore = points * multiplier;
+    gameState.totalScore = gameState.score * multiplier;
     
     // 달성한 족보 애니메이션 표시 (순차적으로)
     achievedCombinations.forEach((combination, index) => {

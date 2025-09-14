@@ -84,9 +84,10 @@ class ShopManager {
                         icon: '🎯',
                         effect: '사용 시 점수 +3',
                         action: function() {
-                            // gameState.score 직접 업데이트
+                            // bonusPoints에 추가
                             if (typeof gameState !== 'undefined') {
-                                gameState.score += 3;
+                                if (!gameState.bonusPoints) gameState.bonusPoints = 0;
+                                gameState.bonusPoints += 3;
                                 // 점수 계산 및 화면 업데이트
                                 calculateScore();
                                 updateDisplay();
@@ -232,13 +233,20 @@ class ShopManager {
                                 // 덱 섞기
                                 shuffleDeck(gameState.deck);
                                 
-                                // 새로운 카드 드로우
-                                for (let i = 0; i < handCount; i++) {
-                                    gameState.hand.push(gameState.deck.pop());
-                                }
-                                
-                                // 화면 업데이트
+                                // 화면 초기화
                                 updateDisplay();
+                                
+                                // 새로운 카드를 애니메이션으로 드로우
+                                const dealDelay = 200; // 카드 간 딜레이
+                                for (let i = 0; i < handCount; i++) {
+                                    const card = gameState.deck.pop();
+                                    setTimeout(() => {
+                                        showInitialDealAnimation(card, 'hand', () => {
+                                            gameState.hand.push(card);
+                                            updateDisplay();
+                                        });
+                                    }, dealDelay * i);
+                                }
                                 
                                 PopupComponent.showMessage(`판엎기 효과 발동! ${handCount}장의 카드를 교체했습니다!`, 'success');
                             }
