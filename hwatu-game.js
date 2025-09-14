@@ -2996,8 +2996,8 @@ function showUpgradeSelection() {
     let filteredItems = allItems;
     if (isGoblinShop) {
         filteredItems = allItems.filter(item => {
-            // 등급이 epic, legendary, mythic인 아이템만
-            return item.tier === 'epic' || item.tier === 'legendary' || item.tier === 'mythic';
+            // 등급이 epic, legendary, mythic인 아이템만 (rarity 필드 사용)
+            return item.rarity === 'epic' || item.rarity === 'legendary' || item.rarity === 'mythic';
         });
     }
     
