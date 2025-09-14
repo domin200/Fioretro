@@ -204,7 +204,7 @@ window.HWATU_CARDS = [
     { month: 8, type: '피', name: '피', points: 0, id: 32 },
     
     // 9월 - 국화
-    { month: 9, type: '열끗', name: '국화술잔', points: 10, id: 33 },
+    { month: 9, type: '열끗', name: '국화술잔(열끗/쌍피)', points: 10, id: 33, special: true },
     { month: 9, type: '청단', name: '청단', points: 10, id: 34 },
     { month: 9, type: '피', name: '피', points: 0, id: 35 },
     { month: 9, type: '피', name: '피', points: 0, id: 36 },
@@ -1190,11 +1190,19 @@ function calculateScore() {
         '피': []
     };
     
+    // 9월 열끗 특수 처리를 위한 변수
+    let september9Yeol = null;
+    
     allCards.forEach(card => {
         if (card.type === '광') {
             cardsByType['광'].push(card);
         } else if (card.type === '열끗') {
-            cardsByType['열끗'].push(card);
+            // 9월 열끗은 별도로 저장 (나중에 유리한 쪽으로 배치)
+            if (card.month === 9) {
+                september9Yeol = card;
+            } else {
+                cardsByType['열끗'].push(card);
+            }
         } else if (card.type === '홍단' || card.type === '청단' || card.type === '초단') {
             cardsByType['단'].push(card);
         } else {
@@ -1204,6 +1212,30 @@ function calculateScore() {
             }
         }
     });
+    
+    // 9월 열끗 최적 배치 결정
+    if (september9Yeol) {
+        // 열끗이 4장 이하면 열끗으로, 피가 9장 이하면 쌍피로 사용하는 것이 유리
+        const yeolCount = cardsByType['열끗'].length;
+        const piCount = cardsByType['피'].length;
+        
+        // 열끗 점수 계산: 5장부터 1점씩
+        const yeolScore = yeolCount >= 4 ? (yeolCount - 3) : 0;
+        const yeolScoreWith9 = (yeolCount + 1) >= 5 ? (yeolCount - 3) : 0;
+        
+        // 피 점수는 항상 1장당 1점
+        const piScoreWith9 = piCount + 2; // 9월 열끗을 쌍피로 사용
+        
+        // 더 유리한 쪽으로 배치
+        if (yeolScoreWith9 > 2 || (yeolCount === 4)) {
+            // 열끗으로 사용하는 것이 유리 (5장 완성 또는 추가 점수)
+            cardsByType['열끗'].push(september9Yeol);
+        } else {
+            // 쌍피로 사용 (2점 추가)
+            cardsByType['피'].push(september9Yeol);
+            cardsByType['피'].push(september9Yeol); // 쌍피는 2장으로 계산
+        }
+    }
     
     // 피 점수 (1장당 1점, 쌍피는 2점) - 기본 점수는 피만
     const piCount = cardsByType['피'].length;
@@ -2217,10 +2249,30 @@ window.createCardElement = function(card) {
             `;
         }
         
+        // 9월 열끗 특별 표시
+        let specialBadge = '';
+        if (card.month === 9 && card.type === '열끗') {
+            specialBadge = `
+                <div style="
+                    position: absolute;
+                    top: 5px;
+                    right: 5px;
+                    background: linear-gradient(135deg, #ff6b6b, #ffd700);
+                    color: white;
+                    font-size: 9px;
+                    padding: 2px 4px;
+                    border-radius: 3px;
+                    font-weight: bold;
+                    box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+                ">열/피</div>
+            `;
+        }
+        
         div.innerHTML = `
             ${monthHtml}
             <div class="card-type">${card.type}</div>
             ${cardNameHtml}
+            ${specialBadge}
         `;
     }
     
