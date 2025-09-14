@@ -2857,13 +2857,13 @@ function showUpgradeSelection() {
         <!-- 소모품 카드 영역 (우측 하단) -->
         <div id="consumable-area" style="
             position: absolute;
-            right: 20px;
             bottom: 20px;
+            right: 20px;
             display: flex;
             gap: 10px;
-            padding: 15px;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(20, 20, 20, 0.8) 100%);
-            border: 2px solid rgba(255, 215, 0, 0.3);
+            padding: 10px;
+            background: rgba(0, 0, 0, 0.7);
+            border: 2px solid #ffd700;
             border-radius: 10px;
         ">
             <div style="
@@ -2901,12 +2901,8 @@ function showUpgradeSelection() {
             "></div>
         </div>
         
-        <!-- 덱 정보 (우측 상단) -->
-        <div id="deck-info" style="
-            position: absolute;
-            right: 20px;
-            top: 60px;
-        ">
+        <!-- 덱 정보 -->
+        <div id="deck-info">
             <div class="deck-card">
                 🎴
                 <div class="deck-remaining-label">
