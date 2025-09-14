@@ -4879,20 +4879,7 @@ function startGame() {
         // Play 컨테이너를 게임 화면으로 복원
         const playContainer = document.getElementById('play-container');
         
-        // 먼저 게임 위치로 애니메이션 준비
-        playContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-        
-        // 스타일 초기화 (원래 위치로)
-        playContainer.style.position = '';
-        playContainer.style.left = '';
-        playContainer.style.top = '';
-        playContainer.style.transform = '';
-        playContainer.style.width = '';
-        playContainer.style.display = '';
-        playContainer.style.flexDirection = '';
-        playContainer.style.justifyContent = '';
-        playContainer.style.alignItems = '';
-        playContainer.style.height = '';
+        // 게임 화면 HTML 먼저 설정 (위치 변경 전에)
         
         // 게임 화면 HTML 설정
         playContainer.innerHTML = `
@@ -4983,10 +4970,27 @@ function startGame() {
         // 게임 초기화
         initFullGame();
         
-        // 트랜지션 완료 후 제거
+        // HTML 설정 후 위치 애니메이션 (중앙에서 오른쪽으로만 이동)
         setTimeout(() => {
-            playContainer.style.transition = '';
-        }, 1000);
+            playContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            
+            // 스타일 초기화 (원래 위치로)
+            playContainer.style.position = '';
+            playContainer.style.left = '';
+            playContainer.style.top = '';
+            playContainer.style.transform = '';
+            playContainer.style.width = '';
+            playContainer.style.display = '';
+            playContainer.style.flexDirection = '';
+            playContainer.style.justifyContent = '';
+            playContainer.style.alignItems = '';
+            playContainer.style.height = '';
+            
+            // 트랜지션 완료 후 제거
+            setTimeout(() => {
+                playContainer.style.transition = '';
+            }, 1000);
+        }, 50);
         
         // 잠시 후 좌측 UI들을 슬라이드인
         setTimeout(() => {
