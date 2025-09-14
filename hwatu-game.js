@@ -2726,13 +2726,26 @@ function showUpgradeSelection() {
     
     const choicesContainer = document.getElementById('upgrade-choices');
     
-    // 랜덤으로 5개 업그레이드 선택
-    const availableUpgrades = [...upgradePool];
+    // 보물(업그레이드)과 보주를 분리
+    const treasures = upgradePool.filter(u => !u.type || (u.type !== 'enhancement' && u.type !== 'remove' && u.type !== 'duplicate'));
+    const orbs = upgradePool.filter(u => u.type === 'enhancement' || u.type === 'remove' || u.type === 'duplicate');
+    
     shopUpgrades = [];
-    for (let i = 0; i < 5 && availableUpgrades.length > 0; i++) {
-        const index = Math.floor(Math.random() * availableUpgrades.length);
-        shopUpgrades.push(availableUpgrades[index]);
-        availableUpgrades.splice(index, 1);
+    
+    // 2개 보물 선택
+    const availableTreasures = [...treasures];
+    for (let i = 0; i < 2 && availableTreasures.length > 0; i++) {
+        const index = Math.floor(Math.random() * availableTreasures.length);
+        shopUpgrades.push(availableTreasures[index]);
+        availableTreasures.splice(index, 1);
+    }
+    
+    // 3개 보주 선택
+    const availableOrbs = [...orbs];
+    for (let i = 0; i < 3 && availableOrbs.length > 0; i++) {
+        const index = Math.floor(Math.random() * availableOrbs.length);
+        shopUpgrades.push(availableOrbs[index]);
+        availableOrbs.splice(index, 1);
     }
     
     // 업그레이드 카드 생성
@@ -2774,8 +2787,12 @@ function showUpgradeSelection() {
             `;
         }
         
+        // 카테고리 결정
+        const category = (upgrade.type === 'enhancement' || upgrade.type === 'remove' || upgrade.type === 'duplicate') ? '보주' : '보물';
+        
         card.innerHTML = `
             <div class="upgrade-rarity rarity-${upgrade.rarity}">${upgrade.rarity.toUpperCase()}</div>
+            <div class="upgrade-category" style="font-size: 12px; color: #aaa; margin-top: 5px;">${category}</div>
             <div class="upgrade-icon">${upgrade.icon}</div>
             <div class="upgrade-name">${upgrade.name}</div>
             <div class="upgrade-price">${upgrade.price}</div>
