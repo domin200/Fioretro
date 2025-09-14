@@ -320,6 +320,13 @@ class BalatroBackground {
         }
     }
     
+    setSpinRotation(rotation) {
+        this.options.spinRotation = rotation;
+        if (this.gl && this.uniforms.uSpinRotation) {
+            this.gl.uniform1f(this.uniforms.uSpinRotation, rotation);
+        }
+    }
+    
     destroy() {
         if (this.animationId) {
             cancelAnimationFrame(this.animationId);
