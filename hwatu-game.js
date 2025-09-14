@@ -1817,6 +1817,17 @@ function updateDisplay() {
         discardBtn.textContent = `버리기(${gameState.discardsLeft})`;
     }
     
+    // 최종 점수 업데이트 (점수 × 배수)
+    const totalScoreElement = document.getElementById('total-score');
+    if (totalScoreElement) {
+        const totalScore = gameState.totalScore;
+        if (totalScoreElement.textContent !== totalScore.toString()) {
+            totalScoreElement.style.animation = 'pulse 0.5s ease';
+            totalScoreElement.textContent = totalScore;
+            setTimeout(() => totalScoreElement.style.animation = '', 500);
+        }
+    }
+    
     // 소지금 업데이트
     const goldElement = document.getElementById('gold-amount');
     if (goldElement) {
