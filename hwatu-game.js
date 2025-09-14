@@ -312,6 +312,12 @@ function initStage() {
         });
     }
     
+    // gameStateManager의 카드 강화 정보를 gameState로 동기화
+    if (typeof gameStateManager !== 'undefined' && gameStateManager.state.cardEnhancements) {
+        // 기존 강화 정보 유지하면서 gameStateManager의 정보로 업데이트
+        Object.assign(gameState.cardEnhancements, gameStateManager.state.cardEnhancements);
+    }
+    
     // 비온뒤 맑음 업그레이드 확인 - 12월 카드 제거
     const hasSunnyAfterRain = gameState.upgrades && gameState.upgrades.some(u => u.id === 'sunny_after_rain');
     if (hasSunnyAfterRain) {
@@ -1848,6 +1854,12 @@ function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 
 }
 
 // 화면 업데이트
+// 이전 카드 위치 저장용
+let previousCardPositions = {
+    hand: new Map(),
+    floor: new Map()
+};
+
 function updateDisplay() {
     // 점수 계산 (새 시스템)
     calculateScore();
@@ -1989,20 +2001,77 @@ function updateDisplay() {
         });
     });
     
-    // 손패 표시
+    // 손패 표시 (애니메이션 포함)
     const handArea = document.getElementById('hand-area');
+    const currentHandCards = new Map();
+    
+    // 현재 손패의 카드 요소들 저장
+    handArea.querySelectorAll('.card').forEach(cardEl => {
+        const cardId = cardEl.dataset.cardId;
+        if (cardId) {
+            const rect = cardEl.getBoundingClientRect();
+            previousCardPositions.hand.set(cardId, rect);
+        }
+    });
+    
     handArea.innerHTML = '';
     gameState.hand.forEach((card, index) => {
         const cardDiv = createCardElement(card);
+        cardDiv.dataset.cardId = card.id;
+        
         if (index === gameState.selectedCard) {
             cardDiv.classList.add('selected');
         }
         cardDiv.onclick = () => selectHandCard(index);
-        handArea.appendChild(cardDiv);
+        
+        // 이전 위치가 있으면 애니메이션 적용
+        const prevPos = previousCardPositions.hand.get(card.id);
+        if (prevPos) {
+            // 카드를 먼저 추가
+            handArea.appendChild(cardDiv);
+            const newPos = cardDiv.getBoundingClientRect();
+            
+            // 위치 차이 계산
+            const deltaX = prevPos.left - newPos.left;
+            const deltaY = prevPos.top - newPos.top;
+            
+            // 애니메이션 적용
+            if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
+                cardDiv.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                cardDiv.style.transition = 'none';
+                
+                // 다음 프레임에서 애니메이션 시작
+                requestAnimationFrame(() => {
+                    cardDiv.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                    cardDiv.style.transform = 'translate(0, 0)';
+                });
+            }
+        } else {
+            // 새로운 카드는 페이드인 애니메이션
+            cardDiv.style.opacity = '0';
+            cardDiv.style.transform = 'scale(0.8)';
+            handArea.appendChild(cardDiv);
+            
+            requestAnimationFrame(() => {
+                cardDiv.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                cardDiv.style.opacity = '1';
+                cardDiv.style.transform = 'scale(1)';
+            });
+        }
     });
     
-    // 바닥패 표시 (같은 월끼리 그룹화)
+    // 바닥패 표시 (같은 월끼리 그룹화, 애니메이션 포함)
     const floorArea = document.getElementById('floor-area');
+    
+    // 현재 바닥패의 카드 요소들 위치 저장
+    floorArea.querySelectorAll('.card').forEach(cardEl => {
+        const cardId = cardEl.dataset.cardId;
+        if (cardId) {
+            const rect = cardEl.getBoundingClientRect();
+            previousCardPositions.floor.set(cardId, rect);
+        }
+    });
+    
     floorArea.innerHTML = '';
     
     // 월별로 카드 그룹화하면서 첫 등장 순서 기록
@@ -2022,7 +2091,38 @@ function updateDisplay() {
         if (monthCards.length === 1) {
             // 카드가 1장이면 그냥 표시
             const cardDiv = createCardElement(monthCards[0]);
-            floorArea.appendChild(cardDiv);
+            cardDiv.dataset.cardId = monthCards[0].id;
+            
+            // 이전 위치가 있으면 애니메이션 적용
+            const prevPos = previousCardPositions.floor.get(monthCards[0].id);
+            if (prevPos) {
+                floorArea.appendChild(cardDiv);
+                const newPos = cardDiv.getBoundingClientRect();
+                
+                const deltaX = prevPos.left - newPos.left;
+                const deltaY = prevPos.top - newPos.top;
+                
+                if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
+                    cardDiv.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                    cardDiv.style.transition = 'none';
+                    
+                    requestAnimationFrame(() => {
+                        cardDiv.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        cardDiv.style.transform = 'translate(0, 0)';
+                    });
+                }
+            } else {
+                // 새로운 카드는 페이드인
+                cardDiv.style.opacity = '0';
+                cardDiv.style.transform = 'scale(0.8) translateY(20px)';
+                floorArea.appendChild(cardDiv);
+                
+                requestAnimationFrame(() => {
+                    cardDiv.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                    cardDiv.style.opacity = '1';
+                    cardDiv.style.transform = 'scale(1) translateY(0)';
+                });
+            }
         } else {
             // 카드가 여러 장이면 겹쳐서 표시
             const stackContainer = document.createElement('div');
@@ -2034,13 +2134,44 @@ function updateDisplay() {
             
             monthCards.forEach((card, index) => {
                 const cardDiv = createCardElement(card);
+                cardDiv.dataset.cardId = card.id;
                 cardDiv.style.position = 'absolute';
                 cardDiv.style.left = `${index * 25}px`;  // 더 넓게 오른쪽으로 이동 (카드 내용 보이게)
                 cardDiv.style.top = `${index * 10}px`;   // 더 넓게 아래로 이동
                 cardDiv.style.zIndex = index;
                 // 모든 카드에 그림자 효과 추가 (깊이감)
                 cardDiv.style.boxShadow = `${2 + index}px ${2 + index}px ${5 + index * 2}px rgba(0, 0, 0, 0.3)`;
-                stackContainer.appendChild(cardDiv);
+                
+                // 이전 위치가 있으면 애니메이션 적용
+                const prevPos = previousCardPositions.floor.get(card.id);
+                if (prevPos) {
+                    stackContainer.appendChild(cardDiv);
+                    const newPos = cardDiv.getBoundingClientRect();
+                    
+                    const deltaX = prevPos.left - newPos.left;
+                    const deltaY = prevPos.top - newPos.top;
+                    
+                    if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
+                        cardDiv.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
+                        cardDiv.style.transition = 'none';
+                        
+                        requestAnimationFrame(() => {
+                            cardDiv.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
+                            cardDiv.style.transform = 'translate(0, 0)';
+                        });
+                    }
+                } else {
+                    // 새로운 카드는 스택에 추가되는 애니메이션
+                    cardDiv.style.opacity = '0';
+                    cardDiv.style.transform = 'translateY(-30px)';
+                    stackContainer.appendChild(cardDiv);
+                    
+                    setTimeout(() => {
+                        cardDiv.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                        cardDiv.style.opacity = '1';
+                        cardDiv.style.transform = 'translateY(0)';
+                    }, index * 50); // 순차적으로 나타남
+                }
             });
             
             // 카드 개수 표시 배지

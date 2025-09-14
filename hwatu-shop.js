@@ -1078,12 +1078,20 @@ class ShopManager {
                     if (item.id === 'rainbow_orb') {
                         // 오색의 보주: 미리 결정된 타입으로 강화
                         gameStateManager.applyEnhancement(selectedCard.id, actualEnhancementType);
+                        // gameState에도 동기화
+                        if (typeof gameState !== 'undefined') {
+                            gameState.cardEnhancements[selectedCard.id] = actualEnhancementType;
+                        }
                         PopupComponent.showMessage(
                             `${selectedCard.name}에 ${actualEnhancementType} 강화가 부여되었습니다!`, 
                             'success'
                         );
                     } else if (item.enhancementType) {
                         gameStateManager.applyEnhancement(selectedCard.id, item.enhancementType);
+                        // gameState에도 동기화
+                        if (typeof gameState !== 'undefined') {
+                            gameState.cardEnhancements[selectedCard.id] = item.enhancementType;
+                        }
                         PopupComponent.showMessage(
                             `${selectedCard.name}에 ${item.enhancementType} 강화가 부여되었습니다!`, 
                             'success'
