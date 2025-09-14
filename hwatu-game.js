@@ -2785,33 +2785,66 @@ function fadeVolume(audioElement, targetVolume, duration = 1000) {
     }, stepTime);
 }
 
-// BGM 전환 (단일 오디오 엘리먼트 사용)
+// BGM 전환 (크로스페이드 효과)
 function switchBGM(type) {
-    const bgm = document.getElementById('bgm');
-    if (!bgm) return;
+    const currentBgm = document.getElementById('bgm');
+    if (!currentBgm) return;
     
-    const currentTime = bgm.currentTime;
-    const isPlaying = !bgm.paused;
-    
-    // 페이드 아웃
-    fadeVolume(bgm, 0, 500);
-    
-    setTimeout(() => {
-        // BGM 소스 변경
+    const isPlaying = !currentBgm.paused;
+    if (!isPlaying) {
+        // BGM이 재생 중이 아니면 단순히 소스만 변경
         if (type === 'shop') {
-            bgm.src = 'bgm/Card Shark Serenade.mp3';
+            currentBgm.src = 'bgm/Card Shark Serenade.mp3';
+        } else if (type === 'boss') {
+            currentBgm.src = 'bgm/boss.mp3';
         } else {
-            bgm.src = 'bgm/Card Chaos.mp3';
+            currentBgm.src = 'bgm/Card Chaos.mp3';
         }
+        return;
+    }
+    
+    // 현재 BGM이 이미 목표 BGM이면 전환하지 않음
+    let targetSrc;
+    if (type === 'shop') {
+        targetSrc = 'bgm/Card Shark Serenade.mp3';
+    } else if (type === 'boss') {
+        targetSrc = 'bgm/boss.mp3';
+    } else {
+        targetSrc = 'bgm/Card Chaos.mp3';
+    }
+    
+    if (currentBgm.src.includes(targetSrc.replace('bgm/', ''))) {
+        return;
+    }
+    
+    // 새 BGM 엘리먼트 생성 (크로스페이드용)
+    const newBgm = document.createElement('audio');
+    newBgm.id = 'bgm-temp';
+    newBgm.src = targetSrc;
+    newBgm.loop = true;
+    newBgm.volume = 0;
+    document.body.appendChild(newBgm);
+    
+    // 새 BGM 재생 시작
+    newBgm.play().then(() => {
+        // 현재 BGM 페이드 아웃
+        fadeVolume(currentBgm, 0, 1000);
+        // 새 BGM 페이드 인
+        fadeVolume(newBgm, 1, 1000);
         
-        // 재생 상태였다면 재생
-        if (isPlaying) {
-            bgm.play().catch(e => console.log('BGM 재생 실패:', e));
-        }
-        
-        // 페이드 인
-        fadeVolume(bgm, 1, 500);
-    }, 500);
+        // 페이드 완료 후 정리
+        setTimeout(() => {
+            currentBgm.pause();
+            currentBgm.src = targetSrc;
+            currentBgm.volume = 1;
+            currentBgm.currentTime = newBgm.currentTime;
+            currentBgm.play().catch(e => console.log('BGM 전환 실패:', e));
+            newBgm.remove();
+        }, 1000);
+    }).catch(e => {
+        console.log('새 BGM 재생 실패:', e);
+        newBgm.remove();
+    });
 }
 
 // 주막 BGM으로 전환
@@ -2835,6 +2868,9 @@ function showUpgradeSelection() {
     // 초기화
     purchasedUpgrades = [];
     
+    // 50% 확률로 도깨비 상점 결정
+    const isGoblinShop = Math.random() < 0.5;
+    
     // play 컨테이너 내용을 상점으로 교체 (소모품 카드 영역과 덱 정보는 유지)
     playContainer.innerHTML = `
         <div id="upgrades-info">
@@ -2845,7 +2881,7 @@ function showUpgradeSelection() {
         
         <div class="shop-container" style="width: 100%; height: 100%; display: flex; flex-direction: column; padding: 20px; position: relative;">
             <div class="shop-header" style="text-align: center; margin-bottom: 15px;">
-                <h3 style="color: #ffd700; font-size: 20px; margin: 0;">🏪 주막</h3>
+                <h3 style="color: ${isGoblinShop ? '#ff6b6b' : '#ffd700'}; font-size: 20px; margin: 0;">${isGoblinShop ? '👺 도깨비 상점' : '🏪 주막'}</h3>
             </div>
             <div class="upgrade-choices" id="upgrade-choices" style="
                 flex: 1;
@@ -2952,11 +2988,20 @@ function showUpgradeSelection() {
         });
     }
     
+    // 도깨비 상점인 경우 epic 이상 등급만 필터링
+    let filteredItems = allItems;
+    if (isGoblinShop) {
+        filteredItems = allItems.filter(item => {
+            // 등급이 epic, legendary, mythic인 아이템만
+            return item.tier === 'epic' || item.tier === 'legendary' || item.tier === 'mythic';
+        });
+    }
+    
     // 카테고리별로 분리
-    const treasures = allItems.filter(u => u.category === 'treasure');
-    const orbs = allItems.filter(u => u.category === 'orb');
-    const consumables = allItems.filter(u => u.category === 'consumable');
-    const consumableCards = allItems.filter(u => u.category === 'consumable_card');
+    const treasures = filteredItems.filter(u => u.category === 'treasure');
+    const orbs = filteredItems.filter(u => u.category === 'orb');
+    const consumables = filteredItems.filter(u => u.category === 'consumable');
+    const consumableCards = filteredItems.filter(u => u.category === 'consumable_card');
     
     shopUpgrades = [];
     
@@ -4429,8 +4474,12 @@ function discardConsumableCard(index) {
 
 // 다음 스테이지 진행
 function proceedToNextStage() {
-    // 게임 BGM으로 전환
-    switchToGameBGM();
+    // 스테이지 번호가 3의 배수면 보스 BGM, 아니면 게임 BGM으로 전환
+    if (gameState.stage % 3 === 0) {
+        switchBGM('boss');
+    } else {
+        switchToGameBGM();
+    }
     
     // play 컨테이너를 게임 화면으로 복원
     const playContainer = document.getElementById('play-container');
