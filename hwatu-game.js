@@ -1220,10 +1220,10 @@ function calculateScore() {
         triggerUpgradeEffect('thousand_mile');
     }
     
-    // 윤회 효과 (덱으로 돌아간 카드당 +5점)
+    // 윤회 효과 (덱으로 돌아간 카드당 +2점)
     const hasReincarnation = gameState.upgrades.some(u => u.id === 'reincarnation');
     if (hasReincarnation && gameState.reincarnatedCards > 0) {
-        points += gameState.reincarnatedCards * 5;
+        points += gameState.reincarnatedCards * 2;
         // 효과는 discardCards에서 이미 발동되므로 여기서는 점수만 추가
     }
     
@@ -2739,7 +2739,7 @@ const upgradePool = [
     { id: 'tiger_cave', name: '호랑이굴', icon: '🐯', description: '매 라운드 첫턴은 버리기 불가, 기본 점수 +5', rarity: 'rare', price: 7 },
     { id: 'triple_discard', name: '일타삼피', icon: '3️⃣', description: '버리기시 양옆 카드도 같이 버려짐', rarity: 'epic', price: 13 },
     { id: 'thousand_mile', name: '천리길', icon: '🛤️', description: '스테이지 번호 × 1 만큼 기본 점수 추가', rarity: 'rare', price: 8 },
-    { id: 'reincarnation', name: '윤회', icon: '♻️', description: '버린 카드가 덱으로 돌아가고, 버리기당 +5점', rarity: 'epic', price: 14 },
+    { id: 'reincarnation', name: '윤회', icon: '♻️', description: '버린 카드가 덱으로 돌아가고, 버리기당 +2점', rarity: 'epic', price: 14 },
     { id: 'two_hearts', name: '두개의 심장', icon: '💕', description: '한 번 패배해도 게임이 끝나지 않음 (1회용)', rarity: 'legendary', price: 20 },
     
     // 카드 강화 아이템 - 사신수 보주 (구버전 - hwatu-shop.js로 이전됨)
@@ -3190,12 +3190,15 @@ function showPurchaseTooltip(upgrade, cardElement) {
         }
     }
     
-    // 소모품 카드의 경우 슬롯 체크
+    // 소모품 카드의 경우 슬롯 체크 (계절 패 제외)
     if (upgrade.category === 'consumable_card' || upgrade.category === 'consumable') {
-        const consumableSlotsFull = gameStateManager.state.consumableCards.length >= 2;
-        if (consumableSlotsFull) {
-            canPurchase = false;
-            purchaseMessage = '(소모품 슬롯 가득참)';
+        // 계절 패는 즉시 사용되므로 슬롯 체크 제외
+        if (!upgrade.id.includes('_pack')) {
+            const consumableSlotsFull = gameStateManager.state.consumableCards.length >= 2;
+            if (consumableSlotsFull) {
+                canPurchase = false;
+                purchaseMessage = '(소모품 슬롯 가득참)';
+            }
         }
     }
     

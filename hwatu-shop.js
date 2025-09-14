@@ -312,8 +312,12 @@ class ShopManager {
             return treasureCount < 5;
         }
         
-        // 소모품은 슬롯 체크 (최대 2개)
+        // 소모품은 슬롯 체크 (최대 2개) - 단, 계절 패는 즉시 사용되므로 제외
         if (item.category === 'consumable') {
+            // 계절 패는 즉시 사용되므로 슬롯 체크 불필요
+            if (item.id.includes('_pack')) {
+                return true;
+            }
             return gameStateManager.state.consumableCards.length < 2;
         }
         
