@@ -4973,17 +4973,22 @@ function startGame() {
             updateBackgroundColors(1);
         }
         
-        // 게임 시작 애니메이션 - 크기 유지하며 중앙에서 우측으로 이동
+        // 게임 시작 애니메이션 - 이동과 크기 변경을 동시에
         setTimeout(() => {
-            playContainer.style.transition = 'left 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            // 모든 속성에 트랜지션 적용
+            playContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
             
-            // 중앙에서 우측으로 이동 (좌측 UI 공간 확보)
+            // 중앙에서 우측으로 이동하면서 크기도 auto로 변경
             playContainer.style.left = 'calc(50% + 150px)';
+            playContainer.style.width = 'auto';
+            playContainer.style.height = 'auto';
+            playContainer.style.minWidth = '800px';
+            playContainer.style.minHeight = '500px';
             
-            // 애니메이션 완료 후 원래 스타일로 복원
+            // 애니메이션 완료 후 모든 인라인 스타일 제거
             setTimeout(() => {
                 playContainer.style.transition = '';
-                // 크기와 위치 관련 스타일 제거하여 CSS 기본값 적용
+                // 모든 인라인 스타일 제거하여 CSS 기본값 적용
                 playContainer.style.position = '';
                 playContainer.style.left = '';
                 playContainer.style.top = '';
@@ -4992,6 +4997,8 @@ function startGame() {
                 playContainer.style.height = '';
                 playContainer.style.maxWidth = '';
                 playContainer.style.maxHeight = '';
+                playContainer.style.minWidth = '';
+                playContainer.style.minHeight = '';
                 playContainer.style.display = '';
                 playContainer.style.flexDirection = '';
                 playContainer.style.justifyContent = '';
