@@ -224,16 +224,8 @@ class ShopManager {
                 price: 3,
                 rarity: 'common',
                 icon: '🌈',
-                requiresCardSelection: true,
-                effect: (card) => {
-                    const types = Object.keys(ENHANCEMENT_TYPES);
-                    const randomType = types[Math.floor(Math.random() * types.length)];
-                    gameStateManager.applyEnhancement(card.id, ENHANCEMENT_TYPES[randomType].name);
-                    PopupComponent.showMessage(
-                        `${card.name}에 ${ENHANCEMENT_TYPES[randomType].name} 강화가 부여되었습니다!`, 
-                        'success'
-                    );
-                }
+                requiresCardSelection: true
+                // effect는 handleCardSelection에서 직접 처리
             },
             {
                 id: 'void_orb',
@@ -884,10 +876,28 @@ class ShopManager {
             isOrbItem: isOrbItem,  // 보주 카테고리인 경우 새로운 UI 사용
             itemIcon: item.icon || '',  // 아이템 아이콘 전달
             onSelect: (selectedCard) => {
+                // 오색의 보주의 경우 미리 강화 타입 결정
+                let actualEnhancementType = item.enhancementType;
+                if (item.id === 'rainbow_orb') {
+                    const types = Object.keys(ENHANCEMENT_TYPES);
+                    const randomType = types[Math.floor(Math.random() * types.length)];
+                    actualEnhancementType = ENHANCEMENT_TYPES[randomType].name;
+                }
+                
+                // 임시 아이템 객체 생성 (실제 강화 타입 포함)
+                const animationItem = { ...item, enhancementType: actualEnhancementType };
+                
                 // 강화 효과 적용 애니메이션 표시
-                this.showEnhancementAnimation(selectedCard, item, () => {
+                this.showEnhancementAnimation(selectedCard, animationItem, () => {
                     // 애니메이션 완료 후 실제 강화 적용
-                    if (item.enhancementType) {
+                    if (item.id === 'rainbow_orb') {
+                        // 오색의 보주: 미리 결정된 타입으로 강화
+                        gameStateManager.applyEnhancement(selectedCard.id, actualEnhancementType);
+                        PopupComponent.showMessage(
+                            `${selectedCard.name}에 ${actualEnhancementType} 강화가 부여되었습니다!`, 
+                            'success'
+                        );
+                    } else if (item.enhancementType) {
                         gameStateManager.applyEnhancement(selectedCard.id, item.enhancementType);
                         PopupComponent.showMessage(
                             `${selectedCard.name}에 ${item.enhancementType} 강화가 부여되었습니다!`, 

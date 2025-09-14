@@ -522,12 +522,14 @@ class OrbCardSelectionComponent {
             }
         });
 
-        // createCardElement 함수 사용
+        // createCardElement 함수 사용 (손패와 동일한 강화 효과 포함)
         if (typeof window.createCardElement === 'function') {
             const generatedCard = window.createCardElement(card);
             generatedCard.style.width = '100%';
             generatedCard.style.height = '100%';
             generatedCard.style.margin = '0';
+            generatedCard.style.borderRadius = '10px';
+            // 강화 효과와 툴팁은 createCardElement에서 이미 적용됨
             cardElement.appendChild(generatedCard);
         } else {
             // 폴백: 직접 카드 이미지 생성
@@ -551,41 +553,25 @@ class OrbCardSelectionComponent {
                 innerHTML: `${card.month}월 ${card.name}`
             });
             cardElement.appendChild(infoOverlay);
-        }
-
-        // 강화 효과 표시
-        if (showEnhancement && gameStateManager.state.cardEnhancements[card.id]) {
-            const enhanceType = gameStateManager.state.cardEnhancements[card.id];
-            const enhancement = ENHANCEMENT_TYPES[
-                Object.keys(ENHANCEMENT_TYPES).find(key => 
-                    ENHANCEMENT_TYPES[key].name === enhanceType
-                )
-            ];
-
-            if (enhancement) {
-                // 강화 배지
-                const badge = DOMUtils.createElement('div', {
-                    style: {
-                        position: 'absolute',
-                        top: '-8px',
-                        right: '-8px',
-                        background: enhancement.color,
-                        color: enhancement.name === '황' ? '#000' : '#fff',
-                        borderRadius: '50%',
-                        width: '24px',
-                        height: '24px',
-                        display: 'flex',
-                        alignItems: 'center',
-                        justifyContent: 'center',
-                        fontSize: '14px',
-                        fontWeight: 'bold',
-                        border: '2px solid white',
-                        boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-                        zIndex: 1
-                    },
-                    textContent: enhanceType
-                });
-                cardElement.appendChild(badge);
+            
+            // 강화 효과 표시 (손패와 동일한 스타일)
+            if (showEnhancement && gameStateManager.state.cardEnhancements[card.id]) {
+                const enhanceType = gameStateManager.state.cardEnhancements[card.id];
+                
+                // 강화 클래스 추가
+                cardElement.classList.add(`enhanced-${enhanceType.toLowerCase()}`);
+                
+                // 강화 데이터 속성 추가
+                const enhancement = ENHANCEMENT_TYPES[
+                    Object.keys(ENHANCEMENT_TYPES).find(key => 
+                        ENHANCEMENT_TYPES[key].name === enhanceType
+                    )
+                ];
+                
+                if (enhancement) {
+                    cardElement.setAttribute('data-enhancement', enhanceType);
+                    cardElement.setAttribute('data-enhancement-effect', enhancement.effect);
+                }
             }
         }
 
