@@ -2810,6 +2810,8 @@ function switchBGM(type) {
             currentBgm.src = 'bgm/Card Shark Serenade.mp3';
         } else if (type === 'boss') {
             currentBgm.src = 'bgm/boss.mp3';
+        } else if (type === 'goblin') {
+            currentBgm.src = 'bgm/dokebi store.mp3';
         } else {
             currentBgm.src = 'bgm/Card Chaos.mp3';
         }
@@ -2822,6 +2824,8 @@ function switchBGM(type) {
         targetSrc = 'bgm/Card Shark Serenade.mp3';
     } else if (type === 'boss') {
         targetSrc = 'bgm/boss.mp3';
+    } else if (type === 'goblin') {
+        targetSrc = 'bgm/dokebi store.mp3';
     } else {
         targetSrc = 'bgm/Card Chaos.mp3';
     }
@@ -2872,17 +2876,21 @@ function switchToGameBGM() {
 
 // 업그레이드 상점 표시
 function showUpgradeSelection() {
-    // 주막 BGM으로 전환
-    switchToShopBGM();
+    // 50% 확률로 도깨비 상점 결정
+    const isGoblinShop = Math.random() < 0.5;
+    
+    // 도깨비 상점이면 도깨비 BGM, 아니면 주막 BGM으로 전환
+    if (isGoblinShop) {
+        switchBGM('goblin');
+    } else {
+        switchToShopBGM();
+    }
     
     // play 컨테이너를 상점으로 변환
     const playContainer = document.getElementById('play-container');
     
     // 초기화
     purchasedUpgrades = [];
-    
-    // 50% 확률로 도깨비 상점 결정
-    const isGoblinShop = Math.random() < 0.5;
     
     // play 컨테이너 내용을 상점으로 교체 (소모품 카드 영역과 덱 정보는 유지)
     playContainer.innerHTML = `
@@ -2965,11 +2973,8 @@ function showUpgradeSelection() {
             <div class="deck-card">
                 🎴
                 <div class="deck-remaining-label">
-                    남은 카드
+                    덱 <span id="deck-remaining">48</span>/<span id="deck-total">48</span>
                 </div>
-            </div>
-            <div class="deck-count">
-                <span id="deck-remaining">48</span>/<span id="deck-total">48</span>
             </div>
         </div>
     `;
@@ -4564,11 +4569,8 @@ function proceedToNextStage() {
             <div class="deck-card">
                 🎴
                 <div class="deck-remaining-label">
-                    남은 카드
+                    덱 <span id="deck-remaining">48</span>/<span id="deck-total">48</span>
                 </div>
-            </div>
-            <div class="deck-count">
-                <span id="deck-remaining">48</span>/<span id="deck-total">48</span>
             </div>
         </div>
     `;
