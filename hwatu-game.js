@@ -1968,9 +1968,27 @@ function showEnhancementTooltip(event, enhancement, enhanceData) {
         animation: fadeIn 0.2s ease;
     `;
     
+    // 각 강화별 그라데이션 색상 설정
+    const gradientColors = {
+        '청': 'linear-gradient(to right, #00bfff, #87ceeb, #00bfff, #4682b4, #00bfff)',
+        '적': 'linear-gradient(to right, #ff4444, #ff7777, #ff4444, #cc0000, #ff4444)',
+        '백': 'linear-gradient(to right, #ffffff, #f0f0f0, #ffffff, #e8e8e8, #ffffff)',
+        '흑': 'linear-gradient(to right, #8b00ff, #da70d6, #8b00ff, #9932cc, #8b00ff)',
+        '황': 'linear-gradient(to right, #ffd700, #ffff99, #ffd700, #ffa500, #ffd700)'
+    };
+    
     tooltip.innerHTML = `
         <div style="margin-bottom: 8px;">
-            <span class="text-content gradient-${enhancement}" style="font-size: 14px; font-weight: bold; background-size: 300% 100%; background-clip: text; -webkit-background-clip: text; color: transparent; animation: gradient 4s linear infinite;">${enhancement} 강화</span>
+            <span style="
+                font-size: 14px; 
+                font-weight: bold; 
+                background: ${gradientColors[enhancement] || gradientColors['황']}; 
+                background-size: 300% 100%; 
+                -webkit-background-clip: text; 
+                background-clip: text; 
+                -webkit-text-fill-color: transparent; 
+                animation: gradient 4s linear infinite;
+            ">${enhancement} 강화</span>
         </div>
         <div style="color: #fff; font-size: 11px;">
             ${enhanceData.effect}
