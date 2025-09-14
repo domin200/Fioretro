@@ -1811,6 +1811,12 @@ function updateDisplay() {
     // 버리기 카운트 업데이트
     document.getElementById('discards-left').textContent = gameState.discardsLeft;
     
+    // 버리기 버튼 텍스트 업데이트
+    const discardBtn = document.getElementById('discard-btn');
+    if (discardBtn) {
+        discardBtn.textContent = `버리기(${gameState.discardsLeft})`;
+    }
+    
     // 소지금 업데이트
     const goldElement = document.getElementById('gold-amount');
     if (goldElement) {
@@ -4521,7 +4527,7 @@ function proceedToNextStage() {
                 <div id="hand-area" style="flex: 1; display: flex; align-items: center;"></div>
                 
                 <div id="control-area" style="margin-top: 15px;">
-                    <button class="btn btn-secondary" id="discard-btn" onclick="discardCards()">버리기</button>
+                    <button class="btn btn-secondary" id="discard-btn" onclick="discardCards()">버리기(${gameState.discardsLeft || 4})</button>
                     <button class="btn btn-primary" id="play-btn" onclick="playCard()">바닥에 내기</button>
                 </div>
             </div>
