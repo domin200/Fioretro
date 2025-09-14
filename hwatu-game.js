@@ -1476,12 +1476,20 @@ function endRound() {
     gameState.stageEnded = true;
     
     if (gameState.totalScore >= gameState.targetScore) {
-        // 미션 성공 - 스테이지에 따른 고정 소지금 지급 (3, 4, 5 반복)
-        const goldPattern = [3, 4, 5];
-        const earnedGold = goldPattern[(gameState.stage - 1) % 3];
-        gameState.gold += earnedGold;
+        // 미션 성공
+        // 1. 먼저 보유 소지금에 대한 이자 계산 (5당 1 지급)
+        const interestGold = Math.floor(gameState.gold / 5);
+        gameState.gold += interestGold;
         
-        showMissionResult(true, gameState.totalScore, false, earnedGold);
+        // 2. 스테이지 클리어 보상 지급 (3, 4, 5 반복)
+        const goldPattern = [3, 4, 5];
+        const clearGold = goldPattern[(gameState.stage - 1) % 3];
+        gameState.gold += clearGold;
+        
+        // 총 획득 소지금 (이자 + 클리어 보상)
+        const totalEarnedGold = interestGold + clearGold;
+        
+        showMissionResult(true, gameState.totalScore, false, totalEarnedGold, interestGold, clearGold);
         setTimeout(() => {
             // 업그레이드 선택 팝업 표시
             showUpgradeSelection();
@@ -1533,7 +1541,7 @@ function endRound() {
 }
 
 // 미션 결과 표시
-function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 0) {
+function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 0, interestGold = 0, clearGold = 0) {
     const message = document.createElement('div');
     message.style.cssText = `
         position: fixed;
@@ -1566,8 +1574,16 @@ function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 
             목표 점수: ${gameState.targetScore}
         </div>
         ${success && earnedGold > 0 ? 
-            `<div style="font-size: 24px; margin-top: 15px; color: #ffd700;">
-                <span style="font-weight: bold;">+${earnedGold}</span> 획득!
+            `<div style="margin-top: 15px; color: #ffd700;">
+                ${interestGold > 0 ? `<div style="font-size: 20px; margin-bottom: 5px;">
+                    이자: <span style="font-weight: bold;">+${interestGold}</span>
+                </div>` : ''}
+                <div style="font-size: 20px; margin-bottom: 5px;">
+                    클리어 보상: <span style="font-weight: bold;">+${clearGold}</span>
+                </div>
+                <div style="font-size: 24px; margin-top: 10px; border-top: 1px solid rgba(255, 215, 0, 0.5); padding-top: 10px;">
+                    총 획득: <span style="font-weight: bold;">+${earnedGold}</span>
+                </div>
             </div>` : ''}
         ${success ? 
             `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">다음 스테이지로 진행합니다!</div>` : 
