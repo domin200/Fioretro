@@ -1669,8 +1669,8 @@ function endRound() {
     
     if (gameState.totalScore >= gameState.targetScore) {
         // 미션 성공
-        // 1. 먼저 보유 소지금에 대한 이자 계산 (5당 1 지급)
-        const interestGold = Math.floor(gameState.gold / 5);
+        // 1. 먼저 보유 소지금에 대한 이자 계산 (5당 1 지급, 최대 5)
+        const interestGold = Math.min(5, Math.floor(gameState.gold / 5));
         gameState.gold += interestGold;
         
         // 2. 황 강화 카드 보너스 계산 (바닥과 손패에 있는 황 강화 카드당 1 소지금)
