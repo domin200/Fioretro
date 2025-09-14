@@ -5145,20 +5145,23 @@ function showOpening() {
             opacity: 0;
         `;
         
-        // 앞면 (뒷면 이미지로 시작)
-        const front = document.createElement('img');
-        front.src = 'new card/back.png';
-        front.style.cssText = `
+        // 앞면 (카드 뒷면 이미지)
+        const back = document.createElement('img');
+        back.src = 'new card/back.png';
+        back.style.cssText = `
             position: absolute;
             width: 100%;
             height: 100%;
             backface-visibility: hidden;
+            transform: rotateY(0deg);
         `;
         
-        // 뒷면 (실제 카드 이미지)
-        const back = document.createElement('img');
-        back.src = cardImages[Math.floor(Math.random() * cardImages.length)];
-        back.style.cssText = `
+        // 뒷면 (실제 카드 앞면 이미지 - 뒷면보다 나중에 보이도록)
+        const front = document.createElement('img');
+        // 뒷면 카드가 아닌 실제 카드 이미지만 선택
+        const frontCardImages = cardImages.filter(img => !img.includes('back.png'));
+        front.src = frontCardImages[Math.floor(Math.random() * frontCardImages.length)];
+        front.style.cssText = `
             position: absolute;
             width: 100%;
             height: 100%;
@@ -5166,8 +5169,8 @@ function showOpening() {
             transform: rotateY(180deg);
         `;
         
-        flipCard.appendChild(front);
         flipCard.appendChild(back);
+        flipCard.appendChild(front);
         
         // 무작위 딜레이 (0.5 ~ 2.5초 사이)
         const randomDelay = 0.5 + Math.random() * 2;
@@ -5175,9 +5178,11 @@ function showOpening() {
         const distance = 800 + Math.random() * 400;
         const startX = Math.cos(angle) * distance;
         const startY = Math.sin(angle) * distance;
+        const rotation = Math.random() * 720 - 360; // Z축 회전 각도
         
         flipCard.style.setProperty('--start-x', `${startX}px`);
         flipCard.style.setProperty('--start-y', `${startY}px`);
+        flipCard.style.setProperty('--rotation', `${rotation}deg`);
         flipCard.style.animation = `flipAndFly 3s ease-out ${randomDelay}s forwards`;
         
         openingContainer.appendChild(flipCard);
@@ -5207,18 +5212,18 @@ function showOpening() {
         
         @keyframes flipAndFly {
             0% {
-                transform: translate(var(--start-x), var(--start-y)) rotateY(0deg) scale(1);
+                transform: translate(var(--start-x), var(--start-y)) rotateY(0deg) rotate(0deg) scale(1);
                 opacity: 0;
             }
             10% {
                 opacity: 1;
             }
             50% {
-                transform: translate(calc(var(--start-x) * 0.3), calc(var(--start-y) * 0.3)) rotateY(720deg) scale(0.8);
+                transform: translate(calc(var(--start-x) * 0.3), calc(var(--start-y) * 0.3)) rotateY(720deg) rotate(calc(var(--rotation) * 0.5)) scale(0.8);
                 opacity: 0.7;  /* 중간부터 투명해지기 시작 */
             }
             100% {
-                transform: translate(0, 0) rotateY(1440deg) scale(0.5);
+                transform: translate(0, 0) rotateY(1440deg) rotate(var(--rotation)) scale(0.5);
                 opacity: 0;
             }
         }
