@@ -557,7 +557,7 @@ class ShopManager {
             position: fixed;
             left: ${centerX - 60}px;
             top: ${centerY - 80}px;
-            width: 120px;
+            width: 100px;
             height: 160px;
             z-index: 10002;
             box-shadow: 0 0 50px rgba(255, 215, 0, 1);
@@ -603,7 +603,7 @@ class ShopManager {
         setTimeout(() => {
             // 덱 위치로 이동 (덱 카드의 중앙으로)
             if (deckRect) {
-                const targetX = deckRect.left + (deckRect.width / 2) - 60;
+                const targetX = deckRect.left + (deckRect.width / 2) - 50;
                 const targetY = deckRect.top + (deckRect.height / 2) - 80;
                 
                 cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -709,7 +709,7 @@ class ShopManager {
         
         // 카드 기본 스타일 설정
         cardElement.style.cssText += `
-            width: 240px;
+            width: 200px;
             height: 320px;
             position: relative;
             transform: scale(0);
