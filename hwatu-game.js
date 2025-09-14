@@ -2687,19 +2687,58 @@ const upgradePool = [
 let shopUpgrades = []; // 상점에 표시된 업그레이드들
 let purchasedUpgrades = []; // 이번 상점에서 구매한 업그레이드들
 
-// BGM 변경 함수
-function changeBGM(filename) {
-    const bgmAudio = document.getElementById('bgm');
-    if (bgmAudio) {
-        bgmAudio.src = `bgm/${filename}`;
-        bgmAudio.play().catch(e => console.log('BGM 재생 실패:', e));
+// BGM 볼륨 페이드 전환 함수
+function fadeVolume(audioElement, targetVolume, duration = 1000) {
+    const startVolume = audioElement.volume;
+    const volumeChange = targetVolume - startVolume;
+    const steps = 20;
+    const stepTime = duration / steps;
+    let currentStep = 0;
+    
+    const interval = setInterval(() => {
+        currentStep++;
+        const progress = currentStep / steps;
+        audioElement.volume = startVolume + (volumeChange * progress);
+        
+        if (currentStep >= steps) {
+            clearInterval(interval);
+            audioElement.volume = targetVolume;
+        }
+    }, stepTime);
+}
+
+// 주막 BGM으로 전환
+function switchToShopBGM() {
+    const gameBGM = document.getElementById('bgm');
+    const shopBGM = document.getElementById('shop-bgm');
+    
+    if (gameBGM && shopBGM) {
+        // 주막 BGM 재생 시작 (볼륨 0에서 시작)
+        shopBGM.volume = 0;
+        shopBGM.play().catch(e => console.log('주막 BGM 재생 실패:', e));
+        
+        // 게임 BGM 페이드 아웃, 주막 BGM 페이드 인
+        fadeVolume(gameBGM, 0, 1000);
+        fadeVolume(shopBGM, 1, 1000);
+    }
+}
+
+// 게임 BGM으로 전환
+function switchToGameBGM() {
+    const gameBGM = document.getElementById('bgm');
+    const shopBGM = document.getElementById('shop-bgm');
+    
+    if (gameBGM && shopBGM) {
+        // 주막 BGM 페이드 아웃, 게임 BGM 페이드 인
+        fadeVolume(shopBGM, 0, 1000);
+        fadeVolume(gameBGM, 1, 1000);
     }
 }
 
 // 업그레이드 상점 표시
 function showUpgradeSelection() {
-    // 주막 BGM으로 변경
-    changeBGM('Card Shark Serenade.mp3');
+    // 주막 BGM으로 전환
+    switchToShopBGM();
     
     // play 컨테이너를 상점으로 변환
     const playContainer = document.getElementById('play-container');
@@ -3710,8 +3749,8 @@ function applyUpgrade(upgrade) {
 
 // 다음 스테이지 진행
 function proceedToNextStage() {
-    // 게임 BGM으로 복원
-    changeBGM('Card Chaos.mp3');
+    // 게임 BGM으로 전환
+    switchToGameBGM();
     
     // play 컨테이너를 게임 화면으로 복원
     const playContainer = document.getElementById('play-container');
@@ -3775,6 +3814,16 @@ function proceedToNextStage() {
 window.onload = () => {
     // 오디오 초기화
     initAudio();
+    
+    // BGM 초기화
+    const gameBGM = document.getElementById('bgm');
+    const shopBGM = document.getElementById('shop-bgm');
+    if (gameBGM) gameBGM.volume = 1;
+    if (shopBGM) {
+        shopBGM.volume = 0;
+        // 주막 BGM 미리 로드
+        shopBGM.load();
+    }
     
     // 게임 시작시 스테이지 1 색상 확실히 설정
     if (typeof updateBackgroundColors === 'function') {
