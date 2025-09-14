@@ -1889,7 +1889,7 @@ function createCardElement(card) {
         // 이미지 위에 텍스트 오버레이 추가 (반응형)
         div.innerHTML = `
             <div style="background: rgba(0,0,0,0.8); color: white; padding: 2px 4px; border-radius: 4px; position: absolute; bottom: 4px; left: 50%; transform: translateX(-50%); font-size: clamp(9px, 1.2vw, 11px); white-space: nowrap; backdrop-filter: blur(2px);">
-                ${card.month}월 ${enhancement ? `<span style="
+                ${enhancement ? `<span style="
                     background: ${(() => {
                         const gradientColors = {
                             '청': 'linear-gradient(to right, #00bfff, #87ceeb, #00bfff)',
@@ -1906,7 +1906,7 @@ function createCardElement(card) {
                     -webkit-text-fill-color: transparent;
                     animation: gradient 3s linear infinite;
                     font-weight: bold;
-                ">${card.name}</span>` : card.name}
+                ">${card.month}월 ${card.name}</span>` : `${card.month}월 ${card.name}`}
             </div>
         `;
     } else {
@@ -1937,8 +1937,32 @@ function createCardElement(card) {
             `;
         }
         
+        let monthHtml = `<div class="card-month">${card.month}월</div>`;
+        
+        if (enhancement) {
+            const gradientColors = {
+                '청': 'linear-gradient(to right, #00bfff, #87ceeb, #00bfff, #4682b4, #00bfff)',
+                '적': 'linear-gradient(to right, #ff4444, #ff7777, #ff4444, #cc0000, #ff4444)',
+                '백': 'linear-gradient(to right, #ffffff, #f0f0f0, #ffffff, #e8e8e8, #ffffff)',
+                '흑': 'linear-gradient(to right, #8b00ff, #da70d6, #8b00ff, #9932cc, #8b00ff)',
+                '황': 'linear-gradient(to right, #ffd700, #ffff99, #ffd700, #ffa500, #ffd700)'
+            };
+            
+            monthHtml = `
+                <div class="card-month" style="
+                    background: ${gradientColors[enhancement] || gradientColors['황']};
+                    background-size: 300% 100%;
+                    -webkit-background-clip: text;
+                    background-clip: text;
+                    -webkit-text-fill-color: transparent;
+                    animation: gradient 4s linear infinite;
+                    font-weight: bold;
+                ">${card.month}월</div>
+            `;
+        }
+        
         div.innerHTML = `
-            <div class="card-month">${card.month}월</div>
+            ${monthHtml}
             <div class="card-type">${card.type}</div>
             ${cardNameHtml}
         `;
