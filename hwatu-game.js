@@ -4753,7 +4753,8 @@ function showTitleScreen() {
             animation: fadeIn 1s ease;
         ">
             <h1 style="
-                font-size: 56px;
+                font-family: 'YiSunShin', sans-serif;
+                font-size: 80px;
                 font-weight: bold;
                 margin-bottom: 15px;
                 background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FF6B6B 100%);
@@ -4789,6 +4790,15 @@ function showTitleScreen() {
         </div>
         
         <style>
+            @font-face {
+                font-family: 'YiSunShin';
+                src: url('font/Yisunshin/YiSunShinBold.woff2') format('woff2'),
+                     url('font/Yisunshin/YiSunShinBold.woff') format('woff');
+                font-weight: bold;
+                font-style: normal;
+                font-display: swap;
+            }
+            
             @keyframes fadeIn {
                 from { opacity: 0; transform: translateY(20px); }
                 to { opacity: 1; transform: translateY(0); }
