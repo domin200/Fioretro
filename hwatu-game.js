@@ -4720,6 +4720,14 @@ function proceedToNextStage() {
 
 // 타이틀 화면 표시
 function showTitleScreen() {
+    // 배경 효과 속도를 절반으로 설정
+    if (window.balatroBackground) {
+        window.balatroBackground.options.spinSpeed = 1.5;  // 원래 속도(3.0)의 절반
+        window.balatroBackground.gl.uniform1f(
+            window.balatroBackground.uniforms.uSpinSpeed, 
+            window.balatroBackground.options.spinSpeed
+        );
+    }
     // 좌측 UI들을 화면 밖으로 이동
     const capturedArea = document.getElementById('captured-area');
     const scoreBoard = document.getElementById('score-board');
@@ -4738,19 +4746,18 @@ function showTitleScreen() {
         scoreBoard.style.opacity = '0';
     }
     
-    // Play 컨테이너를 화면 정중앙에 위치 (왼쪽 UI 공간 없이)
+    // Play 컨테이너를 화면 정중앙에 위치 (왼쪽 UI 공간 없이) - 원래 크기 유지
     const playContainer = document.getElementById('play-container');
     playContainer.style.display = 'flex';
     playContainer.style.flexDirection = 'column';
     playContainer.style.justifyContent = 'center';
     playContainer.style.alignItems = 'center';
-    playContainer.style.height = 'auto';
-    playContainer.style.minHeight = '400px';
+    playContainer.style.height = '600px';  // 게임 화면과 동일한 고정 높이
+    playContainer.style.width = '800px';   // 게임 화면과 동일한 고정 너비
     playContainer.style.position = 'absolute';
     playContainer.style.left = '50%';
     playContainer.style.top = '50%';
     playContainer.style.transform = 'translate(-50%, -50%)';
-    playContainer.style.width = '100%';
     
     // 타이틀 화면 내용
     playContainer.innerHTML = `
@@ -4854,6 +4861,34 @@ function showTitleScreen() {
 
 // 게임 시작 (타이틀에서 전환)
 function startGame() {
+    // 배경 효과 속도를 2초에 걸쳐 원래 속도로 복원
+    if (window.balatroBackground) {
+        const startSpeed = 1.5;
+        const targetSpeed = 3.0;
+        const duration = 2000;  // 2초
+        const startTime = Date.now();
+        
+        const animateSpeed = () => {
+            const elapsed = Date.now() - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+            
+            // 이징 함수 적용 (ease-out)
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+            const currentSpeed = startSpeed + (targetSpeed - startSpeed) * easedProgress;
+            
+            window.balatroBackground.options.spinSpeed = currentSpeed;
+            window.balatroBackground.gl.uniform1f(
+                window.balatroBackground.uniforms.uSpinSpeed,
+                currentSpeed
+            );
+            
+            if (progress < 1) {
+                requestAnimationFrame(animateSpeed);
+            }
+        };
+        
+        requestAnimationFrame(animateSpeed);
+    }
     // 타이틀 화면 페이드아웃
     const titleScreen = document.getElementById('title-screen');
     if (titleScreen) {
