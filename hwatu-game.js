@@ -2638,18 +2638,49 @@ let purchasedUpgrades = []; // 이번 상점에서 구매한 업그레이드들
 
 // 업그레이드 상점 표시
 function showUpgradeSelection() {
-    const popup = document.getElementById('upgrade-popup');
-    const choicesContainer = document.getElementById('upgrade-choices');
+    // play 컨테이너를 상점으로 변환
+    const playContainer = document.getElementById('play-container');
     
     // 초기화
     purchasedUpgrades = [];
-    choicesContainer.innerHTML = '';
     
-    // 소지금 표시 업데이트
-    const shopGoldElement = document.getElementById('shop-gold-amount');
-    if (shopGoldElement) {
-        shopGoldElement.textContent = gameState.gold;
-    }
+    // play 컨테이너 내용을 상점으로 교체
+    playContainer.innerHTML = `
+        <div class="shop-container" style="width: 100%; height: 100%; display: flex; flex-direction: column; padding: 20px;">
+            <div class="shop-header" style="text-align: center; margin-bottom: 20px;">
+                <h2 style="color: #ffd700; font-size: 32px; margin-bottom: 10px;">🏪 업그레이드 상점</h2>
+                <div style="font-size: 24px; color: #ffd700;">
+                    보유 소지금: <span id="shop-gold-amount" style="font-weight: bold;">${gameState.gold}</span>
+                </div>
+            </div>
+            <div class="upgrade-choices" id="upgrade-choices" style="
+                flex: 1;
+                display: flex;
+                flex-wrap: wrap;
+                gap: 20px;
+                justify-content: center;
+                align-items: center;
+                overflow-y: auto;
+                padding: 20px;
+            ">
+                <!-- 동적으로 생성됨 -->
+            </div>
+            <div class="shop-footer" style="text-align: center; padding: 20px;">
+                <button class="btn btn-primary" onclick="proceedToNextStage()" style="
+                    padding: 15px 40px;
+                    font-size: 20px;
+                    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+                    border: none;
+                    border-radius: 10px;
+                    color: white;
+                    cursor: pointer;
+                    transition: all 0.3s ease;
+                ">다음 스테이지로</button>
+            </div>
+        </div>
+    `;
+    
+    const choicesContainer = document.getElementById('upgrade-choices');
     
     // 랜덤으로 5개 업그레이드 선택
     const availableUpgrades = [...upgradePool];
@@ -2713,9 +2744,6 @@ function showUpgradeSelection() {
         
         choicesContainer.appendChild(card);
     });
-    
-    // 팝업 표시
-    popup.style.display = 'flex';
 }
 
 // 구매 툴팁 표시
@@ -2921,11 +2949,46 @@ function applyUpgrade(upgrade) {
 
 // 다음 스테이지 진행
 function proceedToNextStage() {
-    // 팝업 닫기
-    const popup = document.getElementById('upgrade-popup');
-    if (popup) {
-        popup.style.display = 'none';
-    }
+    // play 컨테이너를 게임 화면으로 복원
+    const playContainer = document.getElementById('play-container');
+    playContainer.innerHTML = `
+        <div id="upgrades-info">
+            <div id="upgrades-list">
+                <!-- 동적으로 생성됨 -->
+            </div>
+        </div>
+        
+        <div style="flex: 1; display: flex; flex-direction: column;">
+            <div style="flex: 0.45; display: flex; flex-direction: column;">
+                <div class="section-title">바닥 패</div>
+                <div id="floor-area" style="flex: 1;"></div>
+            </div>
+            
+            <div class="divider"></div>
+            
+            <div style="flex: 0.55; display: flex; flex-direction: column;">
+                <div class="section-title" style="margin-top: 15px;">내 손패</div>
+                <div id="hand-area" style="flex: 1; display: flex; align-items: center;"></div>
+                
+                <div id="control-area" style="margin-top: 15px;">
+                    <button class="btn btn-primary" id="play-btn" onclick="playCard()">바닥에 내기</button>
+                    <button class="btn btn-secondary" id="discard-btn" onclick="discardCards()">버리기</button>
+                </div>
+            </div>
+        </div>
+        
+        <div id="deck-info">
+            <div class="deck-card">
+                🎴
+                <div class="deck-remaining-label">
+                    남은 카드
+                </div>
+            </div>
+            <div class="deck-count">
+                <span id="deck-remaining">48</span>/<span id="deck-total">48</span>
+            </div>
+        </div>
+    `;
     
     // 다음 스테이지 값 설정
     const nextStage = gameState.stage + 1;
