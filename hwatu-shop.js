@@ -633,13 +633,17 @@ class ShopManager {
             return;
         }
         
-        // 모든 보주 아이템은 새로운 OrbCardSelectionComponent 사용
+        // 보주 아이템인지 확인 (category가 'orb'인 모든 아이템)
+        const isOrbItem = item.category === 'orb';
+        console.log(`Showing popup for ${item.name}, category: ${item.category}, isOrbItem: ${isOrbItem}`);
+        
+        // 카드 선택 컴포넌트 생성
         CardSelectionComponent.create(cards, {
             title: item.name,
             description: item.description,
             maxCards: 5,
             showEnhancement: true,
-            isOrbItem: true,  // 모든 보주는 새로운 UI 사용
+            isOrbItem: isOrbItem,  // 보주 카테고리인 경우 새로운 UI 사용
             itemIcon: item.icon || '',  // 아이템 아이콘 전달
             onSelect: (selectedCard) => {
                 if (item.enhancementType) {
