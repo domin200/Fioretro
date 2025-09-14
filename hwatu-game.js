@@ -1477,7 +1477,11 @@ function endRound() {
     
     if (gameState.totalScore >= gameState.targetScore) {
         // 미션 성공
-        // 1. 황 강화 카드 보너스 계산 (바닥과 손패에 있는 황 강화 카드당 1 소지금)
+        // 1. 먼저 보유 소지금에 대한 이자 계산 (5당 1 지급)
+        const interestGold = Math.floor(gameState.gold / 5);
+        gameState.gold += interestGold;
+        
+        // 2. 황 강화 카드 보너스 계산 (바닥과 손패에 있는 황 강화 카드당 1 소지금)
         let goldEnhancementBonus = 0;
         
         // 바닥 카드 중 황 강화 확인
@@ -1499,17 +1503,13 @@ function endRound() {
             showEnhancementEffect(`황 강화 보너스! +${goldEnhancementBonus} 소지금`, '#ffd700');
         }
         
-        // 2. 보유 소지금에 대한 이자 계산 (5당 1 지급)
-        const interestGold = Math.floor(gameState.gold / 5);
-        gameState.gold += interestGold;
-        
         // 3. 스테이지 클리어 보상 지급 (3, 4, 5 반복)
         const goldPattern = [3, 4, 5];
         const clearGold = goldPattern[(gameState.stage - 1) % 3];
         gameState.gold += clearGold;
         
-        // 총 획득 소지금 (황 강화 보너스 + 이자 + 클리어 보상)
-        const totalEarnedGold = goldEnhancementBonus + interestGold + clearGold;
+        // 총 획득 소지금 (이자 + 황 강화 보너스 + 클리어 보상)
+        const totalEarnedGold = interestGold + goldEnhancementBonus + clearGold;
         
         showMissionResult(true, gameState.totalScore, false, totalEarnedGold, interestGold, clearGold, goldEnhancementBonus);
         setTimeout(() => {
@@ -1597,11 +1597,11 @@ function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 
         </div>
         ${success && earnedGold > 0 ? 
             `<div style="margin-top: 15px; color: #ffd700;">
-                ${goldEnhancementBonus > 0 ? `<div style="font-size: 20px; margin-bottom: 5px;">
-                    황 강화 보너스: <span style="font-weight: bold;">+${goldEnhancementBonus}</span>
-                </div>` : ''}
                 ${interestGold > 0 ? `<div style="font-size: 20px; margin-bottom: 5px;">
                     이자: <span style="font-weight: bold;">+${interestGold}</span>
+                </div>` : ''}
+                ${goldEnhancementBonus > 0 ? `<div style="font-size: 20px; margin-bottom: 5px;">
+                    황 강화 보너스: <span style="font-weight: bold;">+${goldEnhancementBonus}</span>
                 </div>` : ''}
                 <div style="font-size: 20px; margin-bottom: 5px;">
                     클리어 보상: <span style="font-weight: bold;">+${clearGold}</span>
