@@ -649,40 +649,50 @@ class ShopManager {
 
     // 강화 효과 애니메이션 표시
     showEnhancementAnimation(card, item, callback) {
-        // 강화 타입에 따른 색상 결정
-        const enhancementColors = {
-            '청': { color: '#4FC3F7', rgb: '79, 195, 247' },
-            '적': { color: '#FF5252', rgb: '255, 82, 82' },
-            '백': { color: '#FFFFFF', rgb: '255, 255, 255' },
-            '흑': { color: '#424242', rgb: '66, 66, 66' },
-            '황': { color: '#FFD700', rgb: '255, 215, 0' }
+        // 강화 타입에 따른 스타일 정의 (실제 게임 효과와 동일)
+        const enhancementStyles = {
+            '청': {
+                border: '3px solid #00bfff',
+                boxShadow: '0 0 20px rgba(0, 191, 255, 0.8), inset 0 0 15px rgba(0, 191, 255, 0.3)',
+                gradient: 'linear-gradient(135deg, rgba(0, 191, 255, 0.3) 0%, rgba(0, 191, 255, 0.15) 30%, transparent 60%)',
+                glow: 'radial-gradient(ellipse at top left, rgba(0, 191, 255, 0.25) 0%, transparent 50%)'
+            },
+            '적': {
+                border: '3px solid #ff4444',
+                boxShadow: '0 0 20px rgba(255, 68, 68, 0.8), inset 0 0 15px rgba(255, 68, 68, 0.3)',
+                gradient: 'linear-gradient(135deg, rgba(255, 68, 68, 0.3) 0%, rgba(255, 68, 68, 0.15) 30%, transparent 60%)',
+                glow: 'radial-gradient(ellipse at top left, rgba(255, 68, 68, 0.25) 0%, transparent 50%)'
+            },
+            '백': {
+                border: '3px solid #ffffff',
+                boxShadow: '0 0 20px rgba(255, 255, 255, 0.9), inset 0 0 15px rgba(255, 255, 255, 0.4)',
+                gradient: 'linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.2) 30%, transparent 60%)',
+                glow: 'radial-gradient(ellipse at top left, rgba(255, 255, 255, 0.3) 0%, transparent 50%)'
+            },
+            '흑': {
+                border: '3px solid #424242',
+                boxShadow: '0 0 20px rgba(66, 66, 66, 0.8), inset 0 0 15px rgba(0, 0, 0, 0.5)',
+                gradient: 'linear-gradient(135deg, rgba(66, 66, 66, 0.4) 0%, rgba(0, 0, 0, 0.3) 30%, transparent 60%)',
+                glow: 'radial-gradient(ellipse at top left, rgba(66, 66, 66, 0.3) 0%, transparent 50%)'
+            },
+            '황': {
+                border: '3px solid #ffd700',
+                boxShadow: '0 0 25px rgba(255, 215, 0, 0.9), inset 0 0 20px rgba(255, 215, 0, 0.4)',
+                gradient: 'linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 215, 0, 0.2) 30%, transparent 60%)',
+                glow: 'radial-gradient(ellipse at top left, rgba(255, 215, 0, 0.35) 0%, transparent 50%)'
+            }
         };
         
-        const enhancement = enhancementColors[item.enhancementType] || 
-                           enhancementColors['황']; // 기본값
+        const enhanceStyle = enhancementStyles[item.enhancementType] || enhancementStyles['황'];
         
-        // 전체 화면 오버레이
-        const overlay = DOMUtils.createElement('div', {
-            style: {
-                position: 'fixed',
-                top: 0,
-                left: 0,
-                width: '100%',
-                height: '100%',
-                background: 'rgba(0, 0, 0, 0.9)',
-                zIndex: 20000,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center'
-            }
-        });
-        
-        // 카드 표시 컨테이너
+        // 카드 표시 컨테이너 (배경 없음)
         const container = DOMUtils.createElement('div', {
             style: {
-                position: 'relative',
-                width: '200px',
-                height: '280px'
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 20000
             }
         });
         
@@ -692,68 +702,81 @@ class ShopManager {
             : DOMUtils.createElement('div', {
                 className: 'card',
                 style: {
-                    width: '200px',
-                    height: '280px',
                     background: `url('cards/${card.id}.svg') center/cover`,
                     borderRadius: '12px'
                 }
             });
         
+        // 카드 기본 스타일 설정
         cardElement.style.cssText += `
-            width: 200px;
-            height: 280px;
+            width: 240px;
+            height: 320px;
             position: relative;
             transform: scale(0);
             animation: enhanceCardAppear 0.5s ease forwards;
+            border-radius: 12px;
+            overflow: visible;
         `;
         
-        // 강화 이펙트 오버레이
-        const effectOverlay = DOMUtils.createElement('div', {
-            style: {
-                position: 'absolute',
-                top: '-20px',
-                left: '-20px',
-                right: '-20px',
-                bottom: '-20px',
-                borderRadius: '12px',
-                opacity: 0,
-                animation: 'enhanceGlow 1.5s ease forwards 0.5s',
-                background: `radial-gradient(circle, rgba(${enhancement.rgb}, 0.8) 0%, transparent 70%)`,
-                boxShadow: `0 0 100px rgba(${enhancement.rgb}, 0.8)`,
-                pointerEvents: 'none'
-            }
-        });
-        
-        // 강화 심볼 표시
-        const enhanceSymbol = DOMUtils.createElement('div', {
-            style: {
-                position: 'absolute',
-                top: '50%',
-                left: '50%',
-                transform: 'translate(-50%, -50%) scale(0)',
-                fontSize: '80px',
-                color: enhancement.color,
-                fontWeight: 'bold',
-                textShadow: `0 0 30px ${enhancement.color}`,
-                animation: 'enhanceSymbol 1.5s ease forwards 0.7s',
-                zIndex: 1
-            },
-            textContent: item.enhancementType
-        });
+        // 강화 효과 적용 (0.5초 후)
+        setTimeout(() => {
+            // 테두리와 그림자 효과
+            cardElement.style.border = enhanceStyle.border;
+            cardElement.style.boxShadow = enhanceStyle.boxShadow;
+            cardElement.style.transition = 'all 0.3s ease';
+            
+            // 그라데이션 오버레이
+            const gradientOverlay = DOMUtils.createElement('div', {
+                style: {
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: enhanceStyle.gradient,
+                    borderRadius: 'inherit',
+                    pointerEvents: 'none',
+                    opacity: 0,
+                    animation: 'fadeIn 0.5s ease forwards'
+                }
+            });
+            
+            // 글로우 오버레이
+            const glowOverlay = DOMUtils.createElement('div', {
+                style: {
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: enhanceStyle.glow,
+                    borderRadius: 'inherit',
+                    pointerEvents: 'none',
+                    opacity: 0,
+                    animation: 'enhancedPulse 2s ease-in-out infinite'
+                }
+            });
+            
+            cardElement.appendChild(gradientOverlay);
+            cardElement.appendChild(glowOverlay);
+            
+            // 파티클 효과
+            this.createEnhancementParticles(container, item.enhancementType);
+        }, 500);
         
         // 강화 완료 텍스트
         const completeText = DOMUtils.createElement('div', {
             style: {
                 position: 'absolute',
-                bottom: '-60px',
+                bottom: '-80px',
                 left: '50%',
                 transform: 'translateX(-50%)',
                 color: '#ffd700',
-                fontSize: '24px',
+                fontSize: '28px',
                 fontWeight: 'bold',
                 opacity: 0,
-                animation: 'fadeIn 0.5s ease forwards 1.8s',
-                textShadow: '0 0 10px rgba(255, 215, 0, 0.5)',
+                animation: 'fadeIn 0.5s ease forwards 1.2s',
+                textShadow: '0 0 15px rgba(255, 215, 0, 0.6)',
                 whiteSpace: 'nowrap'
             },
             textContent: '강화 완료!'
@@ -761,11 +784,8 @@ class ShopManager {
         
         // 요소 조립
         container.appendChild(cardElement);
-        container.appendChild(effectOverlay);
-        container.appendChild(enhanceSymbol);
         container.appendChild(completeText);
-        overlay.appendChild(container);
-        document.body.appendChild(overlay);
+        document.body.appendChild(container);
         
         // 효과음 재생
         if (typeof playSound === 'function') {
@@ -774,12 +794,74 @@ class ShopManager {
         
         // 애니메이션 완료 후 처리
         setTimeout(() => {
-            overlay.style.animation = 'fadeOut 0.3s ease forwards';
+            container.style.animation = 'fadeOut 0.3s ease forwards';
             setTimeout(() => {
-                overlay.remove();
+                container.remove();
                 if (callback) callback();
             }, 300);
-        }, 2500);
+        }, 2200);
+    }
+    
+    // 강화 파티클 효과 생성
+    createEnhancementParticles(container, enhanceType) {
+        const colors = {
+            '청': '#00bfff',
+            '적': '#ff4444',
+            '백': '#ffffff',
+            '흑': '#424242',
+            '황': '#ffd700'
+        };
+        
+        const color = colors[enhanceType] || '#ffd700';
+        
+        // 파티클 생성
+        for (let i = 0; i < 12; i++) {
+            setTimeout(() => {
+                const particle = DOMUtils.createElement('div', {
+                    style: {
+                        position: 'absolute',
+                        width: '6px',
+                        height: '6px',
+                        background: color,
+                        borderRadius: '50%',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        boxShadow: `0 0 10px ${color}`,
+                        animation: `particle-float-${i} 1.5s ease-out forwards`
+                    }
+                });
+                
+                // 동적 애니메이션 생성
+                const angle = (i * 30) * Math.PI / 180;
+                const distance = 150 + Math.random() * 50;
+                const x = Math.cos(angle) * distance;
+                const y = Math.sin(angle) * distance;
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes particle-float-${i} {
+                        0% {
+                            transform: translate(-50%, -50%) scale(0);
+                            opacity: 1;
+                        }
+                        100% {
+                            transform: translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                container.appendChild(particle);
+                
+                // 애니메이션 후 정리
+                setTimeout(() => {
+                    particle.remove();
+                    style.remove();
+                }, 1500);
+            }, i * 50);
+        }
     }
     
     // 카드 선택 팝업 표시
