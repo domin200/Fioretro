@@ -911,6 +911,111 @@
                 transition-duration: 0.01ms !important;
             }
         }
+        
+        /* 카드 강화 효과 */
+        @keyframes enhancedGlow {
+            0%, 100% { 
+                filter: brightness(1) saturate(1.2);
+            }
+            50% { 
+                filter: brightness(1.2) saturate(1.5);
+            }
+        }
+        
+        .card.enhanced-청 {
+            animation: enhancedGlow 2s ease-in-out infinite;
+            position: relative;
+        }
+        
+        .card.enhanced-청::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(0, 191, 255, 0.5), transparent);
+            border-radius: 6px;
+            animation: rotate 3s linear infinite;
+            z-index: -1;
+        }
+        
+        .card.enhanced-적 {
+            animation: enhancedGlow 2s ease-in-out infinite;
+            position: relative;
+        }
+        
+        .card.enhanced-적::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(255, 68, 68, 0.5), transparent);
+            border-radius: 6px;
+            animation: rotate 3s linear infinite;
+            z-index: -1;
+        }
+        
+        .card.enhanced-백 {
+            animation: enhancedGlow 2s ease-in-out infinite;
+            position: relative;
+        }
+        
+        .card.enhanced-백::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.7), transparent);
+            border-radius: 6px;
+            animation: rotate 3s linear infinite;
+            z-index: -1;
+        }
+        
+        .card.enhanced-흑 {
+            animation: enhancedGlow 2s ease-in-out infinite;
+            position: relative;
+        }
+        
+        .card.enhanced-흑::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(139, 0, 255, 0.5), transparent);
+            border-radius: 6px;
+            animation: rotate 3s linear infinite;
+            z-index: -1;
+        }
+        
+        .card.enhanced-황 {
+            animation: enhancedGlow 2s ease-in-out infinite;
+            position: relative;
+        }
+        
+        .card.enhanced-황::before {
+            content: '';
+            position: absolute;
+            top: -2px;
+            left: -2px;
+            right: -2px;
+            bottom: -2px;
+            background: linear-gradient(45deg, transparent, rgba(255, 215, 0, 0.5), transparent);
+            border-radius: 6px;
+            animation: rotate 3s linear infinite;
+            z-index: -1;
+        }
+        
+        @keyframes rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
     </style>
 </head>
 <body>

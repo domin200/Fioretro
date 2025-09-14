@@ -139,6 +139,15 @@ function playSound(soundFile) {
     }
 }
 
+// 카드 강화 타입 정의
+const ENHANCEMENT_TYPES = {
+    BLUE: { name: '청', color: '#00bfff', rgb: '0, 191, 255', effect: '점수 +1' },
+    RED: { name: '적', color: '#ff4444', rgb: '255, 68, 68', effect: '버려질 때 배수 +0.5' },
+    WHITE: { name: '백', color: '#ffffff', rgb: '255, 255, 255', effect: '바닥에 있을 때 점수 +2' },
+    BLACK: { name: '흑', color: '#8b00ff', rgb: '139, 0, 255', effect: '핸드에 있을 때 점수 +2' },
+    GOLD: { name: '황', color: '#ffd700', rgb: '255, 215, 0', effect: '특별 효과' }
+};
+
 // 화투 카드 정의 (48장)
 const HWATU_CARDS = [
     // 1월 - 송학
@@ -236,7 +245,8 @@ const gameState = {
     upgrades: [],        // 획득한 업그레이드 목록
     shownCombinations: new Set(),  // 이미 표시한 족보 추적
     reincarnatedCards: 0,  // 윤회로 덱으로 돌아간 카드 수
-    stageEnded: false  // 스테이지 종료 여부
+    stageEnded: false,  // 스테이지 종료 여부
+    cardEnhancements: {}  // 카드 강화 정보 {cardId: 'blue'|'red'|'white'|'black'|'gold'}
 };
 
 
@@ -651,6 +661,15 @@ function discardCards() {
     
     gameState.discardsLeft--; // 버리기 카운트 감소
     
+    // 적 강화 효과: 버려지는 카드가 적 강화를 가지고 있으면 배수 +0.5
+    cardsToDiscard.forEach(card => {
+        const enhancement = gameState.cardEnhancements[card.id];
+        if (enhancement === '적') {
+            gameState.multiplier += 0.5;
+            console.log(`Red enhancement activated! Multiplier +0.5 (Total: ${gameState.multiplier})`);
+        }
+    });
+    
     // 버릴 카드들의 애니메이션
     const handArea = document.getElementById('hand-area');
     const cardElements = handArea.children;
@@ -1033,6 +1052,35 @@ function calculateScore() {
     // 피 점수 (1장당 1점, 쌍피는 2점) - 기본 점수는 피만
     const piCount = cardsByType['피'].length;
     points += piCount;  // 피 1장당 1점 (쌍피는 이미 2장으로 계산됨)
+    
+    // 카드 강화 효과 적용
+    let enhancementMultiplier = 0;
+    
+    // 청 강화: 모든 카드에 점수 +1
+    allCards.forEach(card => {
+        const enhancement = gameState.cardEnhancements[card.id];
+        if (enhancement === '청') {
+            points += 1;
+        }
+    });
+    
+    // 백 강화: 바닥에 있을 때 점수 +2
+    floorCards.forEach(card => {
+        const enhancement = gameState.cardEnhancements[card.id];
+        if (enhancement === '백') {
+            points += 2;
+        }
+    });
+    
+    // 흑 강화: 핸드에 있을 때 점수 +2
+    handCards.forEach(card => {
+        const enhancement = gameState.cardEnhancements[card.id];
+        if (enhancement === '흑') {
+            points += 2;
+        }
+    });
+    
+    // 적 강화는 버릴 때 처리 (discardCards 함수에서)
     
     // 보너스피 업그레이드 적용
     const bonusPiUpgrades = gameState.upgrades.filter(u => u.id === 'bonus_pi').length;
@@ -1751,6 +1799,18 @@ function createCardElement(card) {
     div.className = 'card';
     div.dataset.cardId = card.id;  // 카드 ID 저장
     
+    // 카드 강화 확인 및 적용
+    const enhancement = gameState.cardEnhancements[card.id];
+    if (enhancement) {
+        div.classList.add(`enhanced-${enhancement.toLowerCase()}`);
+        const enhanceData = Object.values(ENHANCEMENT_TYPES).find(e => e.name === enhancement);
+        if (enhanceData) {
+            // 빛나는 효과 추가
+            div.style.boxShadow = `0 0 20px rgba(${enhanceData.rgb}, 0.8), inset 0 0 15px rgba(${enhanceData.rgb}, 0.3)`;
+            div.style.border = `2px solid ${enhanceData.color}`;
+        }
+    }
+    
     // 카드 이미지 파일명 결정
     let imageName = '';
     
@@ -1859,6 +1919,28 @@ function createMiniCardElement(card) {
     
     return div;
 }
+
+// 카드 강화 함수
+function enhanceCard(cardId, enhancementType) {
+    // 기존 강화 제거
+    if (gameState.cardEnhancements[cardId]) {
+        console.log(`Removing existing enhancement from card ${cardId}`);
+    }
+    
+    // 새 강화 적용
+    gameState.cardEnhancements[cardId] = enhancementType;
+    console.log(`Card ${cardId} enhanced with ${enhancementType}`);
+    
+    // 화면 업데이트
+    updateDisplay();
+}
+
+// 카드 강화 제거 함수
+function removeCardEnhancement(cardId) {
+    delete gameState.cardEnhancements[cardId];
+    updateDisplay();
+}
+
 
 // 카드 하이라이트 함수
 function highlightCard(cardId, isHighlight) {
@@ -2389,6 +2471,24 @@ window.onload = () => {
     }
     initGame();
     
+    // 테스트용 카드 강화 적용
+    testEnhancements();
+    
     // 업그레이드 확인 버튼 이벤트
     document.getElementById('confirm-upgrade').onclick = confirmUpgrade;
 };
+
+// 테스트용 강화 함수
+function testEnhancements() {
+    // 랜덤으로 몇 개 카드에 강화 적용
+    enhanceCard(1, '청');  // 1월 광
+    enhanceCard(5, '적');  // 2월 열끗
+    enhanceCard(10, '백'); // 3월 광
+    enhanceCard(15, '흑'); // 4월 피
+    enhanceCard(20, '황'); // 5월 피
+    enhanceCard(25, '청'); // 7월 열끗
+    enhanceCard(30, '적'); // 8월 열끗
+    enhanceCard(35, '백'); // 9월 피
+    enhanceCard(40, '흑'); // 10월 피
+    enhanceCard(45, '황'); // 12월 광
+}
