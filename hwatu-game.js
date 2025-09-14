@@ -145,7 +145,7 @@ const ENHANCEMENT_TYPES = {
     RED: { name: '적', color: '#ff4444', rgb: '255, 68, 68', effect: '버려질 때 배수 +0.5' },
     WHITE: { name: '백', color: '#ffffff', rgb: '255, 255, 255', effect: '바닥에 있을 때 점수 +2' },
     BLACK: { name: '흑', color: '#8b00ff', rgb: '139, 0, 255', effect: '핸드에 있을 때 점수 +2' },
-    GOLD: { name: '황', color: '#ffd700', rgb: '255, 215, 0', effect: '특별 효과' }
+    GOLD: { name: '황', color: '#ffd700', rgb: '255, 215, 0', effect: '스테이지 종료 시 소지금 +1' }
 };
 
 // 화투 카드 정의 (48장)
@@ -1477,19 +1477,41 @@ function endRound() {
     
     if (gameState.totalScore >= gameState.targetScore) {
         // 미션 성공
-        // 1. 먼저 보유 소지금에 대한 이자 계산 (5당 1 지급)
+        // 1. 황 강화 카드 보너스 계산 (바닥과 손패에 있는 황 강화 카드당 1 소지금)
+        let goldEnhancementBonus = 0;
+        
+        // 바닥 카드 중 황 강화 확인
+        gameState.floor.forEach(card => {
+            if (gameState.cardEnhancements[card.id] === '황') {
+                goldEnhancementBonus++;
+            }
+        });
+        
+        // 손패 카드 중 황 강화 확인
+        gameState.hand.forEach(card => {
+            if (gameState.cardEnhancements[card.id] === '황') {
+                goldEnhancementBonus++;
+            }
+        });
+        
+        if (goldEnhancementBonus > 0) {
+            gameState.gold += goldEnhancementBonus;
+            showEnhancementEffect(`황 강화 보너스! +${goldEnhancementBonus} 소지금`, '#ffd700');
+        }
+        
+        // 2. 보유 소지금에 대한 이자 계산 (5당 1 지급)
         const interestGold = Math.floor(gameState.gold / 5);
         gameState.gold += interestGold;
         
-        // 2. 스테이지 클리어 보상 지급 (3, 4, 5 반복)
+        // 3. 스테이지 클리어 보상 지급 (3, 4, 5 반복)
         const goldPattern = [3, 4, 5];
         const clearGold = goldPattern[(gameState.stage - 1) % 3];
         gameState.gold += clearGold;
         
-        // 총 획득 소지금 (이자 + 클리어 보상)
-        const totalEarnedGold = interestGold + clearGold;
+        // 총 획득 소지금 (황 강화 보너스 + 이자 + 클리어 보상)
+        const totalEarnedGold = goldEnhancementBonus + interestGold + clearGold;
         
-        showMissionResult(true, gameState.totalScore, false, totalEarnedGold, interestGold, clearGold);
+        showMissionResult(true, gameState.totalScore, false, totalEarnedGold, interestGold, clearGold, goldEnhancementBonus);
         setTimeout(() => {
             // 업그레이드 선택 팝업 표시
             showUpgradeSelection();
@@ -1541,7 +1563,7 @@ function endRound() {
 }
 
 // 미션 결과 표시
-function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 0, interestGold = 0, clearGold = 0) {
+function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 0, interestGold = 0, clearGold = 0, goldEnhancementBonus = 0) {
     const message = document.createElement('div');
     message.style.cssText = `
         position: fixed;
@@ -1575,6 +1597,9 @@ function showMissionResult(success, score, usingTwoHearts = false, earnedGold = 
         </div>
         ${success && earnedGold > 0 ? 
             `<div style="margin-top: 15px; color: #ffd700;">
+                ${goldEnhancementBonus > 0 ? `<div style="font-size: 20px; margin-bottom: 5px;">
+                    황 강화 보너스: <span style="font-weight: bold;">+${goldEnhancementBonus}</span>
+                </div>` : ''}
                 ${interestGold > 0 ? `<div style="font-size: 20px; margin-bottom: 5px;">
                     이자: <span style="font-weight: bold;">+${interestGold}</span>
                 </div>` : ''}
