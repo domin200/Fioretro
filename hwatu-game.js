@@ -2694,8 +2694,8 @@ function showUpgradeSelection() {
     // play 컨테이너 내용을 상점으로 교체
     playContainer.innerHTML = `
         <div class="shop-container" style="width: 100%; height: 100%; display: flex; flex-direction: column; padding: 20px;">
-            <div class="shop-header" style="text-align: center; margin-bottom: 20px;">
-                <h2 style="color: #ffd700; font-size: 32px; margin-bottom: 10px;">🏪 주막</h2>
+            <div class="shop-header" style="text-align: center; margin-bottom: 15px;">
+                <h3 style="color: #ffd700; font-size: 20px; margin: 0;">🏪 주막</h3>
             </div>
             <div class="upgrade-choices" id="upgrade-choices" style="
                 flex: 1;
