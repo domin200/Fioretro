@@ -412,6 +412,25 @@ function initGame() {
             showTopCardPreview();
         }, totalDealTime + 600);
     }
+    
+    // 놀부심보 효과 - 첫 턴에 카드 2장 추가 드로우
+    const hasNolbuTreasure = gameState.upgrades && gameState.upgrades.some(u => u.id === 'nolbu_treasure');
+    if (hasNolbuTreasure && gameState.turn === 0) {
+        setTimeout(() => {
+            triggerUpgradeEffect('nolbu_treasure');
+            // 2장 추가 드로우
+            for (let i = 0; i < 2; i++) {
+                if (gameState.deck.length > 0) {
+                    setTimeout(() => {
+                        const extraCard = gameState.deck.pop();
+                        showDrawAnimation(extraCard);
+                        gameState.hand.push(extraCard);
+                        updateDisplay();
+                    }, i * 300);
+                }
+            }
+        }, totalDealTime + 800);
+    }
 }
 
 // 덱 섞기
@@ -576,9 +595,15 @@ function playCard() {
             updateDisplay();
         }
         
-        // 1초 후에 손패 보충
+        // 1초 후에 손패 보충 (놀부심보가 있으면 추가 드로우 안함)
         setTimeout(() => {
-            if (gameState.deck.length > 0 && gameState.hand.length < 5) {
+            const hasNolbuTreasure = gameState.upgrades && gameState.upgrades.some(u => u.id === 'nolbu_treasure');
+            
+            // 놀부심보가 있고 첫 턴이 아니면 드로우 안함
+            if (hasNolbuTreasure && gameState.turn > 0) {
+                // 추가 드로우 차단
+                console.log('놀부심보 효과: 추가 드로우 차단');
+            } else if (gameState.deck.length > 0 && gameState.hand.length < 5) {
                 const newCard = gameState.deck.pop();
                 if (newCard) {  // 카드가 존재하는지 확인
                     // 손패 보충 애니메이션
@@ -860,26 +885,34 @@ function discardCards() {
         triggerUpgradeEffect('reincarnation');
     }
     
-    // 덱에서 새 카드들 드로우 (버린 카드 수만큼)
-    const drawCount = cardsToDiscard.length;
-    setTimeout(() => {
-        for (let i = 0; i < drawCount; i++) {
-            if (gameState.deck.length > 0) {
-                const newCard = gameState.deck.pop();
-                
-                // 각 카드 드로우에 딜레이 추가
-                setTimeout(() => {
-                    showDrawAnimation(newCard);
+    // 덱에서 새 카드들 드로우 (버린 카드 수만큼) - 놀부심보가 있으면 드로우 안함
+    const hasNolbuTreasure = gameState.upgrades && gameState.upgrades.some(u => u.id === 'nolbu_treasure');
+    
+    if (hasNolbuTreasure) {
+        // 놀부심보 효과: 추가 드로우 차단
+        console.log('놀부심보 효과: 버리기 후 추가 드로우 차단');
+        PopupComponent.showMessage('놀부심보 효과로 카드를 보충할 수 없습니다!', 'warning');
+    } else {
+        const drawCount = cardsToDiscard.length;
+        setTimeout(() => {
+            for (let i = 0; i < drawCount; i++) {
+                if (gameState.deck.length > 0) {
+                    const newCard = gameState.deck.pop();
                     
-                    // 1초 후 손패에 추가
+                    // 각 카드 드로우에 딜레이 추가
                     setTimeout(() => {
-                        gameState.hand.push(newCard);
-                        updateDisplay();
-                    }, 1000);
-                }, i * 200); // 각 카드마다 200ms 간격
+                        showDrawAnimation(newCard);
+                        
+                        // 1초 후 손패에 추가
+                        setTimeout(() => {
+                            gameState.hand.push(newCard);
+                            updateDisplay();
+                        }, 1000);
+                    }, i * 200); // 각 카드마다 200ms 간격
+                }
             }
-        }
-    }, 500);
+        }, 500);
+    }
     
     // 애니메이션 완료 후 임시 카드 제거
     setTimeout(() => {
@@ -2784,6 +2817,7 @@ const upgradePool = [
     { id: 'thousand_mile', name: '천리길', icon: '🛤️', description: '스테이지 번호 × 1 만큼 기본 점수 추가', rarity: 'rare', price: 8 },
     { id: 'reincarnation', name: '윤회', icon: '♻️', description: '버린 카드가 덱으로 돌아가고, 버리기당 +2점', rarity: 'epic', price: 14 },
     { id: 'two_hearts', name: '두개의 심장', icon: '💕', description: '한 번 패배해도 게임이 끝나지 않음 (1회용)', rarity: 'legendary', price: 20 },
+    { id: 'nolbu_treasure', name: '놀부심보', icon: '💰', description: '첫 턴에 카드 2장 추가 드로우, 이후 추가 드로우 불가', rarity: 'epic', price: 15 },
     
     // 카드 강화 아이템 - 사신수 보주 (구버전 - hwatu-shop.js로 이전됨)
     // { id: 'enhance_blue', name: '청룡의 보주', icon: '🔵', description: '덱에서 무작위 5장 중 1장을 선택하여 청 강화 부여', rarity: 'common', price: 6, type: 'enhancement', enhanceType: '청' },
