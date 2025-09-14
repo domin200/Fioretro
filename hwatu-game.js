@@ -2001,78 +2001,109 @@ function updateDisplay() {
         });
     });
     
-    // 손패 표시 (애니메이션 포함)
+    // 손패 표시 (DOM 재사용으로 깜빡임 방지)
     const handArea = document.getElementById('hand-area');
-    const currentHandCards = new Map();
+    const existingCards = new Map();
     
-    // 현재 손패의 카드 요소들 저장
+    // 현재 DOM에 있는 카드들을 맵에 저장
     handArea.querySelectorAll('.card').forEach(cardEl => {
         const cardId = cardEl.dataset.cardId;
         if (cardId) {
-            const rect = cardEl.getBoundingClientRect();
-            previousCardPositions.hand.set(cardId, rect);
+            existingCards.set(cardId, cardEl);
         }
     });
     
-    handArea.innerHTML = '';
+    // 새로운 손패 카드들을 위한 요소 준비
+    const newHandElements = [];
+    
     gameState.hand.forEach((card, index) => {
-        const cardDiv = createCardElement(card);
-        cardDiv.dataset.cardId = card.id;
+        let cardDiv = existingCards.get(card.id);
         
-        if (index === gameState.selectedCard) {
-            cardDiv.classList.add('selected');
-        }
-        cardDiv.onclick = () => selectHandCard(index);
-        
-        // 이전 위치가 있으면 애니메이션 적용
-        const prevPos = previousCardPositions.hand.get(card.id);
-        if (prevPos) {
-            // 카드를 먼저 추가
-            handArea.appendChild(cardDiv);
-            const newPos = cardDiv.getBoundingClientRect();
+        if (cardDiv) {
+            // 기존 카드 재사용
+            existingCards.delete(card.id); // 사용된 카드는 맵에서 제거
             
-            // 위치 차이 계산
-            const deltaX = prevPos.left - newPos.left;
-            const deltaY = prevPos.top - newPos.top;
-            
-            // 애니메이션 적용
-            if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
-                cardDiv.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-                cardDiv.style.transition = 'none';
-                
-                // 다음 프레임에서 애니메이션 시작
-                requestAnimationFrame(() => {
-                    cardDiv.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                    cardDiv.style.transform = 'translate(0, 0)';
-                });
+            // 선택 상태 업데이트
+            if (index === gameState.selectedCard) {
+                cardDiv.classList.add('selected');
+            } else {
+                cardDiv.classList.remove('selected');
             }
+            cardDiv.onclick = () => selectHandCard(index);
         } else {
-            // 새로운 카드는 페이드인 애니메이션
-            cardDiv.style.opacity = '0';
-            cardDiv.style.transform = 'scale(0.8)';
-            handArea.appendChild(cardDiv);
+            // 새 카드 생성
+            cardDiv = createCardElement(card);
+            cardDiv.dataset.cardId = card.id;
             
+            if (index === gameState.selectedCard) {
+                cardDiv.classList.add('selected');
+            }
+            cardDiv.onclick = () => selectHandCard(index);
+            
+            // 새 카드는 나중에 애니메이션 적용
+            cardDiv.style.opacity = '0';
+            cardDiv.style.transform = 'scale(0.8) translateY(20px)';
+            cardDiv.classList.add('new-card');
+        }
+        
+        newHandElements.push(cardDiv);
+    });
+    
+    // 사용되지 않은 기존 카드들 제거 (페이드아웃)
+    existingCards.forEach(cardEl => {
+        cardEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        cardEl.style.opacity = '0';
+        cardEl.style.transform = 'scale(0.8)';
+        setTimeout(() => cardEl.remove(), 200);
+    });
+    
+    // 새로운 순서로 카드 배치
+    newHandElements.forEach((cardDiv, index) => {
+        if (cardDiv.classList.contains('new-card')) {
+            handArea.appendChild(cardDiv);
+            cardDiv.classList.remove('new-card');
+            
+            // 새 카드 애니메이션
             requestAnimationFrame(() => {
                 cardDiv.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
                 cardDiv.style.opacity = '1';
-                cardDiv.style.transform = 'scale(1)';
+                cardDiv.style.transform = 'scale(1) translateY(0)';
             });
+        } else if (cardDiv.parentNode !== handArea) {
+            handArea.appendChild(cardDiv);
+        } else {
+            // 기존 카드의 위치만 조정
+            const currentIndex = Array.from(handArea.children).indexOf(cardDiv);
+            if (currentIndex !== index) {
+                // 위치가 바뀐 경우만 이동
+                if (index === handArea.children.length - 1) {
+                    handArea.appendChild(cardDiv);
+                } else {
+                    handArea.insertBefore(cardDiv, handArea.children[index]);
+                }
+            }
         }
     });
     
-    // 바닥패 표시 (같은 월끼리 그룹화, 애니메이션 포함)
+    // 바닥패 표시 (같은 월끼리 그룹화, DOM 재사용)
     const floorArea = document.getElementById('floor-area');
+    const existingFloorCards = new Map();
+    const existingStacks = new Map();
     
-    // 현재 바닥패의 카드 요소들 위치 저장
+    // 현재 DOM에 있는 카드와 스택 저장
     floorArea.querySelectorAll('.card').forEach(cardEl => {
         const cardId = cardEl.dataset.cardId;
         if (cardId) {
-            const rect = cardEl.getBoundingClientRect();
-            previousCardPositions.floor.set(cardId, rect);
+            existingFloorCards.set(cardId, cardEl);
         }
     });
     
-    floorArea.innerHTML = '';
+    floorArea.querySelectorAll('[data-month]').forEach(stackEl => {
+        const month = stackEl.dataset.month;
+        if (month) {
+            existingStacks.set(month, stackEl);
+        }
+    });
     
     // 월별로 카드 그룹화하면서 첫 등장 순서 기록
     const cardsByMonth = {};
@@ -2085,92 +2116,85 @@ function updateDisplay() {
         cardsByMonth[card.month].push(card);
     });
     
+    // 사용된 요소 추적
+    const usedElements = new Set();
+    const newFloorElements = [];
+    
     // 첫 등장 순서대로 각 월의 카드들을 표시 (같은 월은 겹쳐서)
     monthOrder.forEach(month => {
         const monthCards = cardsByMonth[month];
+        
         if (monthCards.length === 1) {
             // 카드가 1장이면 그냥 표시
-            const cardDiv = createCardElement(monthCards[0]);
-            cardDiv.dataset.cardId = monthCards[0].id;
+            let cardDiv = existingFloorCards.get(monthCards[0].id);
             
-            // 이전 위치가 있으면 애니메이션 적용
-            const prevPos = previousCardPositions.floor.get(monthCards[0].id);
-            if (prevPos) {
-                floorArea.appendChild(cardDiv);
-                const newPos = cardDiv.getBoundingClientRect();
-                
-                const deltaX = prevPos.left - newPos.left;
-                const deltaY = prevPos.top - newPos.top;
-                
-                if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
-                    cardDiv.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-                    cardDiv.style.transition = 'none';
-                    
-                    requestAnimationFrame(() => {
-                        cardDiv.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                        cardDiv.style.transform = 'translate(0, 0)';
-                    });
-                }
+            if (cardDiv) {
+                // 기존 카드 재사용
+                existingFloorCards.delete(monthCards[0].id);
+                usedElements.add(cardDiv);
             } else {
-                // 새로운 카드는 페이드인
+                // 새 카드 생성
+                cardDiv = createCardElement(monthCards[0]);
+                cardDiv.dataset.cardId = monthCards[0].id;
                 cardDiv.style.opacity = '0';
                 cardDiv.style.transform = 'scale(0.8) translateY(20px)';
-                floorArea.appendChild(cardDiv);
-                
-                requestAnimationFrame(() => {
-                    cardDiv.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
-                    cardDiv.style.opacity = '1';
-                    cardDiv.style.transform = 'scale(1) translateY(0)';
-                });
+                cardDiv.classList.add('new-floor-card');
             }
+            
+            newFloorElements.push(cardDiv);
+            
         } else {
-            // 카드가 여러 장이면 겹쳐서 표시
-            const stackContainer = document.createElement('div');
-            stackContainer.style.position = 'relative';
-            stackContainer.style.width = `${100 + (monthCards.length - 1) * 25}px`;  // 카드 수에 따라 너비 조정
-            stackContainer.style.height = `${150 + (monthCards.length - 1) * 10}px`;  // 카드 수에 따라 높이 조정
-            stackContainer.style.display = 'inline-block';
-            stackContainer.style.marginRight = '15px';
+            // 카드가 여러 장이면 스택으로 표시
+            let stackContainer = existingStacks.get(month.toString());
+            
+            if (!stackContainer) {
+                // 새 스택 컨테이너 생성
+                stackContainer = document.createElement('div');
+                stackContainer.dataset.month = month;
+                stackContainer.style.position = 'relative';
+                stackContainer.style.display = 'inline-block';
+                stackContainer.style.marginRight = '15px';
+            } else {
+                existingStacks.delete(month.toString());
+                // 기존 스택의 카드들 제거 (나중에 다시 추가)
+                stackContainer.innerHTML = '';
+            }
+            
+            stackContainer.style.width = `${100 + (monthCards.length - 1) * 25}px`;
+            stackContainer.style.height = `${150 + (monthCards.length - 1) * 10}px`;
             
             monthCards.forEach((card, index) => {
-                const cardDiv = createCardElement(card);
-                cardDiv.dataset.cardId = card.id;
-                cardDiv.style.position = 'absolute';
-                cardDiv.style.left = `${index * 25}px`;  // 더 넓게 오른쪽으로 이동 (카드 내용 보이게)
-                cardDiv.style.top = `${index * 10}px`;   // 더 넓게 아래로 이동
-                cardDiv.style.zIndex = index;
-                // 모든 카드에 그림자 효과 추가 (깊이감)
-                cardDiv.style.boxShadow = `${2 + index}px ${2 + index}px ${5 + index * 2}px rgba(0, 0, 0, 0.3)`;
+                let cardDiv = existingFloorCards.get(card.id);
                 
-                // 이전 위치가 있으면 애니메이션 적용
-                const prevPos = previousCardPositions.floor.get(card.id);
-                if (prevPos) {
-                    stackContainer.appendChild(cardDiv);
-                    const newPos = cardDiv.getBoundingClientRect();
-                    
-                    const deltaX = prevPos.left - newPos.left;
-                    const deltaY = prevPos.top - newPos.top;
-                    
-                    if (Math.abs(deltaX) > 1 || Math.abs(deltaY) > 1) {
-                        cardDiv.style.transform = `translate(${deltaX}px, ${deltaY}px)`;
-                        cardDiv.style.transition = 'none';
-                        
-                        requestAnimationFrame(() => {
-                            cardDiv.style.transition = 'transform 0.4s cubic-bezier(0.4, 0, 0.2, 1)';
-                            cardDiv.style.transform = 'translate(0, 0)';
-                        });
-                    }
+                if (cardDiv) {
+                    // 기존 카드 재사용
+                    existingFloorCards.delete(card.id);
+                    cardDiv.style.position = 'absolute';
                 } else {
-                    // 새로운 카드는 스택에 추가되는 애니메이션
+                    // 새 카드 생성
+                    cardDiv = createCardElement(card);
+                    cardDiv.dataset.cardId = card.id;
+                    cardDiv.style.position = 'absolute';
                     cardDiv.style.opacity = '0';
                     cardDiv.style.transform = 'translateY(-30px)';
-                    stackContainer.appendChild(cardDiv);
-                    
+                    cardDiv.classList.add('new-stack-card');
+                }
+                
+                cardDiv.style.left = `${index * 25}px`;
+                cardDiv.style.top = `${index * 10}px`;
+                cardDiv.style.zIndex = index;
+                cardDiv.style.boxShadow = `${2 + index}px ${2 + index}px ${5 + index * 2}px rgba(0, 0, 0, 0.3)`;
+                
+                stackContainer.appendChild(cardDiv);
+                
+                // 새 카드 애니메이션 예약
+                if (cardDiv.classList.contains('new-stack-card')) {
                     setTimeout(() => {
                         cardDiv.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
                         cardDiv.style.opacity = '1';
                         cardDiv.style.transform = 'translateY(0)';
-                    }, index * 50); // 순차적으로 나타남
+                        cardDiv.classList.remove('new-stack-card');
+                    }, index * 50);
                 }
             });
             
@@ -2198,7 +2222,38 @@ function updateDisplay() {
                 stackContainer.appendChild(badge);
             }
             
-            floorArea.appendChild(stackContainer);
+            newFloorElements.push(stackContainer);
+        }
+    });
+    
+    // 사용되지 않은 기존 카드와 스택 제거
+    existingFloorCards.forEach(cardEl => {
+        cardEl.style.transition = 'opacity 0.2s ease, transform 0.2s ease';
+        cardEl.style.opacity = '0';
+        cardEl.style.transform = 'scale(0.8) translateY(-20px)';
+        setTimeout(() => cardEl.remove(), 200);
+    });
+    
+    existingStacks.forEach(stackEl => {
+        stackEl.style.transition = 'opacity 0.2s ease';
+        stackEl.style.opacity = '0';
+        setTimeout(() => stackEl.remove(), 200);
+    });
+    
+    // 새로운 요소들 추가
+    newFloorElements.forEach(element => {
+        if (!element.parentNode) {
+            floorArea.appendChild(element);
+        }
+        
+        // 새 카드 애니메이션
+        if (element.classList && element.classList.contains('new-floor-card')) {
+            requestAnimationFrame(() => {
+                element.style.transition = 'opacity 0.3s ease, transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                element.style.opacity = '1';
+                element.style.transform = 'scale(1) translateY(0)';
+                element.classList.remove('new-floor-card');
+            });
         }
     });
     
