@@ -2971,11 +2971,13 @@ function purchaseUpgrade(upgrade, cardElement) {
 
 // 카드 강화 선택 화면 표시
 function showCardEnhancementSelection(upgrade, shopCardElement) {
-    // 덱에서 무작위로 5장 선택 (이미 강화된 카드 제외)
-    const availableCards = HWATU_CARDS.filter(card => !gameState.cardEnhancements[card.id]);
+    // 덱에서 무작위로 5장 선택 (제거된 카드만 제외)
+    const availableCards = HWATU_CARDS.filter(card => {
+        return !gameState.removedCards || !gameState.removedCards.includes(card.id);
+    });
     
     if (availableCards.length === 0) {
-        alert('강화 가능한 카드가 없습니다!');
+        alert('강화할 카드가 없습니다!');
         // 소지금 환불
         gameState.gold += upgrade.price;
         const shopGoldElement = document.getElementById('shop-gold-amount');
@@ -3057,6 +3059,37 @@ function showCardEnhancementSelection(upgrade, shopCardElement) {
         const cardDiv = createCardElement(card);
         cardDiv.style.cursor = 'pointer';
         cardDiv.style.transition = 'all 0.3s ease';
+        cardDiv.style.position = 'relative';
+        
+        // 기존 강화 표시
+        if (gameState.cardEnhancements[card.id]) {
+            const currentEnhance = gameState.cardEnhancements[card.id];
+            const enhanceType = ENHANCEMENT_TYPES[Object.keys(ENHANCEMENT_TYPES).find(key => 
+                ENHANCEMENT_TYPES[key].name === currentEnhance)];
+            if (enhanceType) {
+                const badge = document.createElement('div');
+                badge.style.cssText = `
+                    position: absolute;
+                    top: -10px;
+                    right: -10px;
+                    background: ${enhanceType.color};
+                    color: ${enhanceType.name === '황' ? '#000' : '#fff'};
+                    border-radius: 50%;
+                    width: 30px;
+                    height: 30px;
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+                    font-weight: bold;
+                    font-size: 16px;
+                    box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+                    z-index: 10;
+                `;
+                badge.textContent = currentEnhance;
+                cardDiv.appendChild(badge);
+            }
+        }
+        
         cardDiv.onclick = () => applyEnhancementToCard(card.id, upgrade, shopCardElement, selectionOverlay);
         cardDiv.onmouseover = () => {
             cardDiv.style.transform = 'translateY(-10px) scale(1.1)';
@@ -3389,13 +3422,20 @@ function applyEnhancementToCard(cardId, upgrade, shopCardElement, selectionOverl
         enhanceType = enhanceTypes[Math.floor(Math.random() * enhanceTypes.length)];
     }
     
-    // 강화 적용
+    // 기존 강화 확인
+    const previousEnhancement = gameState.cardEnhancements[cardId];
+    
+    // 강화 적용 (덮어씌우기)
     gameState.cardEnhancements[cardId] = enhanceType;
     
     // 카드 정보 가져오기
     const card = HWATU_CARDS.find(c => c.id === cardId);
     if (card) {
-        showEnhancementEffect(`${card.month}월 ${card.name}에 ${enhanceType} 강화 적용!`, 
+        let message = `${card.month}월 ${card.name}에 ${enhanceType} 강화 적용!`;
+        if (previousEnhancement && previousEnhancement !== enhanceType) {
+            message = `${card.month}월 ${card.name}의 ${previousEnhancement} 강화를 ${enhanceType} 강화로 교체!`;
+        }
+        showEnhancementEffect(message, 
             ENHANCEMENT_TYPES[Object.keys(ENHANCEMENT_TYPES).find(key => 
                 ENHANCEMENT_TYPES[key].name === enhanceType)].color);
     }
