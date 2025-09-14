@@ -4521,8 +4521,8 @@ function proceedToNextStage() {
                 <div id="hand-area" style="flex: 1; display: flex; align-items: center;"></div>
                 
                 <div id="control-area" style="margin-top: 15px;">
-                    <button class="btn btn-primary" id="play-btn" onclick="playCard()">바닥에 내기</button>
                     <button class="btn btn-secondary" id="discard-btn" onclick="discardCards()">버리기</button>
+                    <button class="btn btn-primary" id="play-btn" onclick="playCard()">바닥에 내기</button>
                 </div>
             </div>
         </div>
