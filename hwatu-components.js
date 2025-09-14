@@ -500,7 +500,7 @@ class OrbCardSelectionComponent {
         const cardElement = DOMUtils.createElement('div', {
             className: 'orb-selection-card',
             style: {
-                width: '120px',
+                width: '100px',
                 height: '160px',
                 borderRadius: '10px',
                 cursor: 'pointer',
