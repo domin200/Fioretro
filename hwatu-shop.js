@@ -352,40 +352,53 @@ class ShopManager {
 
     // 모든 덱 카드 가져오기
     getAllDeckCards() {
-        const cards = [];
-        for (let month = 1; month <= 12; month++) {
-            for (let i = 0; i < 4; i++) {
-                const cardId = `${month}_${i + 1}`;
-                if (!gameStateManager.state.removedCards.has(cardId)) {
-                    cards.push(hwatu[month - 1][i]);
-                }
-            }
+        // HWATU_CARDS가 전역에 없으면 gameState.deck 사용
+        let allCards = [];
+        
+        if (typeof HWATU_CARDS !== 'undefined') {
+            allCards = [...HWATU_CARDS];
+        } else if (typeof gameState !== 'undefined' && gameState.deck) {
+            // gameState.deck와 hand, floor, captures에서 모든 카드 수집
+            allCards = [
+                ...gameState.deck,
+                ...gameState.hand,
+                ...gameState.floor,
+                ...gameState.captures,
+                ...gameState.opponentHand,
+                ...gameState.opponentCaptures
+            ];
         }
+        
+        // 제거된 카드 필터링
+        const filteredCards = allCards.filter(card => 
+            !gameStateManager.state.removedCards.has(card.id)
+        );
         
         // 복제된 카드 추가
         gameStateManager.state.duplicatedCards.forEach(cardId => {
-            const [month, num] = cardId.split('_').map(Number);
-            cards.push(hwatu[month - 1][num - 1]);
+            const duplicatedCard = allCards.find(c => c.id === parseInt(cardId));
+            if (duplicatedCard) {
+                filteredCards.push({...duplicatedCard});
+            }
         });
         
-        return cards;
+        return filteredCards;
     }
 
     // 계절 카드 추가 메서드
     addSeasonalCard(months, seasonName) {
-        // hwatu 카드 데이터가 필요함 - 전역 변수 참조
-        if (typeof hwatu === 'undefined') {
-            console.error('hwatu card data not found');
+        // 모든 카드 가져오기
+        const allCards = this.getAllDeckCards();
+        
+        // 해당 월의 모든 카드 수집
+        const seasonalCards = allCards.filter(card => 
+            months.includes(card.month)
+        );
+        
+        if (seasonalCards.length === 0) {
+            console.error('No seasonal cards found for months:', months);
             return;
         }
-
-        // 해당 월의 모든 카드 수집
-        const seasonalCards = [];
-        months.forEach(month => {
-            for (let i = 0; i < 4; i++) {
-                seasonalCards.push(hwatu[month - 1][i]);
-            }
-        });
 
         // 무작위 카드 선택
         const randomCard = seasonalCards[Math.floor(Math.random() * seasonalCards.length)];

@@ -153,8 +153,8 @@ function playSound(soundFile) {
 
 // 카드 강화 타입은 hwatu-config.js에서 가져옴
 
-// 화투 카드 정의 (48장)
-const HWATU_CARDS = [
+// 화투 카드 정의 (48장) - 전역 변수로 설정
+window.HWATU_CARDS = [
     // 1월 - 송학
     { month: 1, type: '광', name: '송학', points: 20, id: 1 },
     { month: 1, type: '홍단', name: '홍단', points: 10, id: 2 },
@@ -231,9 +231,11 @@ const HWATU_CARDS = [
 // 화투 카드를 2차원 배열로 변환 (월별로 정리)
 const hwatu = [];
 for (let month = 1; month <= 12; month++) {
-    const monthCards = HWATU_CARDS.filter(card => card.month === month);
+    const monthCards = window.HWATU_CARDS.filter(card => card.month === month);
     hwatu.push(monthCards);
 }
+// HWATU_CARDS 별칭 설정 (호환성)
+const HWATU_CARDS = window.HWATU_CARDS;
 
 // 게임 상태
 const gameState = {
@@ -2820,9 +2822,9 @@ function showUpgradeSelection() {
     // 초기화
     purchasedUpgrades = [];
     
-    // play 컨테이너 내용을 상점으로 교체
+    // play 컨테이너 내용을 상점으로 교체 (소모품 카드 영역과 덱 정보는 유지)
     playContainer.innerHTML = `
-        <div class="shop-container" style="width: 100%; height: 100%; display: flex; flex-direction: column; padding: 20px;">
+        <div class="shop-container" style="width: 100%; height: 100%; display: flex; flex-direction: column; padding: 20px; position: relative;">
             <div class="shop-header" style="text-align: center; margin-bottom: 15px;">
                 <h3 style="color: #ffd700; font-size: 20px; margin: 0;">🏪 주막</h3>
             </div>
@@ -2849,6 +2851,70 @@ function showUpgradeSelection() {
                     cursor: pointer;
                     transition: all 0.3s ease;
                 ">다음 스테이지로</button>
+            </div>
+        </div>
+        
+        <!-- 소모품 카드 영역 (우측 하단) -->
+        <div id="consumable-area" style="
+            position: absolute;
+            right: 20px;
+            bottom: 20px;
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.8) 0%, rgba(20, 20, 20, 0.8) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+        ">
+            <div style="
+                position: absolute;
+                top: -10px;
+                left: 10px;
+                background: #1a1a2e;
+                padding: 2px 8px;
+                border-radius: 4px;
+                font-size: 11px;
+                color: #ffd700;
+                font-weight: bold;
+            ">소모품</div>
+            <div id="consumable-slot-1" class="consumable-slot" style="
+                width: 80px;
+                height: 110px;
+                border: 2px dashed rgba(255, 215, 0, 0.3);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            "></div>
+            <div id="consumable-slot-2" class="consumable-slot" style="
+                width: 80px;
+                height: 110px;
+                border: 2px dashed rgba(255, 215, 0, 0.3);
+                border-radius: 8px;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                cursor: pointer;
+                transition: all 0.3s ease;
+            "></div>
+        </div>
+        
+        <!-- 덱 정보 (우측 상단) -->
+        <div id="deck-info" style="
+            position: absolute;
+            right: 20px;
+            top: 60px;
+        ">
+            <div class="deck-card">
+                🎴
+                <div class="deck-remaining-label">
+                    남은 카드
+                </div>
+            </div>
+            <div class="deck-count">
+                <span id="deck-remaining">48</span>/<span id="deck-total">48</span>
             </div>
         </div>
     `;
@@ -3020,6 +3086,33 @@ function showUpgradeSelection() {
     // 컨테이너에 두 줄 추가
     choicesContainer.appendChild(firstRow);
     choicesContainer.appendChild(secondRow);
+    
+    // 소모품 카드 영역 업데이트
+    updateConsumableCards();
+    
+    // 덱 카운트 업데이트
+    updateDeckCount();
+}
+
+// 덱 카운트 업데이트
+function updateDeckCount() {
+    const deckRemaining = document.getElementById('deck-remaining');
+    const deckTotal = document.getElementById('deck-total');
+    
+    if (deckRemaining && deckTotal) {
+        // 전체 카드 수 계산 (기본 48장 + 복제된 카드 - 제거된 카드)
+        let totalCards = 48;
+        
+        if (typeof gameStateManager !== 'undefined') {
+            totalCards = totalCards - gameStateManager.state.removedCards.size + gameStateManager.state.duplicatedCards.size;
+        }
+        
+        // 현재 덱에 남은 카드 수
+        const remaining = gameState.deck ? gameState.deck.length : totalCards;
+        
+        deckRemaining.textContent = remaining;
+        deckTotal.textContent = totalCards;
+    }
 }
 
 // 구매 툴팁 표시
@@ -3196,6 +3289,8 @@ function purchaseUpgrade(upgrade, cardElement) {
             cardElement.style.opacity = '0.5';
             cardElement.style.pointerEvents = 'none';
             updateDisplay();
+            updateConsumableCards();  // 소모품 카드 영역 업데이트
+            updateDeckCount();  // 덱 카운트 업데이트
         }
         return;
     }
