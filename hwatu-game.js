@@ -4738,12 +4738,6 @@ function showTitleScreen() {
         scoreBoard.style.opacity = '0';
     }
     
-    // 타이틀을 위해 grid 레이아웃을 임시로 변경
-    const mainLayout = document.getElementById('main-game-layout');
-    if (mainLayout) {
-        mainLayout.style.gridTemplateColumns = '1fr';  // 한 열만 사용
-    }
-    
     // Play 컨테이너를 화면 정중앙에 위치 (왼쪽 UI 공간 없이)
     const playContainer = document.getElementById('play-container');
     
@@ -4970,13 +4964,6 @@ function startGame() {
             updateBackgroundColors(1);
         }
         
-        // Grid 레이아웃 복원
-        const mainLayout = document.getElementById('main-game-layout');
-        if (mainLayout) {
-            mainLayout.style.transition = 'grid-template-columns 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-            mainLayout.style.gridTemplateColumns = '';  // CSS 기본값으로 복원
-        }
-        
         // 게임 시작 애니메이션 - 스타일 초기화만
         setTimeout(() => {
             // 트랜지션 설정
@@ -4992,9 +4979,6 @@ function startGame() {
             // 애니메이션 완료 후 트랜지션 제거
             setTimeout(() => {
                 playContainer.style.transition = '';
-                if (mainLayout) {
-                    mainLayout.style.transition = '';
-                }
             }, 850);
         }, 50);
         
