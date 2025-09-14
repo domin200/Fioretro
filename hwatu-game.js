@@ -4766,8 +4766,10 @@ function showTitleScreen() {
     playContainer.style.justifyContent = 'center';
     playContainer.style.alignItems = 'center';
     
-    // 타이틀 화면에서 배경 투명도 2배로 (0.08 -> 0.16)
-    playContainer.style.background = 'rgba(0, 255, 0, 0.16)';
+    // 타이틀 화면에서 점수판 UI와 같은 어두운 색상 사용
+    playContainer.style.background = 'rgba(0, 0, 0, 0.3)';
+    playContainer.style.border = '1px solid rgba(255, 255, 255, 0.1)';
+    playContainer.style.backdropFilter = 'blur(5px)';
     
     // 타이틀 화면 내용
     playContainer.innerHTML = `
@@ -5008,6 +5010,12 @@ function startGame() {
             const capturedArea = document.getElementById('captured-area');
             const scoreBoard = document.getElementById('score-board');
             
+            // play 컨테이너 색상을 어두운 색상에서 초록색으로 전환
+            playContainer.style.transition = 'background 2s ease, border-color 2s ease, backdrop-filter 2s ease';
+            playContainer.style.background = 'rgba(0, 255, 0, 0.08)';
+            playContainer.style.border = '2px solid rgba(100, 255, 100, 0.25)';
+            playContainer.style.backdropFilter = 'blur(5px)';
+            
             // 게임 컨테이너를 원위치로 복원
             if (gameContainer) {
                 gameContainer.style.transition = 'transform 2s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -5094,13 +5102,13 @@ function showOpening() {
         'new card/back.png',
         'new card/1_일광.png', 'new card/1_띠.png', 'new card/1_피1.png', 'new card/1_피2.png',
         'new card/2_끗.png', 'new card/2_띠.png', 'new card/2_피1.png', 'new card/2_피2.png',
-        'new card/3_광.png', 'new card/3_띠.png', 'new card/3_피1.png', 'new card/3_피2.png',
+        'new card/3_삼광.png', 'new card/3_띠.png', 'new card/3_피1.png', 'new card/3_피2.png',
         'new card/4_끗.png', 'new card/4_띠.png', 'new card/4_피1.png', 'new card/4_피2.png',
         'new card/5_끗.png', 'new card/5_띠.png', 'new card/5_피1.png', 'new card/5_피2.png',
         'new card/6_끗.png', 'new card/6_띠.png', 'new card/6_피1.png', 'new card/6_피2.png',
         'new card/7_끗.png', 'new card/7_띠.png', 'new card/7_피1.png', 'new card/7_피2.png',
-        'new card/8_광.png', 'new card/8_끗.png', 'new card/8_피1.png', 'new card/8_피2.png',
-        'new card/9_끗.png', 'new card/9_띠.png', 'new card/9_피1.png', 'new card/9_쌍피.png',
+        'new card/8_팔광.png', 'new card/8_끗.png', 'new card/8_피1.png', 'new card/8_피2.png',
+        'new card/9_띠.png', 'new card/9_쌍피.png', 'new card/9_피1.png', 'new card/9_피2.png',
         'new card/10_끗.png', 'new card/10_띠.png', 'new card/10_피1.png', 'new card/10_피2.png',
         'new card/11_똥광.png', 'new card/11_쌍피.png', 'new card/11_피1.png', 'new card/11_피2.png',
         'new card/12_비광.png', 'new card/12_끗.png', 'new card/12_띠.png', 'new card/12_쌍피.png'
