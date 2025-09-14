@@ -283,6 +283,7 @@ function initFullGame() {
     // gameStateManager도 동기화
     if (typeof gameStateManager !== 'undefined') {
         gameStateManager.state.consumableCards = [];
+        gameStateManager.state.cardEnhancements = {};  // 카드 강화도 초기화
     }
     
     initStage();
