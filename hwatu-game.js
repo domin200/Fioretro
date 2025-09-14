@@ -5034,7 +5034,7 @@ function startGame() {
             }, 2100);
         }, 50);
         
-        // 게임 초기화 타이밍 조정
+        // 게임 초기화 타이밍 조정 - 2초 애니메이션 완료 후
         setTimeout(() => {
             // 게임 초기화 및 카드 배분
             initFullGame();
@@ -5055,7 +5055,7 @@ function startGame() {
                     gameBGM.volume = volume;
                 }, 50);
             }
-        }, 100);
+        }, 2100);
     }, 500);
 }
 
