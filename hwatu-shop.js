@@ -36,11 +36,11 @@ class ShopManager {
                     PopupComponent.showMessage('목표 점수가 5 감소했습니다!', 'success');
                 }
             },
-            // 계절 패 (Seasonal Cards)
+            // 계절 패 (Seasonal Cards - Consumables)
             {
                 id: 'spring_pack',
                 name: '봄의 패',
-                category: 'treasure',
+                category: 'consumable',
                 description: '1~3월 패 중 무작위 한 장을 덱에 추가',
                 price: 5,
                 rarity: 'rare',
@@ -52,7 +52,7 @@ class ShopManager {
             {
                 id: 'summer_pack',
                 name: '여름의 패',
-                category: 'treasure',
+                category: 'consumable',
                 description: '4~6월 패 중 무작위 한 장을 덱에 추가',
                 price: 5,
                 rarity: 'rare',
@@ -64,7 +64,7 @@ class ShopManager {
             {
                 id: 'autumn_pack',
                 name: '가을의 패',
-                category: 'treasure',
+                category: 'consumable',
                 description: '7~9월 패 중 무작위 한 장을 덱에 추가',
                 price: 5,
                 rarity: 'rare',
@@ -76,7 +76,7 @@ class ShopManager {
             {
                 id: 'winter_pack',
                 name: '겨울의 패',
-                category: 'treasure',
+                category: 'consumable',
                 description: '10~12월 패 중 무작위 한 장을 덱에 추가',
                 price: 5,
                 rarity: 'rare',
@@ -208,11 +208,16 @@ class ShopManager {
     arrangeShopItems() {
         const treasures = this.items.filter(item => item.category === 'treasure');
         const orbs = this.items.filter(item => item.category === 'orb');
+        const consumables = this.items.filter(item => item.category === 'consumable');
+        
+        // 보주와 소모품을 합쳐서 섞기
+        const mixedItems = [...orbs, ...consumables];
+        const shuffledItems = ArrayUtils.shuffle(mixedItems);
         
         return {
-            topRow: treasures,  // 2개
-            bottomRow: orbs.slice(0, 3),  // 3개
-            additionalOrbs: orbs.slice(3)  // 나머지
+            topRow: treasures,  // 2개 보물
+            bottomRow: shuffledItems.slice(0, 3),  // 3개 (보주/소모품 랜덤)
+            additionalItems: shuffledItems.slice(3)  // 나머지
         };
     }
 

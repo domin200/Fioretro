@@ -2801,9 +2801,15 @@ function showUpgradeSelection() {
     
     const choicesContainer = document.getElementById('upgrade-choices');
     
-    // 보물(업그레이드)과 보주를 분리
-    const treasures = upgradePool.filter(u => !u.type || (u.type !== 'enhancement' && u.type !== 'remove' && u.type !== 'duplicate'));
-    const orbs = upgradePool.filter(u => u.type === 'enhancement' || u.type === 'remove' || u.type === 'duplicate');
+    // 보물, 보주, 소모품 분리
+    const treasures = upgradePool.filter(u => 
+        (!u.type || (u.type !== 'enhancement' && u.type !== 'remove' && u.type !== 'duplicate')) 
+        && u.category !== 'consumable' && u.category !== 'orb'
+    );
+    const orbs = upgradePool.filter(u => 
+        u.type === 'enhancement' || u.type === 'remove' || u.type === 'duplicate' || u.category === 'orb'
+    );
+    const consumables = upgradePool.filter(u => u.category === 'consumable');
     
     shopUpgrades = [];
     
@@ -2815,12 +2821,11 @@ function showUpgradeSelection() {
         availableTreasures.splice(index, 1);
     }
     
-    // 3개 보주 선택
-    const availableOrbs = [...orbs];
-    for (let i = 0; i < 3 && availableOrbs.length > 0; i++) {
-        const index = Math.floor(Math.random() * availableOrbs.length);
-        shopUpgrades.push(availableOrbs[index]);
-        availableOrbs.splice(index, 1);
+    // 보주와 소모품을 섞어서 3개 선택
+    const mixedItems = [...orbs, ...consumables];
+    const shuffledMixed = mixedItems.sort(() => Math.random() - 0.5);
+    for (let i = 0; i < 3 && i < shuffledMixed.length; i++) {
+        shopUpgrades.push(shuffledMixed[i]);
     }
     
     // 첫 번째 줄 (보물 2개)
@@ -2877,7 +2882,14 @@ function showUpgradeSelection() {
         }
         
         // 카테고리 결정
-        const category = (upgrade.type === 'enhancement' || upgrade.type === 'remove' || upgrade.type === 'duplicate') ? '보주' : '보물';
+        let category = '보물';
+        if (upgrade.type === 'enhancement' || upgrade.type === 'remove' || upgrade.type === 'duplicate') {
+            category = '보주';
+        } else if (upgrade.category === 'consumable') {
+            category = '소모';
+        } else if (upgrade.category === 'orb') {
+            category = '보주';
+        }
         
         // 등급별 그라데이션 클래스 결정
         let rarityGradientClass = '';
