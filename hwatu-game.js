@@ -3559,6 +3559,17 @@ function purchaseUpgrade(upgrade, cardElement) {
     // 소지금 차감
     gameState.gold -= upgrade.price;
     
+    // 구매 효과음 재생 (가격에 따라 다른 효과음)
+    if (upgrade.price >= 10) {
+        const audio = new Audio('SE/gold_big.mp3');
+        audio.volume = 0.9;
+        audio.play().catch(e => console.log('효과음 재생 실패:', e));
+    } else {
+        const audio = new Audio('SE/gold_small.mp3');
+        audio.volume = 0.9;
+        audio.play().catch(e => console.log('효과음 재생 실패:', e));
+    }
+    
     // 강화 아이템인 경우 카드 선택 화면 표시
     if (upgrade.type === 'enhancement') {
         purchasedUpgrades.push(upgrade);
