@@ -3131,11 +3131,25 @@ function purchaseUpgrade(upgrade, cardElement) {
         return;
     }
     
+    // gameStateManager와 gameState 동기화
+    if (typeof gameStateManager !== 'undefined') {
+        gameStateManager.state.gold = gameState.gold;
+        gameStateManager.state.discardsRemaining = gameState.discardsLeft;
+        gameStateManager.state.playerScore = gameState.score;
+        gameStateManager.state.consumableCards = gameState.consumableCards || [];
+    }
+    
     // shopManager가 있고 해당 아이템이 shopManager에 있는 경우
     if (typeof shopManager !== 'undefined' && shopManager.items.find(i => i.id === upgrade.id)) {
         // shopManager를 통해 구매 처리
         const success = shopManager.purchaseItem(upgrade.id);
         if (success) {
+            // gameState와 동기화
+            gameState.gold = gameStateManager.state.gold;
+            gameState.discardsLeft = gameStateManager.state.discardsRemaining;
+            gameState.score = gameStateManager.state.playerScore;
+            gameState.consumableCards = gameStateManager.state.consumableCards;
+            
             purchasedUpgrades.push(upgrade);
             cardElement.classList.add('purchased');
             cardElement.style.opacity = '0.5';
@@ -4121,6 +4135,32 @@ window.onload = () => {
     initFullGame();
     
     // 테스트용 강화 제거됨
+    
+    // 테스트용 키보드 이벤트 (q 키로 소지금 +1)
+    document.addEventListener('keydown', (e) => {
+        if (e.key === 'q' || e.key === 'Q') {
+            gameState.gold++;
+            
+            // gameStateManager와 동기화
+            if (typeof gameStateManager !== 'undefined') {
+                gameStateManager.state.gold = gameState.gold;
+            }
+            
+            // 화면 업데이트
+            updateDisplay();
+            
+            // 시각적 피드백
+            const goldElement = document.getElementById('gold-amount');
+            if (goldElement) {
+                goldElement.style.color = '#4ade80';
+                setTimeout(() => {
+                    goldElement.style.color = '#ffd700';
+                }, 300);
+            }
+            
+            console.log('테스트: 소지금 +1 (현재:', gameState.gold + ')');
+        }
+    });
     
     // 업그레이드 확인 버튼 이벤트
     document.getElementById('confirm-upgrade').onclick = confirmUpgrade;

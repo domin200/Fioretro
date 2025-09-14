@@ -111,7 +111,10 @@ class ShopManager {
                         icon: '🎯',
                         effect: '사용 시 점수 +3',
                         action: function() {
-                            gameStateManager.updateScore('player', 3);
+                            // gameState.score 직접 업데이트
+                            if (typeof gameState !== 'undefined') {
+                                gameState.score += 3;
+                            }
                             PopupComponent.showMessage('보너스피 효과 발동! 점수 +3', 'success');
                         }
                     });
@@ -145,7 +148,10 @@ class ShopManager {
                         icon: '🗑️',
                         effect: '사용 시 버리기 횟수 +1',
                         action: function() {
-                            gameStateManager.state.discardsRemaining++;
+                            // gameState.discardsLeft 직접 업데이트
+                            if (typeof gameState !== 'undefined') {
+                                gameState.discardsLeft++;
+                            }
                             PopupComponent.showMessage('쓰레기통 효과 발동! 버리기 횟수 +1', 'success');
                         }
                     });
