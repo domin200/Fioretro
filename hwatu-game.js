@@ -257,6 +257,23 @@ function initGame() {
     // 덱 준비 및 섞기
     gameState.deck = [...HWATU_CARDS];
     
+    // 제거된 카드 처리
+    if (gameState.removedCards && gameState.removedCards.length > 0) {
+        gameState.deck = gameState.deck.filter(card => !gameState.removedCards.includes(card.id));
+    }
+    
+    // 복제된 카드 추가
+    if (gameState.duplicatedCards && gameState.duplicatedCards.length > 0) {
+        gameState.duplicatedCards.forEach(cardId => {
+            const originalCard = HWATU_CARDS.find(c => c.id === cardId);
+            if (originalCard) {
+                // 복제 카드 생성 (ID는 다르게 설정)
+                const duplicatedCard = {...originalCard, id: cardId + '_dup_' + Date.now()};
+                gameState.deck.push(duplicatedCard);
+            }
+        });
+    }
+    
     // 비온뒤 맑음 업그레이드 확인 - 12월 카드 제거
     const hasSunnyAfterRain = gameState.upgrades.some(u => u.id === 'sunny_after_rain');
     if (hasSunnyAfterRain) {
@@ -2631,6 +2648,16 @@ const upgradePool = [
     { id: 'thousand_mile', name: '천리길', icon: '🛤️', description: '스테이지 번호 × 1 만큼 기본 점수 추가', rarity: 'rare', price: 8 },
     { id: 'reincarnation', name: '윤회', icon: '♻️', description: '버린 카드가 덱으로 돌아가고, 버리기당 +5점', rarity: 'epic', price: 14 },
     { id: 'two_hearts', name: '두개의 심장', icon: '💕', description: '한 번 패배해도 게임이 끝나지 않음 (1회용)', rarity: 'legendary', price: 20 },
+    
+    // 카드 강화 아이템 - 사신수 보주
+    { id: 'enhance_blue', name: '청룡의 보주', icon: '🔵', description: '무작위 카드 1장에 청 강화 부여', rarity: 'common', price: 6, type: 'enhancement', enhanceType: '청' },
+    { id: 'enhance_red', name: '주작의 보주', icon: '🔴', description: '무작위 카드 1장에 적 강화 부여', rarity: 'common', price: 6, type: 'enhancement', enhanceType: '적' },
+    { id: 'enhance_white', name: '백호의 보주', icon: '⚪', description: '무작위 카드 1장에 백 강화 부여', rarity: 'rare', price: 8, type: 'enhancement', enhanceType: '백' },
+    { id: 'enhance_black', name: '현무의 보주', icon: '⚫', description: '무작위 카드 1장에 흑 강화 부여', rarity: 'rare', price: 8, type: 'enhancement', enhanceType: '흑' },
+    { id: 'enhance_gold', name: '황룡의 보주', icon: '🟡', description: '무작위 카드 1장에 황 강화 부여', rarity: 'epic', price: 10, type: 'enhancement', enhanceType: '황' },
+    { id: 'enhance_random', name: '오색의 보주', icon: '🌈', description: '무작위 카드 1장에 무작위 강화 부여', rarity: 'rare', price: 5, type: 'enhancement', enhanceType: 'random' },
+    { id: 'remove_card', name: '무극의 보주', icon: '🌀', description: '카드 1장을 덱에서 완전히 제거', rarity: 'epic', price: 12, type: 'remove' },
+    { id: 'duplicate_card', name: '쌍생의 보주', icon: '♊', description: '카드 1장을 선택해서 복제 (덱에 추가)', rarity: 'epic', price: 10, type: 'duplicate' },
 ];
 
 let shopUpgrades = []; // 상점에 표시된 업그레이드들
@@ -2875,7 +2902,28 @@ function purchaseUpgrade(upgrade, cardElement) {
     // 소지금 차감
     gameState.gold -= upgrade.price;
     
-    // 업그레이드 적용
+    // 강화 아이템인 경우 카드 선택 화면 표시
+    if (upgrade.type === 'enhancement') {
+        purchasedUpgrades.push(upgrade);
+        showCardEnhancementSelection(upgrade, cardElement);
+        return;
+    }
+    
+    // 카드 제거 아이템인 경우
+    if (upgrade.type === 'remove') {
+        purchasedUpgrades.push(upgrade);
+        showCardRemovalSelection(upgrade, cardElement);
+        return;
+    }
+    
+    // 카드 복제 아이템인 경우
+    if (upgrade.type === 'duplicate') {
+        purchasedUpgrades.push(upgrade);
+        showCardDuplicationSelection(upgrade, cardElement);
+        return;
+    }
+    
+    // 일반 업그레이드 적용
     gameState.upgrades.push(upgrade);
     purchasedUpgrades.push(upgrade);
     applyUpgrade(upgrade);
@@ -2896,6 +2944,458 @@ function purchaseUpgrade(upgrade, cardElement) {
     if (shopGoldElement) {
         shopGoldElement.textContent = gameState.gold;
     }
+    
+    // 다른 카드들의 구매 가능 여부 재확인
+    updateShopAffordability();
+}
+
+// 카드 강화 선택 화면 표시
+function showCardEnhancementSelection(upgrade, shopCardElement) {
+    // 덱에서 무작위로 5장 선택 (이미 강화된 카드 제외)
+    const availableCards = HWATU_CARDS.filter(card => !gameState.cardEnhancements[card.id]);
+    
+    if (availableCards.length === 0) {
+        alert('강화 가능한 카드가 없습니다!');
+        // 소지금 환불
+        gameState.gold += upgrade.price;
+        const shopGoldElement = document.getElementById('shop-gold-amount');
+        if (shopGoldElement) {
+            shopGoldElement.textContent = gameState.gold;
+        }
+        updateShopAffordability();
+        return;
+    }
+    
+    // 최대 5장 선택
+    const cardsToShow = [];
+    const numCards = Math.min(5, availableCards.length);
+    const selectedIndices = new Set();
+    
+    while (cardsToShow.length < numCards) {
+        const index = Math.floor(Math.random() * availableCards.length);
+        if (!selectedIndices.has(index)) {
+            selectedIndices.add(index);
+            cardsToShow.push(availableCards[index]);
+        }
+    }
+    
+    // 선택 화면 생성
+    const selectionOverlay = document.createElement('div');
+    selectionOverlay.id = 'enhancement-selection-overlay';
+    selectionOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    selectionOverlay.innerHTML = `
+        <div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+                    border-radius: 20px; 
+                    padding: 30px; 
+                    max-width: 800px;">
+            <h2 style="color: #ffd700; text-align: center; margin-bottom: 20px; font-size: 28px;">
+                강화할 카드를 선택하세요
+            </h2>
+            <div style="color: white; text-align: center; margin-bottom: 20px;">
+                ${upgrade.name} - ${upgrade.enhanceType === 'random' ? '무작위' : upgrade.enhanceType} 강화
+            </div>
+            <div id="enhancement-card-choices" style="
+                display: flex;
+                gap: 20px;
+                justify-content: center;
+                flex-wrap: wrap;
+                margin-bottom: 20px;
+            "></div>
+            <div style="text-align: center;">
+                <button onclick="cancelEnhancement('${upgrade.id}')" style="
+                    padding: 10px 30px;
+                    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    cursor: pointer;
+                ">취소 (환불)</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(selectionOverlay);
+    
+    // 카드 표시
+    const choicesContainer = document.getElementById('enhancement-card-choices');
+    cardsToShow.forEach(card => {
+        const cardDiv = createCardElement(card);
+        cardDiv.style.cursor = 'pointer';
+        cardDiv.style.transition = 'all 0.3s ease';
+        cardDiv.onclick = () => applyEnhancementToCard(card.id, upgrade, shopCardElement, selectionOverlay);
+        cardDiv.onmouseover = () => {
+            cardDiv.style.transform = 'translateY(-10px) scale(1.1)';
+            cardDiv.style.boxShadow = '0 10px 30px rgba(255, 215, 0, 0.5)';
+        };
+        cardDiv.onmouseout = () => {
+            cardDiv.style.transform = '';
+            cardDiv.style.boxShadow = '';
+        };
+        choicesContainer.appendChild(cardDiv);
+    });
+}
+
+// 강화 취소 (환불)
+function cancelEnhancement(upgradeId) {
+    const upgrade = upgradePool.find(u => u.id === upgradeId);
+    if (upgrade) {
+        // 소지금 환불
+        gameState.gold += upgrade.price;
+        
+        // purchasedUpgrades에서 제거
+        const index = purchasedUpgrades.findIndex(u => u.id === upgradeId);
+        if (index !== -1) {
+            purchasedUpgrades.splice(index, 1);
+        }
+        
+        // UI 업데이트
+        const shopGoldElement = document.getElementById('shop-gold-amount');
+        if (shopGoldElement) {
+            shopGoldElement.textContent = gameState.gold;
+        }
+        
+        updateShopAffordability();
+    }
+    
+    // 선택 화면 닫기
+    const overlay = document.getElementById('enhancement-selection-overlay');
+    if (overlay) {
+        overlay.remove();
+    }
+}
+
+// 카드 제거 선택 화면 표시
+function showCardRemovalSelection(upgrade, shopCardElement) {
+    // 덱의 모든 카드 가져오기
+    const availableCards = HWATU_CARDS.filter(card => {
+        // 이미 제거된 카드는 제외
+        return !gameState.removedCards || !gameState.removedCards.includes(card.id);
+    });
+    
+    if (availableCards.length === 0) {
+        alert('제거할 카드가 없습니다!');
+        // 소지금 환불
+        gameState.gold += upgrade.price;
+        const shopGoldElement = document.getElementById('shop-gold-amount');
+        if (shopGoldElement) {
+            shopGoldElement.textContent = gameState.gold;
+        }
+        updateShopAffordability();
+        return;
+    }
+    
+    // 최대 5장 선택
+    const cardsToShow = [];
+    const numCards = Math.min(5, availableCards.length);
+    const selectedIndices = new Set();
+    
+    while (cardsToShow.length < numCards) {
+        const index = Math.floor(Math.random() * availableCards.length);
+        if (!selectedIndices.has(index)) {
+            selectedIndices.add(index);
+            cardsToShow.push(availableCards[index]);
+        }
+    }
+    
+    // 선택 화면 생성
+    const selectionOverlay = document.createElement('div');
+    selectionOverlay.id = 'enhancement-selection-overlay';
+    selectionOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    selectionOverlay.innerHTML = `
+        <div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+                    border-radius: 20px; 
+                    padding: 30px; 
+                    max-width: 800px;">
+            <h2 style="color: #ffd700; text-align: center; margin-bottom: 20px; font-size: 28px;">
+                제거할 카드를 선택하세요
+            </h2>
+            <div style="color: white; text-align: center; margin-bottom: 20px;">
+                ${upgrade.name} - 선택한 카드를 덱에서 완전히 제거합니다
+            </div>
+            <div id="enhancement-card-choices" style="
+                display: flex;
+                gap: 20px;
+                justify-content: center;
+                flex-wrap: wrap;
+                margin-bottom: 20px;
+            "></div>
+            <div style="text-align: center;">
+                <button onclick="cancelEnhancement('${upgrade.id}')" style="
+                    padding: 10px 30px;
+                    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    cursor: pointer;
+                ">취소 (환불)</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(selectionOverlay);
+    
+    // 카드 표시
+    const choicesContainer = document.getElementById('enhancement-card-choices');
+    cardsToShow.forEach(card => {
+        const cardDiv = createCardElement(card);
+        cardDiv.style.cursor = 'pointer';
+        cardDiv.style.transition = 'all 0.3s ease';
+        cardDiv.onclick = () => removeCardFromDeck(card.id, upgrade, shopCardElement, selectionOverlay);
+        cardDiv.onmouseover = () => {
+            cardDiv.style.transform = 'translateY(-10px) scale(1.1)';
+            cardDiv.style.boxShadow = '0 10px 30px rgba(255, 0, 0, 0.5)';
+        };
+        cardDiv.onmouseout = () => {
+            cardDiv.style.transform = '';
+            cardDiv.style.boxShadow = '';
+        };
+        choicesContainer.appendChild(cardDiv);
+    });
+}
+
+// 카드를 덱에서 제거
+function removeCardFromDeck(cardId, upgrade, shopCardElement, selectionOverlay) {
+    // 제거된 카드 목록 초기화
+    if (!gameState.removedCards) {
+        gameState.removedCards = [];
+    }
+    
+    // 카드 제거
+    gameState.removedCards.push(cardId);
+    
+    // 카드 정보 가져오기
+    const card = HWATU_CARDS.find(c => c.id === cardId);
+    if (card) {
+        showEnhancementEffect(`${card.month}월 ${card.name}을(를) 덱에서 제거했습니다!`, '#ff0000');
+    }
+    
+    // 상점 카드 UI 업데이트
+    shopCardElement.classList.add('purchased');
+    shopCardElement.onclick = null;
+    const priceElement = shopCardElement.querySelector('.upgrade-price');
+    if (priceElement) {
+        priceElement.textContent = '구매완료';
+    }
+    
+    // 소지금 표시 업데이트
+    const shopGoldElement = document.getElementById('shop-gold-amount');
+    if (shopGoldElement) {
+        shopGoldElement.textContent = gameState.gold;
+    }
+    
+    // 선택 화면 닫기
+    selectionOverlay.remove();
+    
+    // 다른 카드들의 구매 가능 여부 재확인
+    updateShopAffordability();
+}
+
+// 카드 복제 선택 화면 표시
+function showCardDuplicationSelection(upgrade, shopCardElement) {
+    // 덱의 모든 카드 가져오기 (제거된 카드 제외)
+    const availableCards = HWATU_CARDS.filter(card => {
+        return !gameState.removedCards || !gameState.removedCards.includes(card.id);
+    });
+    
+    if (availableCards.length === 0) {
+        alert('복제할 카드가 없습니다!');
+        // 소지금 환불
+        gameState.gold += upgrade.price;
+        const shopGoldElement = document.getElementById('shop-gold-amount');
+        if (shopGoldElement) {
+            shopGoldElement.textContent = gameState.gold;
+        }
+        updateShopAffordability();
+        return;
+    }
+    
+    // 최대 5장 선택
+    const cardsToShow = [];
+    const numCards = Math.min(5, availableCards.length);
+    const selectedIndices = new Set();
+    
+    while (cardsToShow.length < numCards) {
+        const index = Math.floor(Math.random() * availableCards.length);
+        if (!selectedIndices.has(index)) {
+            selectedIndices.add(index);
+            cardsToShow.push(availableCards[index]);
+        }
+    }
+    
+    // 선택 화면 생성
+    const selectionOverlay = document.createElement('div');
+    selectionOverlay.id = 'enhancement-selection-overlay';
+    selectionOverlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 10000;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    selectionOverlay.innerHTML = `
+        <div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
+                    border-radius: 20px; 
+                    padding: 30px; 
+                    max-width: 800px;">
+            <h2 style="color: #ffd700; text-align: center; margin-bottom: 20px; font-size: 28px;">
+                복제할 카드를 선택하세요
+            </h2>
+            <div style="color: white; text-align: center; margin-bottom: 20px;">
+                ${upgrade.name} - 선택한 카드를 복제하여 덱에 추가합니다
+            </div>
+            <div id="enhancement-card-choices" style="
+                display: flex;
+                gap: 20px;
+                justify-content: center;
+                flex-wrap: wrap;
+                margin-bottom: 20px;
+            "></div>
+            <div style="text-align: center;">
+                <button onclick="cancelEnhancement('${upgrade.id}')" style="
+                    padding: 10px 30px;
+                    background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
+                    color: white;
+                    border: none;
+                    border-radius: 5px;
+                    font-size: 16px;
+                    cursor: pointer;
+                ">취소 (환불)</button>
+            </div>
+        </div>
+    `;
+    
+    document.body.appendChild(selectionOverlay);
+    
+    // 카드 표시
+    const choicesContainer = document.getElementById('enhancement-card-choices');
+    cardsToShow.forEach(card => {
+        const cardDiv = createCardElement(card);
+        cardDiv.style.cursor = 'pointer';
+        cardDiv.style.transition = 'all 0.3s ease';
+        cardDiv.onclick = () => duplicateCard(card.id, upgrade, shopCardElement, selectionOverlay);
+        cardDiv.onmouseover = () => {
+            cardDiv.style.transform = 'translateY(-10px) scale(1.1)';
+            cardDiv.style.boxShadow = '0 10px 30px rgba(0, 215, 255, 0.5)';
+        };
+        cardDiv.onmouseout = () => {
+            cardDiv.style.transform = '';
+            cardDiv.style.boxShadow = '';
+        };
+        choicesContainer.appendChild(cardDiv);
+    });
+}
+
+// 카드 복제
+function duplicateCard(cardId, upgrade, shopCardElement, selectionOverlay) {
+    // 복제된 카드 목록 초기화
+    if (!gameState.duplicatedCards) {
+        gameState.duplicatedCards = [];
+    }
+    
+    // 카드 복제 기록
+    gameState.duplicatedCards.push(cardId);
+    
+    // 카드 정보 가져오기
+    const card = HWATU_CARDS.find(c => c.id === cardId);
+    if (card) {
+        showEnhancementEffect(`${card.month}월 ${card.name}을(를) 복제했습니다! 덱에 추가됩니다.`, '#00d7ff');
+    }
+    
+    // 상점 카드 UI 업데이트
+    shopCardElement.classList.add('purchased');
+    shopCardElement.onclick = null;
+    const priceElement = shopCardElement.querySelector('.upgrade-price');
+    if (priceElement) {
+        priceElement.textContent = '구매완료';
+    }
+    
+    // 소지금 표시 업데이트
+    const shopGoldElement = document.getElementById('shop-gold-amount');
+    if (shopGoldElement) {
+        shopGoldElement.textContent = gameState.gold;
+    }
+    
+    // 선택 화면 닫기
+    selectionOverlay.remove();
+    
+    // 다른 카드들의 구매 가능 여부 재확인
+    updateShopAffordability();
+}
+
+// 카드에 강화 적용
+function applyEnhancementToCard(cardId, upgrade, shopCardElement, selectionOverlay) {
+    // 무작위 강화인 경우
+    let enhanceType = upgrade.enhanceType;
+    if (enhanceType === 'random') {
+        const enhanceTypes = ['청', '적', '백', '흑', '황'];
+        enhanceType = enhanceTypes[Math.floor(Math.random() * enhanceTypes.length)];
+    }
+    
+    // 강화 적용
+    gameState.cardEnhancements[cardId] = enhanceType;
+    
+    // 카드 정보 가져오기
+    const card = HWATU_CARDS.find(c => c.id === cardId);
+    if (card) {
+        showEnhancementEffect(`${card.month}월 ${card.name}에 ${enhanceType} 강화 적용!`, 
+            ENHANCEMENT_TYPES[Object.keys(ENHANCEMENT_TYPES).find(key => 
+                ENHANCEMENT_TYPES[key].name === enhanceType)].color);
+    }
+    
+    // 상점 카드 UI 업데이트
+    shopCardElement.classList.add('purchased');
+    shopCardElement.onclick = null;
+    const priceElement = shopCardElement.querySelector('.upgrade-price');
+    if (priceElement) {
+        priceElement.textContent = '구매완료';
+    }
+    
+    // 소지금 표시 업데이트
+    const shopGoldElement = document.getElementById('shop-gold-amount');
+    if (shopGoldElement) {
+        shopGoldElement.textContent = gameState.gold;
+    }
+    
+    // 선택 화면 닫기
+    selectionOverlay.remove();
     
     // 다른 카드들의 구매 가능 여부 재확인
     updateShopAffordability();
