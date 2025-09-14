@@ -4738,18 +4738,37 @@ function showTitleScreen() {
         scoreBoard.style.opacity = '0';
     }
     
-    // Play 컨테이너를 화면 정중앙에 위치 (왼쪽 UI 공간 없이) - 원래 크기 유지
+    // Play 컨테이너를 화면 정중앙에 위치 (왼쪽 UI 공간 없이)
     const playContainer = document.getElementById('play-container');
+    
+    // 원래 게임 스타일 저장
+    const originalStyles = {
+        background: playContainer.style.background,
+        padding: playContainer.style.padding,
+        borderRadius: playContainer.style.borderRadius,
+        border: playContainer.style.border,
+        backdropFilter: playContainer.style.backdropFilter
+    };
+    
+    // 타이틀 화면용 스타일 설정
     playContainer.style.display = 'flex';
     playContainer.style.flexDirection = 'column';
     playContainer.style.justifyContent = 'center';
     playContainer.style.alignItems = 'center';
-    playContainer.style.height = '600px';  // 게임 화면과 동일한 고정 높이
-    playContainer.style.width = '800px';   // 게임 화면과 동일한 고정 너비
     playContainer.style.position = 'absolute';
     playContainer.style.left = '50%';
     playContainer.style.top = '50%';
     playContainer.style.transform = 'translate(-50%, -50%)';
+    playContainer.style.width = 'auto';
+    playContainer.style.height = 'auto';
+    playContainer.style.minWidth = '600px';
+    playContainer.style.minHeight = '400px';
+    
+    // 타이틀용 임시 스타일
+    playContainer.style.background = 'transparent';
+    playContainer.style.padding = '40px';
+    playContainer.style.border = 'none';
+    playContainer.style.backdropFilter = 'none';
     
     // 타이틀 화면 내용
     playContainer.innerHTML = `
@@ -4967,29 +4986,35 @@ function startGame() {
             updateBackgroundColors(1);
         }
         
-        // 중앙 위치 유지하면서 컨테이너 스타일만 변경
+        // 게임 스타일 복원 준비
         playContainer.style.transition = 'none';
-        playContainer.style.display = '';
-        playContainer.style.flexDirection = '';
-        playContainer.style.justifyContent = '';
-        playContainer.style.alignItems = '';
         
         // HTML 설정 후 위치 애니메이션 (중앙에서 오른쪽으로만 이동)
         setTimeout(() => {
-            playContainer.style.transition = 'left 0.8s cubic-bezier(0.4, 0, 0.2, 1), transform 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            // 게임 스타일 적용
+            playContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
             
-            // 중앙에서 게임 위치로 이동 (좌측 UI 공간 확보)
-            playContainer.style.left = 'calc(50% + 150px)';  // 우측으로 150px 이동
+            // 모든 스타일 초기화 (CSS 기본값으로 복원)
+            playContainer.style.position = '';
+            playContainer.style.left = '';
+            playContainer.style.top = '';
+            playContainer.style.transform = '';
+            playContainer.style.width = '';
+            playContainer.style.height = '';
+            playContainer.style.minWidth = '';
+            playContainer.style.minHeight = '';
+            playContainer.style.display = '';
+            playContainer.style.flexDirection = '';
+            playContainer.style.justifyContent = '';
+            playContainer.style.alignItems = '';
+            playContainer.style.background = '';
+            playContainer.style.padding = '';
+            playContainer.style.border = '';
+            playContainer.style.backdropFilter = '';
             
-            // 애니메이션 완료 후 스타일 정리
+            // 애니메이션 완료 후 트랜지션 제거
             setTimeout(() => {
                 playContainer.style.transition = '';
-                playContainer.style.position = '';
-                playContainer.style.left = '';
-                playContainer.style.top = '';
-                playContainer.style.transform = '';
-                playContainer.style.width = '';
-                playContainer.style.height = '';
             }, 850);
         }, 50);
         
