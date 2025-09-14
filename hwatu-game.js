@@ -4720,10 +4720,6 @@ function proceedToNextStage() {
 
 // 타이틀 화면 표시
 function showTitleScreen() {
-    // 배경 효과 회전 속도를 절반으로 설정
-    if (window.balatroBackground) {
-        window.balatroBackground.setSpinRotation(-1.0);  // 원래 속도(-2.0)의 절반
-    }
     // 좌측 UI들을 화면 밖으로 이동
     const capturedArea = document.getElementById('captured-area');
     const scoreBoard = document.getElementById('score-board');
@@ -4857,30 +4853,6 @@ function showTitleScreen() {
 
 // 게임 시작 (타이틀에서 전환)
 function startGame() {
-    // 배경 효과 회전 속도를 2초에 걸쳐 원래 속도로 복원
-    if (window.balatroBackground) {
-        const startRotation = -1.0;
-        const targetRotation = -2.0;
-        const duration = 2000;  // 2초
-        const startTime = Date.now();
-        
-        const animateRotation = () => {
-            const elapsed = Date.now() - startTime;
-            const progress = Math.min(elapsed / duration, 1);
-            
-            // 이징 함수 적용 (ease-out)
-            const easedProgress = 1 - Math.pow(1 - progress, 3);
-            const currentRotation = startRotation + (targetRotation - startRotation) * easedProgress;
-            
-            window.balatroBackground.setSpinRotation(currentRotation);
-            
-            if (progress < 1) {
-                requestAnimationFrame(animateRotation);
-            }
-        };
-        
-        requestAnimationFrame(animateRotation);
-    }
     // 타이틀 화면 페이드아웃
     const titleScreen = document.getElementById('title-screen');
     if (titleScreen) {
