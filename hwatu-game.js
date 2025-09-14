@@ -2748,18 +2748,31 @@ function showUpgradeSelection() {
         availableOrbs.splice(index, 1);
     }
     
+    // 첫 번째 줄 (보물 2개)
+    const firstRow = document.createElement('div');
+    firstRow.style.cssText = `
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        margin-bottom: 20px;
+        width: 100%;
+    `;
+    
+    // 두 번째 줄 (보주 3개)
+    const secondRow = document.createElement('div');
+    secondRow.style.cssText = `
+        display: flex;
+        gap: 20px;
+        justify-content: center;
+        width: 100%;
+    `;
+    
     // 업그레이드 카드 생성
     shopUpgrades.forEach((upgrade, index) => {
         const card = document.createElement('div');
         card.className = 'upgrade-card';
         card.dataset.upgradeId = upgrade.id;
         card.style.position = 'relative'; // 카테고리 절대 위치를 위해 추가
-        
-        // 구매 가능 여부 확인
-        const canAfford = gameState.gold >= upgrade.price;
-        if (!canAfford) {
-            card.classList.add('cant-afford');
-        }
         
         // 강화 관련 텍스트에 애니메이션 그라데이션 효과 적용
         let enhancedDescription = upgrade.description;
@@ -2810,8 +2823,17 @@ function showUpgradeSelection() {
         // 소지금 관계없이 클릭 가능 (설명 보기)
         card.onclick = () => showPurchaseTooltip(upgrade, card);
         
-        choicesContainer.appendChild(card);
+        // 첫 2개는 첫번째 줄, 나머지 3개는 두번째 줄
+        if (index < 2) {
+            firstRow.appendChild(card);
+        } else {
+            secondRow.appendChild(card);
+        }
     });
+    
+    // 컨테이너에 두 줄 추가
+    choicesContainer.appendChild(firstRow);
+    choicesContainer.appendChild(secondRow);
 }
 
 // 구매 툴팁 표시
@@ -3618,12 +3640,7 @@ function updateShopAffordability() {
         const upgrade = shopUpgrades.find(u => u.id === upgradeId);
         if (!upgrade) return;
         
-        if (gameState.gold < upgrade.price) {
-            card.classList.add('cant-afford');
-        } else {
-            card.classList.remove('cant-afford');
-        }
-        // 소지금 관계없이 클릭 가능
+        // 소지금 관계없이 클릭 가능 (cant-afford 클래스 제거)
         card.onclick = () => showPurchaseTooltip(upgrade, card);
     });
 }
