@@ -1208,7 +1208,7 @@ function calculateScore() {
             gameState.shownCombinations.add('오광');
         }
     } else if (gwangCount === 4) {
-        multiplier *= 10;  // 사광 (원래 10점)
+        multiplier *= 4;  // 사광 (원래 4점)
         if (!gameState.shownCombinations.has('사광')) {
             achievedCombinations.push('사광!');
             gameState.shownCombinations.add('사광');
@@ -1216,13 +1216,13 @@ function calculateScore() {
     } else if (gwangCount === 3) {
         const hasRain = cardsByType['광'].some(c => c.month === 12);
         if (hasRain) {
-            multiplier *= 5;  // 비광 (원래 5점)
+            multiplier *= 2;  // 비광 (원래 2점)
             if (!gameState.shownCombinations.has('비광')) {
                 achievedCombinations.push('비광!');
                 gameState.shownCombinations.add('비광');
             }
         } else {
-            multiplier *= 5;  // 삼광 (원래 5점)
+            multiplier *= 3;  // 삼광 (원래 3점)
             if (!gameState.shownCombinations.has('삼광')) {
                 achievedCombinations.push('삼광!');
                 gameState.shownCombinations.add('삼광');
