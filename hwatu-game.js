@@ -4720,23 +4720,7 @@ function proceedToNextStage() {
 
 // 타이틀 화면 표시
 function showTitleScreen() {
-    // 좌측 UI들을 화면 밖으로 이동
-    const capturedArea = document.getElementById('captured-area');
-    const scoreBoard = document.getElementById('score-board');
-    
-    // 보유패 전체 영역을 화면 밖으로
-    if (capturedArea) {
-        capturedArea.style.transition = 'none';
-        capturedArea.style.transform = 'translateX(-120%)';
-        capturedArea.style.opacity = '0';
-    }
-    
-    // 점수판도 화면 밖으로
-    if (scoreBoard) {
-        scoreBoard.style.transition = 'none';
-        scoreBoard.style.transform = 'translateX(-120%)';
-        scoreBoard.style.opacity = '0';
-    }
+    // 좌측 UI들은 그대로 유지 (화면 밖으로 보내지 않음)
     
     // Play 컨테이너를 화면 정중앙에 위치 (왼쪽 UI 공간 없이)
     const playContainer = document.getElementById('play-container');
@@ -4982,32 +4966,10 @@ function startGame() {
             }, 850);
         }, 50);
         
-        // 잠시 후 좌측 UI들을 슬라이드인
+        // 게임 초기화 타이밍 조정
         setTimeout(() => {
-            const capturedArea = document.getElementById('captured-area');
-            const scoreBoard = document.getElementById('score-board');
-            
-            // 보유패 전체 영역 슬라이드인
-            if (capturedArea) {
-                capturedArea.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
-                capturedArea.style.transform = 'translateX(0)';
-                capturedArea.style.opacity = '1';
-            }
-            
-            // 점수판 슬라이드인 (약간 늦게)
-            if (scoreBoard) {
-                setTimeout(() => {
-                    scoreBoard.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
-                    scoreBoard.style.transform = 'translateX(0)';
-                    scoreBoard.style.opacity = '1';
-                    
-                    // 모든 UI 애니메이션이 완료된 후 게임 초기화 (점수판 애니메이션 완료 후)
-                    setTimeout(() => {
-                        // 게임 초기화 및 카드 배분
-                        initFullGame();
-                    }, 800);  // 점수판 애니메이션이 끝난 후
-                }, 200);
-            }
+            // 게임 초기화 및 카드 배분
+            initFullGame();
             
             // BGM 시작
             const gameBGM = document.getElementById('bgm');
