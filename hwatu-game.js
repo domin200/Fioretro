@@ -269,6 +269,7 @@ const gameState = {
 
 // 전체 게임 초기화 (게임 시작 또는 실패 후 재시작)
 function initFullGame() {
+    console.log('initFullGame 시작');
     // upgrades가 없으면 초기화
     if (!gameState.upgrades) {
         gameState.upgrades = [];
@@ -287,6 +288,7 @@ function initFullGame() {
         gameStateManager.state.cardEnhancements = {};  // 카드 강화도 초기화
     }
     
+    console.log('initStage 호출 전, deck length:', gameState.deck.length);
     initStage();
 }
 
@@ -399,6 +401,7 @@ function showBossIntro(boss) {
 
 // 스테이지 초기화 (매 스테이지마다)
 function initStage() {
+    console.log('initStage 시작');
     // 현재 덱 준비 (제거/복제 카드 반영)
     const tempDeck = [...HWATU_CARDS];
     
@@ -436,6 +439,7 @@ function initStage() {
     }
     
     shuffleDeck();
+    console.log('shuffleDeck 후, deck length:', gameState.deck.length);
     
     // 스테이지 설정 초기화 계속
     initGame();
@@ -443,6 +447,7 @@ function initStage() {
 
 // 게임 초기화
 function initGame() {
+    console.log('initGame 시작, deck length:', gameState.deck.length);
     // 상태 초기화
     gameState.hand = [];
     gameState.floor = [];
@@ -494,6 +499,7 @@ function initGame() {
     
     // 카드 분배 함수
     const dealCards = () => {
+        console.log('dealCards 시작, deck length:', gameState.deck.length);
         // 초기 카드 분배 (애니메이션)
         const hasMapleHand = gameState.upgrades && gameState.upgrades.some(u => u.id === 'maple_hand');
         let handSize = hasMapleHand ? 4 : 5;
