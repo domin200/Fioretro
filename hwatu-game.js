@@ -867,20 +867,36 @@ function showDeckCardAnimation(card) {
     
     // 바닥으로 이동하면서 뒤집기 + 크기 100%로 확대
     setTimeout(() => {
-        // 바닥 영역의 맨 우측 카드 위치 찾기
-        const floorCards = floorArea.querySelectorAll('.card');
         let targetLeft, targetTop;
+        let foundSameMonth = false;
 
-        if (floorCards.length > 0) {
-            // 맨 우측 카드 위치 가져오기
-            const rightmostCard = floorCards[floorCards.length - 1];
-            const rightCardRect = rightmostCard.getBoundingClientRect();
-            targetLeft = rightCardRect.left + rightCardRect.width/2; // 우측 카드와 겹쳐서 표시
-            targetTop = rightCardRect.top;
-        } else {
-            // 카드가 없으면 바닥 영역 중앙으로
-            targetLeft = floorRect.left + floorRect.width / 2 - 50;
-            targetTop = floorRect.top + floorRect.height / 2 - 75;
+        // 바닥에 있는 카드 중 동일한 월 카드 찾기
+        const floorCards = floorArea.querySelectorAll('.card');
+        for (let floorCard of floorCards) {
+            const floorCardData = floorCard.cardData;
+            if (floorCardData && floorCardData.month === card.month) {
+                // 동일한 월 카드 위치로
+                const sameMonthRect = floorCard.getBoundingClientRect();
+                targetLeft = sameMonthRect.left;
+                targetTop = sameMonthRect.top;
+                foundSameMonth = true;
+                break;
+            }
+        }
+
+        // 동일한 월 카드가 없으면 기존 로직
+        if (!foundSameMonth) {
+            if (floorCards.length > 0) {
+                // 맨 우측 카드 위치 가져오기
+                const rightmostCard = floorCards[floorCards.length - 1];
+                const rightCardRect = rightmostCard.getBoundingClientRect();
+                targetLeft = rightCardRect.left + rightCardRect.width/2;
+                targetTop = rightCardRect.top;
+            } else {
+                // 카드가 없으면 바닥 영역 중앙으로
+                targetLeft = floorRect.left + floorRect.width / 2 - 50;
+                targetTop = floorRect.top + floorRect.height / 2 - 75;
+            }
         }
 
         cardContainer.style.left = targetLeft + 'px';
@@ -1137,8 +1153,31 @@ function showHandToFloorAnimation(cardElement, card) {
     
     // 바닥으로 이동 애니메이션
     setTimeout(() => {
-        tempCard.style.left = floorRect.left + floorRect.width / 2 - 50 + 'px';
-        tempCard.style.top = floorRect.top + floorRect.height / 2 - 75 + 'px';
+        let targetLeft, targetTop;
+        let foundSameMonth = false;
+
+        // 바닥에 있는 카드 중 동일한 월 카드 찾기
+        const floorCards = floorArea.querySelectorAll('.card');
+        for (let floorCard of floorCards) {
+            const floorCardData = floorCard.cardData;
+            if (floorCardData && floorCardData.month === card.month) {
+                // 동일한 월 카드 위치로
+                const sameMonthRect = floorCard.getBoundingClientRect();
+                targetLeft = sameMonthRect.left;
+                targetTop = sameMonthRect.top;
+                foundSameMonth = true;
+                break;
+            }
+        }
+
+        // 동일한 월 카드가 없으면 중앙으로
+        if (!foundSameMonth) {
+            targetLeft = floorRect.left + floorRect.width / 2 - 50;
+            targetTop = floorRect.top + floorRect.height / 2 - 75;
+        }
+
+        tempCard.style.left = targetLeft + 'px';
+        tempCard.style.top = targetTop + 'px';
         tempCard.style.transform = 'rotate(360deg)';
     }, 50);
     
@@ -2500,6 +2539,9 @@ function updateDisplay() {
 window.createCardElement = function(card) {
     const div = document.createElement('div');
     div.className = 'card';
+
+    // 카드 데이터를 엘리먼트에 저장
+    div.cardData = card;
     
     // 카드 강화 확인 및 적용
     const enhancement = gameState.cardEnhancements[card.id];
