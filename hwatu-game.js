@@ -262,7 +262,8 @@ const gameState = {
     stageEnded: false,  // 스테이지 종료 여부
     cardEnhancements: {},  // 카드 강화 정보 {cardId: 'blue'|'red'|'white'|'black'|'gold'}
     gold: 0,  // 소지금
-    redEnhancementBonus: 0  // 적 강화로 인한 추가 배수 (스테이지당 누적)
+    redEnhancementBonus: 0,  // 적 강화로 인한 추가 배수 (스테이지당 누적)
+    currentBoss: null  // 현재 보스 정보
 };
 
 
@@ -355,13 +356,40 @@ function initGame() {
     gameState.reincarnatedCards = 0;  // 윤회 카운터 초기화
     gameState.stageEnded = false;  // 스테이지 종료 플래그 초기화
     
+    // 보스 스테이지인지 확인 (3의 배수)
+    const isBossStage = gameState.stage % 3 === 0;
+    
+    // 보스 선택 (3의 배수 스테이지일 때)
+    if (isBossStage) {
+        const bossList = [
+            { id: 'rat', name: '쥐', icon: '🐀', description: '라운드 시작 시 핸드 -1장' },
+            { id: 'ox', name: '소', icon: '🐂', description: '버리기 횟수 1로 시작' },
+            { id: 'tiger', name: '호랑이', icon: '🐯', description: '광 점수 0점 처리' }
+        ];
+        gameState.currentBoss = bossList[Math.floor(Math.random() * bossList.length)];
+    } else {
+        gameState.currentBoss = null;
+    }
+    
     // 버리기 횟수 계산 (기본 4 + 업그레이드)
     const extraDiscards = gameState.upgrades ? gameState.upgrades.filter(u => u.id === 'extra_discard').length : 0;
-    gameState.discardsLeft = 4 + extraDiscards;
+    let baseDiscards = 4 + extraDiscards;
+    
+    // 소 보스 효과: 버리기 횟수를 1로 고정
+    if (gameState.currentBoss && gameState.currentBoss.id === 'ox') {
+        gameState.discardsLeft = 1;
+    } else {
+        gameState.discardsLeft = baseDiscards;
+    }
     
     // 초기 카드 분배 (애니메이션)
     const hasMapleHand = gameState.upgrades && gameState.upgrades.some(u => u.id === 'maple_hand');
-    const handSize = hasMapleHand ? 4 : 5;
+    let handSize = hasMapleHand ? 4 : 5;
+    
+    // 쥐 보스 효과: 핸드 -1장
+    if (gameState.currentBoss && gameState.currentBoss.id === 'rat') {
+        handSize = Math.max(1, handSize - 1); // 최소 1장은 보장
+    }
     const hasNoPossession = gameState.upgrades && gameState.upgrades.some(u => u.id === 'no_possession');
     
     // 카드를 미리 뽑아둠
@@ -1349,8 +1377,11 @@ function calculateScore() {
     let september9Yeol = null;
     
     allCards.forEach(card => {
+        // 호랑이 보스 효과: 광 카드를 무시
         if (card.type === '광') {
-            cardsByType['광'].push(card);
+            if (!gameState.currentBoss || gameState.currentBoss.id !== 'tiger') {
+                cardsByType['광'].push(card);
+            }
         } else if (card.type === '열끗') {
             // 9월 열끗은 별도로 저장 (나중에 유리한 쪽으로 배치)
             if (card.month === 9) {
@@ -2030,6 +2061,9 @@ function updateDisplay() {
     
     // 소모품 카드 표시 업데이트
     updateConsumableCards();
+    
+    // 보스 정보 표시
+    updateBossDisplay();
     
     // 점수 정보 (숫자 변경 시 애니메이션 효과) - 배수 적용 전 점수 표시
     const scoreElement = document.getElementById('score');
@@ -4464,6 +4498,69 @@ function applyUpgrade(upgrade) {
             break;
     }
     updateDisplay();
+}
+
+// 보스 정보 표시
+function updateBossDisplay() {
+    const existingBossInfo = document.getElementById('boss-info');
+    
+    // 보스가 없으면 기존 정보 제거
+    if (!gameState.currentBoss) {
+        if (existingBossInfo) {
+            existingBossInfo.remove();
+        }
+        return;
+    }
+    
+    // 보스 정보 생성 또는 업데이트
+    let bossInfo = existingBossInfo;
+    if (!bossInfo) {
+        bossInfo = document.createElement('div');
+        bossInfo.id = 'boss-info';
+        bossInfo.style.cssText = `
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            background: linear-gradient(135deg, rgba(139, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.9) 100%);
+            border: 3px solid #ff0000;
+            border-radius: 12px;
+            padding: 15px 20px;
+            color: white;
+            font-family: 'Nanum Gothic', sans-serif;
+            font-weight: bold;
+            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.5);
+            z-index: 100;
+            animation: bossPulse 2s infinite;
+        `;
+        
+        // play-container에 추가
+        const playContainer = document.getElementById('play-container');
+        if (playContainer) {
+            playContainer.appendChild(bossInfo);
+        }
+    }
+    
+    bossInfo.innerHTML = `
+        <div style="font-size: 24px; margin-bottom: 10px;">
+            ${gameState.currentBoss.icon} ${gameState.currentBoss.name}
+        </div>
+        <div style="font-size: 14px; opacity: 0.9;">
+            ${gameState.currentBoss.description}
+        </div>
+    `;
+    
+    // 보스 펄스 애니메이션 CSS 추가
+    if (!document.getElementById('boss-pulse-style')) {
+        const style = document.createElement('style');
+        style.id = 'boss-pulse-style';
+        style.textContent = `
+            @keyframes bossPulse {
+                0%, 100% { box-shadow: 0 4px 20px rgba(255, 0, 0, 0.5); }
+                50% { box-shadow: 0 4px 30px rgba(255, 0, 0, 0.8); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
 }
 
 // 소모품 카드 표시 업데이트
