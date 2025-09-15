@@ -520,13 +520,13 @@ function initGame() {
         // 순차적으로 카드 분배 애니메이션
         let dealDelay = 300;
     
-        // 손패 카드 분배 애니메이션
+        // 손패 카드 분배 애니메이션 (각 카드마다 순차적으로)
         cardsToHand.forEach((card, index) => {
             setTimeout(() => {
                 showInitialDealAnimation(card, 'hand', () => {
                     gameState.hand.push(card);
                     updateDisplay();
-                });
+                }, index); // index를 전달하여 순차적 위치 계산
             }, dealDelay * index);
         });
         
@@ -877,8 +877,8 @@ function showDeckCardAnimation(card) {
             targetLeft = rightCardRect.left + rightCardRect.width/2; // 우측 카드와 겹쳐서 표시
             targetTop = rightCardRect.top;
         } else {
-            // 카드가 없으면 바닥 영역 왼쪽부터 시작
-            targetLeft = floorRect.left + 10;
+            // 카드가 없으면 바닥 영역 중앙으로
+            targetLeft = floorRect.left + floorRect.width / 2 - 50;
             targetTop = floorRect.top + floorRect.height / 2 - 75;
         }
 
@@ -1219,8 +1219,8 @@ function showDrawAnimation(card) {
             targetLeft = rightCardRect.left + rightCardRect.width/2; // 우측 카드와 겹쳐서 표시
             targetTop = rightCardRect.top;
         } else {
-            // 카드가 없으면 손패 영역 왼쪽부터 시작
-            targetLeft = handRect.left + 10;
+            // 카드가 없으면 손패 영역 중앙으로
+            targetLeft = handRect.left + handRect.width / 2 - 50;
             targetTop = handRect.top + handRect.height / 2 - 75;
         }
 
@@ -1236,7 +1236,7 @@ function showDrawAnimation(card) {
 }
 
 // 초기 카드 분배 애니메이션
-function showInitialDealAnimation(card, destination, onComplete) {
+function showInitialDealAnimation(card, destination, onComplete, cardIndex = 0) {
     // 시작 사운드 재생 (손패로 갈 때만 allow1)
     if (destination === 'hand') {
         playSound('SE/allow1.ogg');
@@ -1299,20 +1299,32 @@ function showInitialDealAnimation(card, destination, onComplete) {
     
     // 목적지로 이동하면서 뒤집기 + 크기 100%로 확대
     setTimeout(() => {
-        // 목적지 영역의 맨 우측 카드 위치 찾기
-        const existingCards = targetArea.querySelectorAll('.card');
         let targetX, targetY;
 
-        if (existingCards.length > 0) {
-            // 맨 우측 카드 위치 가져오기
-            const rightmostCard = existingCards[existingCards.length - 1];
-            const rightCardRect = rightmostCard.getBoundingClientRect();
-            targetX = rightCardRect.left + rightCardRect.width/2; // 우측 카드와 겹쳐서 표시
-            targetY = rightCardRect.top;
-        } else {
-            // 카드가 없으면 영역 왼쪽부터 시작
-            targetX = targetRect.left + 10;
+        if (destination === 'hand') {
+            // 손패로 가는 경우: 순차적으로 위치 계산
+            const cardWidth = 100;
+            const cardSpacing = 110; // 카드 간 간격
+            const maxCards = 5; // 최대 카드 수
+            const startX = targetRect.left + (targetRect.width - (cardSpacing * maxCards)) / 2; // 중앙 정렬
+
+            targetX = startX + (cardIndex * cardSpacing);
             targetY = targetRect.top + targetRect.height / 2 - 75;
+        } else {
+            // 바닥패로 가는 경우: 기존 로직 유지
+            const existingCards = targetArea.querySelectorAll('.card');
+
+            if (existingCards.length > 0) {
+                // 맨 우측 카드 위치 가져오기
+                const rightmostCard = existingCards[existingCards.length - 1];
+                const rightCardRect = rightmostCard.getBoundingClientRect();
+                targetX = rightCardRect.left + rightCardRect.width/2;
+                targetY = rightCardRect.top;
+            } else {
+                // 카드가 없으면 영역 중앙으로
+                targetX = targetRect.left + targetRect.width / 2 - 50;
+                targetY = targetRect.top + targetRect.height / 2 - 75;
+            }
         }
 
         cardContainer.style.left = `${targetX}px`;
