@@ -1303,19 +1303,23 @@ function showInitialDealAnimation(card, destination, onComplete, cardIndex = 0, 
         let targetX, targetY;
 
         if (destination === 'hand') {
-            // 손패로 가는 경우: 순차적으로 위치 계산
-            const cardWidth = 100;
+            // 손패로 가는 경우: 첫 카드는 중앙, 나머지는 옆에 배치
             const cardSpacing = 110; // 카드 간 간격
 
-            // 전체 카드들의 총 너비 계산
-            const totalWidth = cardWidth + (cardSpacing * (totalCards - 1));
+            // 현재 손패에 있는 카드 수 확인 (애니메이션 중인 카드는 제외)
+            const existingCards = targetArea.querySelectorAll('.card');
 
-            // 중앙 정렬을 위한 시작 위치 계산
-            const startX = targetRect.left + (targetRect.width - totalWidth) / 2;
-
-            // 각 카드의 위치 계산
-            targetX = startX + (cardIndex * cardSpacing);
-            targetY = targetRect.top + targetRect.height / 2 - 75;
+            if (existingCards.length > 0) {
+                // 맨 우측 카드 위치 가져오기
+                const rightmostCard = existingCards[existingCards.length - 1];
+                const rightCardRect = rightmostCard.getBoundingClientRect();
+                targetX = rightCardRect.left + rightCardRect.width/2; // 우측 카드와 겹쳐서 표시
+                targetY = rightCardRect.top;
+            } else {
+                // 첫 카드는 영역 중앙으로
+                targetX = targetRect.left + targetRect.width / 2 - 50;
+                targetY = targetRect.top + targetRect.height / 2 - 75;
+            }
         } else {
             // 바닥패로 가는 경우: 기존 로직 유지
             const existingCards = targetArea.querySelectorAll('.card');
