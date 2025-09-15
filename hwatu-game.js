@@ -1360,19 +1360,36 @@ function showInitialDealAnimation(card, destination, onComplete, cardIndex = 0, 
                 targetY = targetRect.top + targetRect.height / 2 - 75;
             }
         } else {
-            // 바닥패로 가는 경우: 기존 로직 유지
+            // 바닥패로 가는 경우: 같은 월 카드 찾기
             const existingCards = targetArea.querySelectorAll('.card');
+            let foundSameMonth = false;
 
-            if (existingCards.length > 0) {
-                // 맨 우측 카드 위치 가져오기
-                const rightmostCard = existingCards[existingCards.length - 1];
-                const rightCardRect = rightmostCard.getBoundingClientRect();
-                targetX = rightCardRect.left + rightCardRect.width/2;
-                targetY = rightCardRect.top;
-            } else {
-                // 카드가 없으면 영역 중앙으로
-                targetX = targetRect.left + targetRect.width / 2 - 50;
-                targetY = targetRect.top + targetRect.height / 2 - 75;
+            // 바닥에 있는 카드 중 동일한 월 카드 찾기
+            for (let floorCard of existingCards) {
+                const floorCardData = floorCard.cardData;
+                if (floorCardData && floorCardData.month === card.month) {
+                    // 동일한 월 카드 위치로
+                    const sameMonthRect = floorCard.getBoundingClientRect();
+                    targetX = sameMonthRect.left;
+                    targetY = sameMonthRect.top;
+                    foundSameMonth = true;
+                    break;
+                }
+            }
+
+            // 동일한 월 카드가 없으면 기존 로직
+            if (!foundSameMonth) {
+                if (existingCards.length > 0) {
+                    // 맨 우측 카드 위치 가져오기
+                    const rightmostCard = existingCards[existingCards.length - 1];
+                    const rightCardRect = rightmostCard.getBoundingClientRect();
+                    targetX = rightCardRect.left + rightCardRect.width/2;
+                    targetY = rightCardRect.top;
+                } else {
+                    // 카드가 없으면 영역 중앙으로
+                    targetX = targetRect.left + targetRect.width / 2 - 50;
+                    targetY = targetRect.top + targetRect.height / 2 - 75;
+                }
             }
         }
 
