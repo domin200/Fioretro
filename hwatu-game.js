@@ -5169,11 +5169,12 @@ function proceedToNextStage() {
         updateBackgroundColors(nextStage);
     }
     
-    initStage();
-    
-    // 스테이지 값 업데이트
+    // 스테이지 값을 먼저 업데이트
     gameState.stage = nextStage;
     gameState.targetScore = nextTarget;
+    
+    // 그 다음 initStage 호출
+    initStage();
     // updateDisplay는 initGame 내부의 카드 분배 애니메이션에서 호출됨
 }
 
