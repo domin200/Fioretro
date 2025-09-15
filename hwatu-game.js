@@ -4626,8 +4626,8 @@ function applyUpgrade(upgrade) {
 function updateBossDisplay() {
     const existingBossInfo = document.getElementById('boss-info');
     
-    // 2의 배수 스테이지에서 보스전 경고 표시
-    if (gameState.stage % 2 === 0 && gameState.stage % 3 !== 0) {
+    // 3의 배수 -1 스테이지에서 보스전 경고 표시 (2, 5, 8, 11...)
+    if ((gameState.stage + 1) % 3 === 0) {
         let bossWarning = existingBossInfo;
         if (!bossWarning) {
             bossWarning = document.createElement('div');
