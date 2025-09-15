@@ -866,8 +866,24 @@ function showDeckCardAnimation(card) {
     
     // 바닥으로 이동하면서 뒤집기 + 크기 100%로 확대
     setTimeout(() => {
-        cardContainer.style.left = floorRect.left + floorRect.width - 120 + 'px';
-        cardContainer.style.top = floorRect.top + floorRect.height / 2 - 75 + 'px';
+        // 바닥 영역의 맨 우측 카드 위치 찾기
+        const floorCards = floorArea.querySelectorAll('.card');
+        let targetLeft, targetTop;
+
+        if (floorCards.length > 0) {
+            // 맨 우측 카드 위치 가져오기
+            const rightmostCard = floorCards[floorCards.length - 1];
+            const rightCardRect = rightmostCard.getBoundingClientRect();
+            targetLeft = rightCardRect.left + rightCardRect.width + 10; // 우측 카드 옆에 약간 간격
+            targetTop = rightCardRect.top;
+        } else {
+            // 카드가 없으면 바닥 영역 왼쪽부터 시작
+            targetLeft = floorRect.left + 10;
+            targetTop = floorRect.top + floorRect.height / 2 - 75;
+        }
+
+        cardContainer.style.left = targetLeft + 'px';
+        cardContainer.style.top = targetTop + 'px';
         cardContainer.style.transform = 'rotateY(180deg) scale(1)';
     }, 50);
     
@@ -1192,8 +1208,24 @@ function showDrawAnimation(card) {
     
     // 손패로 이동하면서 뒤집기 + 크기 100%로 확대
     setTimeout(() => {
-        cardContainer.style.left = handRect.left + handRect.width - 120 + 'px';
-        cardContainer.style.top = handRect.top + handRect.height / 2 - 75 + 'px';
+        // 손패 영역의 맨 우측 카드 위치 찾기
+        const handCards = handArea.querySelectorAll('.card');
+        let targetLeft, targetTop;
+
+        if (handCards.length > 0) {
+            // 맨 우측 카드 위치 가져오기
+            const rightmostCard = handCards[handCards.length - 1];
+            const rightCardRect = rightmostCard.getBoundingClientRect();
+            targetLeft = rightCardRect.left + rightCardRect.width + 10; // 우측 카드 옆에 약간 간격
+            targetTop = rightCardRect.top;
+        } else {
+            // 카드가 없으면 손패 영역 왼쪽부터 시작
+            targetLeft = handRect.left + 10;
+            targetTop = handRect.top + handRect.height / 2 - 75;
+        }
+
+        cardContainer.style.left = targetLeft + 'px';
+        cardContainer.style.top = targetTop + 'px';
         cardContainer.style.transform = 'rotateY(180deg) scale(1)';
     }, 50);
     
