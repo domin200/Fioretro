@@ -754,6 +754,12 @@ function playCard() {
         console.log('Stage will end due to empty hand or deck');
     }
     
+    // 뱀 보스 효과: 뒷면 카드인 경우 앞면 공개
+    if (playedCard.isHidden) {
+        delete playedCard.isHidden; // 숨김 상태 해제
+        showEnhancementEffect(`카드 공개: ${playedCard.month}월 ${playedCard.name}!`, '#6b7280');
+    }
+
     // 애니메이션을 위해 선택된 카드 엘리먼트 가져오기
     const handArea = document.getElementById('hand-area');
     const selectedCardElement = handArea.children[gameState.selectedCard];
@@ -1042,32 +1048,54 @@ function discardCards() {
     // 버릴 카드들 결정
     const cardsToDiscard = [];
     const indicesToRemove = [];
-    
+
     if (hasTripleDiscard) {
         // 선택한 카드와 양옆 카드 모두 버리기
         const selectedIndex = gameState.selectedCard;
-        
+
         // 중앙 카드
-        cardsToDiscard.push(gameState.hand[selectedIndex]);
+        const centerCard = gameState.hand[selectedIndex];
+        // 뱀 보스 효과: 뒷면 카드인 경우 앞면 공개
+        if (centerCard.isHidden) {
+            delete centerCard.isHidden;
+            showEnhancementEffect(`카드 공개: ${centerCard.month}월 ${centerCard.name}!`, '#6b7280');
+        }
+        cardsToDiscard.push(centerCard);
         indicesToRemove.push(selectedIndex);
         
         // 왼쪽 카드
         if (selectedIndex > 0) {
-            cardsToDiscard.push(gameState.hand[selectedIndex - 1]);
+            const leftCard = gameState.hand[selectedIndex - 1];
+            if (leftCard.isHidden) {
+                delete leftCard.isHidden;
+                showEnhancementEffect(`카드 공개: ${leftCard.month}월 ${leftCard.name}!`, '#6b7280');
+            }
+            cardsToDiscard.push(leftCard);
             indicesToRemove.push(selectedIndex - 1);
         }
-        
+
         // 오른쪽 카드
         if (selectedIndex < gameState.hand.length - 1) {
-            cardsToDiscard.push(gameState.hand[selectedIndex + 1]);
+            const rightCard = gameState.hand[selectedIndex + 1];
+            if (rightCard.isHidden) {
+                delete rightCard.isHidden;
+                showEnhancementEffect(`카드 공개: ${rightCard.month}월 ${rightCard.name}!`, '#6b7280');
+            }
+            cardsToDiscard.push(rightCard);
             indicesToRemove.push(selectedIndex + 1);
         }
-        
+
         // 일타삼피 효과 발동
         triggerUpgradeEffect('triple_discard');
     } else {
         // 일반 버리기
-        cardsToDiscard.push(gameState.hand[gameState.selectedCard]);
+        const discardCard = gameState.hand[gameState.selectedCard];
+        // 뱀 보스 효과: 뒷면 카드인 경우 앞면 공개
+        if (discardCard.isHidden) {
+            delete discardCard.isHidden;
+            showEnhancementEffect(`카드 공개: ${discardCard.month}월 ${discardCard.name}!`, '#6b7280');
+        }
+        cardsToDiscard.push(discardCard);
         indicesToRemove.push(gameState.selectedCard);
     }
     
