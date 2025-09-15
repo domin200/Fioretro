@@ -315,8 +315,8 @@ function showBossIntro(boss) {
     const bossImage = document.createElement('img');
     bossImage.src = boss.image;
     bossImage.style.cssText = `
-        width: 400px;
-        height: 600px;
+        width: 280px;
+        height: 420px;
         object-fit: cover;
         border-radius: 20px;
         border: 5px solid #ff0000;
