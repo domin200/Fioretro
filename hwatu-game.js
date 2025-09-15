@@ -362,11 +362,14 @@ function initGame() {
     // 보스 선택 (3의 배수 스테이지일 때)
     if (isBossStage) {
         const bossList = [
-            { id: 'rat', name: '쥐', icon: '🐀', description: '라운드 시작 시 핸드 -1장' },
-            { id: 'ox', name: '소', icon: '🐂', description: '버리기 횟수 1로 시작' },
-            { id: 'tiger', name: '호랑이', icon: '🐯', description: '광 점수 0점 처리' }
+            { id: 'rat', name: '쥐', icon: '🐀', description: '라운드 시작 시 핸드 -1장', image: 'boss/01.jpeg' },
+            { id: 'ox', name: '소', icon: '🐂', description: '버리기 횟수 1로 시작', image: 'boss/02.jpeg' },
+            { id: 'tiger', name: '호랑이', icon: '🐯', description: '광 점수 0점 처리', image: 'boss/03.jpeg' }
         ];
         gameState.currentBoss = bossList[Math.floor(Math.random() * bossList.length)];
+        
+        // 보스 인트로 애니메이션 표시
+        showBossIntro(gameState.currentBoss);
     } else {
         gameState.currentBoss = null;
     }
@@ -382,90 +385,95 @@ function initGame() {
         gameState.discardsLeft = baseDiscards;
     }
     
-    // 초기 카드 분배 (애니메이션)
-    const hasMapleHand = gameState.upgrades && gameState.upgrades.some(u => u.id === 'maple_hand');
-    let handSize = hasMapleHand ? 4 : 5;
+    // 보스 인트로가 끝난 후 카드 분배 시작
+    const bossIntroDelay = isBossStage ? 2500 : 0;
     
-    // 쥐 보스 효과: 핸드 -1장
-    if (gameState.currentBoss && gameState.currentBoss.id === 'rat') {
-        handSize = Math.max(1, handSize - 1); // 최소 1장은 보장
-    }
-    const hasNoPossession = gameState.upgrades && gameState.upgrades.some(u => u.id === 'no_possession');
-    
-    // 카드를 미리 뽑아둠
-    const cardsToHand = [];
-    for (let i = 0; i < handSize; i++) {
-        if (gameState.deck.length > 0) {
-            cardsToHand.push(gameState.deck.pop());
+    setTimeout(() => {
+        // 초기 카드 분배 (애니메이션)
+        const hasMapleHand = gameState.upgrades && gameState.upgrades.some(u => u.id === 'maple_hand');
+        let handSize = hasMapleHand ? 4 : 5;
+        
+        // 쥐 보스 효과: 핸드 -1장
+        if (gameState.currentBoss && gameState.currentBoss.id === 'rat') {
+            handSize = Math.max(1, handSize - 1); // 최소 1장은 보장
         }
-    }
-    
-    const cardToFloor = !hasNoPossession && gameState.deck.length > 0 ? gameState.deck.pop() : null;
-    
-    // UI 초기화 (카드 없이)
-    updateDisplay();
-    
-    // 순차적으로 카드 분배 애니메이션
-    let dealDelay = 300;
-    
-    // 손패 카드 분배 애니메이션
-    cardsToHand.forEach((card, index) => {
-        setTimeout(() => {
-            showInitialDealAnimation(card, 'hand', () => {
-                gameState.hand.push(card);
-                updateDisplay();
-            });
-        }, dealDelay * index);
-    });
-    
-    // 바닥패 카드 분배 (손패 다음에)
-    if (cardToFloor) {
-        setTimeout(() => {
-            showInitialDealAnimation(cardToFloor, 'floor', () => {
-                gameState.floor.push(cardToFloor);
-                updateDisplay();
-            });
-        }, dealDelay * handSize);
-    }
-    
-    // 업그레이드 효과들 (모든 카드 분배 후)
-    const totalDealTime = dealDelay * (handSize + (cardToFloor ? 1 : 0));
-    
-    if (hasNoPossession) {
-        setTimeout(() => triggerUpgradeEffect('no_possession'), totalDealTime + 200);
-    }
-    
-    if (hasMapleHand) {
-        setTimeout(() => triggerUpgradeEffect('maple_hand'), totalDealTime + 400);
-    }
-    
-    // 관심법 효과
-    const hasMindReading = gameState.upgrades.some(u => u.id === 'mind_reading');
-    if (hasMindReading && gameState.deck.length > 0) {
-        setTimeout(() => {
-            triggerUpgradeEffect('mind_reading');
-            showTopCardPreview();
-        }, totalDealTime + 600);
-    }
-    
-    // 놀부심보 효과 - 첫 턴에 카드 2장 추가 드로우
-    const hasNolbuTreasure = gameState.upgrades && gameState.upgrades.some(u => u.id === 'nolbu_treasure');
-    if (hasNolbuTreasure && gameState.turn === 0) {
-        setTimeout(() => {
-            triggerUpgradeEffect('nolbu_treasure');
-            // 2장 추가 드로우
-            for (let i = 0; i < 2; i++) {
-                if (gameState.deck.length > 0) {
-                    setTimeout(() => {
-                        const extraCard = gameState.deck.pop();
-                        showDrawAnimation(extraCard);
-                        gameState.hand.push(extraCard);
-                        updateDisplay();
-                    }, i * 300);
-                }
+        const hasNoPossession = gameState.upgrades && gameState.upgrades.some(u => u.id === 'no_possession');
+        
+        // 카드를 미리 뽑아둠
+        const cardsToHand = [];
+        for (let i = 0; i < handSize; i++) {
+            if (gameState.deck.length > 0) {
+                cardsToHand.push(gameState.deck.pop());
             }
-        }, totalDealTime + 800);
-    }
+        }
+        
+        const cardToFloor = !hasNoPossession && gameState.deck.length > 0 ? gameState.deck.pop() : null;
+        
+        // UI 초기화 (카드 없이)
+        updateDisplay();
+        
+        // 순차적으로 카드 분배 애니메이션
+        let dealDelay = 300;
+    
+        // 손패 카드 분배 애니메이션
+        cardsToHand.forEach((card, index) => {
+            setTimeout(() => {
+                showInitialDealAnimation(card, 'hand', () => {
+                    gameState.hand.push(card);
+                    updateDisplay();
+                });
+            }, dealDelay * index);
+        });
+        
+        // 바닥패 카드 분배 (손패 다음에)
+        if (cardToFloor) {
+            setTimeout(() => {
+                showInitialDealAnimation(cardToFloor, 'floor', () => {
+                    gameState.floor.push(cardToFloor);
+                    updateDisplay();
+                });
+            }, dealDelay * handSize);
+        }
+        
+        // 업그레이드 효과들 (모든 카드 분배 후)
+        const totalDealTime = dealDelay * (handSize + (cardToFloor ? 1 : 0));
+        
+        if (hasNoPossession) {
+            setTimeout(() => triggerUpgradeEffect('no_possession'), totalDealTime + 200);
+        }
+        
+        if (hasMapleHand) {
+            setTimeout(() => triggerUpgradeEffect('maple_hand'), totalDealTime + 400);
+        }
+        
+        // 관심법 효과
+        const hasMindReading = gameState.upgrades.some(u => u.id === 'mind_reading');
+        if (hasMindReading && gameState.deck.length > 0) {
+            setTimeout(() => {
+                triggerUpgradeEffect('mind_reading');
+                showTopCardPreview();
+            }, totalDealTime + 600);
+        }
+        
+        // 놀부심보 효과 - 첫 턴에 카드 2장 추가 드로우
+        const hasNolbuTreasure = gameState.upgrades && gameState.upgrades.some(u => u.id === 'nolbu_treasure');
+        if (hasNolbuTreasure && gameState.turn === 0) {
+            setTimeout(() => {
+                triggerUpgradeEffect('nolbu_treasure');
+                // 2장 추가 드로우
+                for (let i = 0; i < 2; i++) {
+                    if (gameState.deck.length > 0) {
+                        setTimeout(() => {
+                            const extraCard = gameState.deck.pop();
+                            showDrawAnimation(extraCard);
+                            gameState.hand.push(extraCard);
+                            updateDisplay();
+                        }, i * 300);
+                    }
+                }
+            }, totalDealTime + 800);
+        }
+    }, bossIntroDelay);
 }
 
 // 덱 섞기
@@ -4498,6 +4506,113 @@ function applyUpgrade(upgrade) {
             break;
     }
     updateDisplay();
+}
+
+// 보스 인트로 애니메이션
+function showBossIntro(boss) {
+    // 보스 인트로 오버레이 생성
+    const overlay = document.createElement('div');
+    overlay.id = 'boss-intro-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    // 보스 이미지
+    const bossImage = document.createElement('img');
+    bossImage.src = boss.image;
+    bossImage.style.cssText = `
+        width: 400px;
+        height: 400px;
+        object-fit: cover;
+        border-radius: 20px;
+        border: 5px solid #ff0000;
+        box-shadow: 0 0 50px rgba(255, 0, 0, 0.8);
+        animation: bossAppear 2s ease;
+    `;
+    
+    // 보스 정보
+    const bossInfo = document.createElement('div');
+    bossInfo.style.cssText = `
+        margin-top: 30px;
+        text-align: center;
+        color: white;
+        animation: textAppear 2s ease;
+    `;
+    bossInfo.innerHTML = `
+        <div style="font-size: 48px; font-weight: bold; color: #ff0000; margin-bottom: 10px;">
+            ${boss.icon} ${boss.name}
+        </div>
+        <div style="font-size: 24px; color: #ffa500;">
+            ${boss.description}
+        </div>
+    `;
+    
+    overlay.appendChild(bossImage);
+    overlay.appendChild(bossInfo);
+    document.body.appendChild(overlay);
+    
+    // 애니메이션 CSS 추가
+    if (!document.getElementById('boss-intro-style')) {
+        const style = document.createElement('style');
+        style.id = 'boss-intro-style';
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes bossAppear {
+                0% { 
+                    transform: scale(0.5) rotate(-10deg);
+                    opacity: 0;
+                }
+                50% { 
+                    transform: scale(1.1) rotate(5deg);
+                    opacity: 1;
+                }
+                100% { 
+                    transform: scale(1) rotate(0deg);
+                    opacity: 1;
+                }
+            }
+            @keyframes textAppear {
+                0% { 
+                    transform: translateY(50px);
+                    opacity: 0;
+                }
+                50% {
+                    opacity: 1;
+                }
+                100% { 
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // 2초 후 페이드아웃
+    setTimeout(() => {
+        overlay.style.animation = 'fadeOut 0.5s ease';
+        setTimeout(() => {
+            overlay.remove();
+        }, 500);
+    }, 2000);
 }
 
 // 보스 정보 표시
