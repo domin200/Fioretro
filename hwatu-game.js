@@ -385,10 +385,8 @@ function initGame() {
         gameState.discardsLeft = baseDiscards;
     }
     
-    // 보스 인트로가 끝난 후 카드 분배 시작
-    const bossIntroDelay = isBossStage ? 2500 : 0;
-    
-    setTimeout(() => {
+    // 카드 분배 함수
+    const dealCards = () => {
         // 초기 카드 분배 (애니메이션)
         const hasMapleHand = gameState.upgrades && gameState.upgrades.some(u => u.id === 'maple_hand');
         let handSize = hasMapleHand ? 4 : 5;
@@ -473,7 +471,14 @@ function initGame() {
                 }
             }, totalDealTime + 800);
         }
-    }, bossIntroDelay);
+    };
+    
+    // 보스 스테이지면 인트로 후 카드 분배, 아니면 즉시 분배
+    if (isBossStage) {
+        setTimeout(dealCards, 2500);
+    } else {
+        dealCards();
+    }
 }
 
 // 덱 섞기
