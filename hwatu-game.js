@@ -4823,6 +4823,9 @@ function proceedToNextStage() {
 
 // 타이틀 화면 표시
 function showTitleScreen() {
+    // 게임 시작 플래그 리셋
+    isGameStarting = false;
+    
     // 게임 컨테이너 표시
     const gameContainer = document.getElementById('game-container');
     if (gameContainer) {
@@ -4974,8 +4977,25 @@ function showTitleScreen() {
     });
 }
 
+// 게임 시작 중복 방지 플래그
+let isGameStarting = false;
+
 // 게임 시작 (타이틀에서 전환)
 function startGame() {
+    // 이미 게임 시작 중이면 무시
+    if (isGameStarting) {
+        return;
+    }
+    isGameStarting = true;
+    
+    // 버튼 비활성화
+    const playButton = document.getElementById('play-button');
+    if (playButton) {
+        playButton.disabled = true;
+        playButton.style.opacity = '0.5';
+        playButton.style.cursor = 'not-allowed';
+    }
+    
     // 타이틀 화면 페이드아웃
     const titleScreen = document.getElementById('title-screen');
     if (titleScreen) {
@@ -5171,6 +5191,8 @@ function startGame() {
         setTimeout(() => {
             // 게임 초기화 및 카드 배분
             initFullGame();
+            // 게임이 완전히 시작되면 플래그 리셋 (안전장치)
+            isGameStarting = false;
         }, 2100);
     }, 500);
 }
