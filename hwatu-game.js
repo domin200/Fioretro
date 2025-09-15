@@ -1459,17 +1459,35 @@ function showStackNotification(month, stackCount) {
 }
 
 // 카드 펄스 애니메이션
-function pulseCards() {
+function pulseCards(yakuCards = null) {
     // 바닥 카드들
     const floorArea = document.getElementById('floor-area');
     const floorCards = floorArea ? floorArea.querySelectorAll('.card') : [];
-    
+
     // 손패 카드들
     const handArea = document.getElementById('hand-area');
     const handCards = handArea ? handArea.querySelectorAll('.card') : [];
-    
-    // 모든 카드에 펄스 애니메이션 적용
-    [...floorCards, ...handCards].forEach((card, index) => {
+
+    // 애니메이션 적용할 카드 결정
+    let cardsToAnimate = [];
+
+    if (yakuCards && yakuCards.length > 0) {
+        // 족보 카드가 지정된 경우, 해당 카드들만 찾아서 애니메이션
+        [...floorCards, ...handCards].forEach(cardElement => {
+            const cardData = cardElement.cardData;
+            if (cardData && yakuCards.some(yakuCard =>
+                yakuCard.id === cardData.id ||
+                (yakuCard.name === cardData.name && yakuCard.month === cardData.month))) {
+                cardsToAnimate.push(cardElement);
+            }
+        });
+    } else {
+        // 족보 카드가 없으면 모든 카드에 적용 (기존 동작)
+        cardsToAnimate = [...floorCards, ...handCards];
+    }
+
+    // 선택된 카드들에만 펄스 애니메이션 적용
+    cardsToAnimate.forEach((card, index) => {
         // 약간의 딜레이를 주어 웨이브 효과
         setTimeout(() => {
             card.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
@@ -1520,7 +1538,7 @@ function pulseStackedCards(month) {
 }
 
 // 족보 달성 애니메이션 표시
-function showCombinationAchievement(text) {
+function showCombinationAchievement(text, yakuCards = null) {
     const achievement = document.createElement('div');
     achievement.style.cssText = `
         position: fixed;
@@ -1530,7 +1548,7 @@ function showCombinationAchievement(text) {
         font-size: 72px;
         font-weight: bold;
         color: #ffd700;
-        text-shadow: 
+        text-shadow:
             2px 2px 4px rgba(0, 0, 0, 0.8),
             0 0 20px rgba(255, 215, 0, 0.6),
             0 0 40px rgba(255, 215, 0, 0.4);
@@ -1539,9 +1557,9 @@ function showCombinationAchievement(text) {
         animation: achievementFloat 2s ease-out forwards;
     `;
     achievement.textContent = text;
-    
-    // 카드 펄스 애니메이션 실행
-    pulseCards();
+
+    // 카드 펄스 애니메이션 실행 (족보 카드만)
+    pulseCards(yakuCards);
     
     // 애니메이션 스타일 추가
     if (!document.getElementById('achievement-animation-style')) {
@@ -1919,7 +1937,29 @@ function calculateScore() {
     // 달성한 족보 애니메이션 표시 (순차적으로)
     achievedCombinations.forEach((combination, index) => {
         setTimeout(() => {
-            showCombinationAchievement(combination);
+            // 족보에 해당하는 카드들 찾기
+            let yakuCards = [];
+            if (combination.includes('오광')) {
+                yakuCards = cardsByType['광'];
+            } else if (combination.includes('사광')) {
+                yakuCards = cardsByType['광'];
+            } else if (combination.includes('삼광')) {
+                yakuCards = cardsByType['광'];
+            } else if (combination.includes('고도리')) {
+                yakuCards = cardsByType['열끗'].filter(c =>
+                    c.month === 2 || c.month === 4 || c.month === 8
+                );
+            } else if (combination.includes('홍단')) {
+                yakuCards = cardsByType['단'].filter(c => c.type === '홍단');
+            } else if (combination.includes('청단')) {
+                yakuCards = cardsByType['단'].filter(c => c.type === '청단');
+            } else if (combination.includes('초단')) {
+                yakuCards = cardsByType['단'].filter(c => c.type === '초단');
+            } else if (combination.includes('칠지도')) {
+                yakuCards = cardsByType['피'].slice(0, 7); // 피 7장
+            }
+
+            showCombinationAchievement(combination, yakuCards);
         }, index * 500); // 0.5초 간격으로 표시
     });
 }
