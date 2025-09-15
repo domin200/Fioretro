@@ -387,7 +387,7 @@ class ShopManager {
                 name: '황룡의 보주',
                 category: 'orb',
                 description: '선택한 카드에 황 강화 부여 (스테이지 종료 시 소지금 +1)',
-                price: 6,
+                price: 3,
                 rarity: 'legendary',
                 icon: '🟡',
                 enhancementType: ENHANCEMENT_TYPES.GOLD.name,
