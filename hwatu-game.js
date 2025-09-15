@@ -303,9 +303,10 @@ function showBossIntro(boss) {
         height: 100%;
         background: rgba(0, 0, 0, 0.9);
         display: flex;
-        flex-direction: column;
+        flex-direction: row;
         justify-content: center;
         align-items: center;
+        gap: 50px;
         z-index: 10000;
         animation: fadeIn 0.3s ease;
     `;
@@ -315,7 +316,7 @@ function showBossIntro(boss) {
     bossImage.src = boss.image;
     bossImage.style.cssText = `
         width: 400px;
-        height: 400px;
+        height: 600px;
         object-fit: cover;
         border-radius: 20px;
         border: 5px solid #ff0000;
@@ -326,16 +327,15 @@ function showBossIntro(boss) {
     // 보스 정보
     const bossInfo = document.createElement('div');
     bossInfo.style.cssText = `
-        margin-top: 30px;
         text-align: center;
         color: white;
         animation: textAppear 2s ease;
     `;
     bossInfo.innerHTML = `
-        <div style="font-size: 48px; font-weight: bold; color: #ff0000; margin-bottom: 10px;">
+        <div style="font-family: 'Yisunshin', sans-serif; font-size: 64px; font-weight: bold; color: #ff0000; margin-bottom: 20px; text-shadow: 3px 3px 6px rgba(0,0,0,0.8);">
             ${boss.icon} ${boss.name}
         </div>
-        <div style="font-size: 24px; color: #ffa500;">
+        <div style="font-size: 28px; color: #ffa500; text-shadow: 2px 2px 4px rgba(0,0,0,0.8);">
             ${boss.description}
         </div>
     `;
