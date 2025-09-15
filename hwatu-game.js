@@ -2061,16 +2061,17 @@ function endRound() {
                     updateBackgroundColors(1);
                 }
                 
-                // 업그레이드 초기화
-                gameState.upgrades = [];
-                
-                initFullGame();
-                
-                // initGame 후에 스테이지 값 설정
+                // 스테이지와 기본값 먼저 초기화
                 gameState.stage = 1;
                 gameState.targetScore = 25;  // 초기값 25
                 gameState.discardsLeft = 4;  // 버리기 횟수 초기화
                 gameState.gold = 0;  // 소지금 초기화
+                
+                // 업그레이드 초기화
+                gameState.upgrades = [];
+                
+                // 그 다음 게임 초기화
+                initFullGame();
                 updateDisplay();
             }, 2500);
         }
