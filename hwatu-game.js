@@ -4504,6 +4504,55 @@ function applyUpgrade(upgrade) {
 function updateBossDisplay() {
     const existingBossInfo = document.getElementById('boss-info');
     
+    // 2의 배수 스테이지에서 보스전 경고 표시
+    if (gameState.stage % 2 === 0 && gameState.stage % 3 !== 0) {
+        let bossWarning = existingBossInfo;
+        if (!bossWarning) {
+            bossWarning = document.createElement('div');
+            bossWarning.id = 'boss-info';
+            bossWarning.style.cssText = `
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                background: linear-gradient(135deg, rgba(255, 165, 0, 0.9) 0%, rgba(255, 69, 0, 0.9) 100%);
+                border: 3px solid #ffa500;
+                border-radius: 12px;
+                padding: 15px 20px;
+                color: white;
+                font-family: 'Nanum Gothic', sans-serif;
+                font-weight: bold;
+                box-shadow: 0 4px 20px rgba(255, 165, 0, 0.5);
+                z-index: 100;
+                animation: warningPulse 2s infinite;
+            `;
+            
+            const playContainer = document.getElementById('play-container');
+            if (playContainer) {
+                playContainer.appendChild(bossWarning);
+            }
+        }
+        
+        bossWarning.innerHTML = `
+            <div style="font-size: 18px;">
+                ⚠️ 다음 스테이지: 보스전
+            </div>
+        `;
+        
+        // 경고 펄스 애니메이션 CSS 추가
+        if (!document.getElementById('warning-pulse-style')) {
+            const style = document.createElement('style');
+            style.id = 'warning-pulse-style';
+            style.textContent = `
+                @keyframes warningPulse {
+                    0%, 100% { box-shadow: 0 4px 20px rgba(255, 165, 0, 0.5); }
+                    50% { box-shadow: 0 4px 30px rgba(255, 165, 0, 0.8); }
+                }
+            `;
+            document.head.appendChild(style);
+        }
+        return;
+    }
+    
     // 보스가 없으면 기존 정보 제거
     if (!gameState.currentBoss) {
         if (existingBossInfo) {
