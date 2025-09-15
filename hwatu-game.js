@@ -1168,6 +1168,11 @@ function showStackNotification(month, stackCount) {
     `;
     notification.textContent = text;
     
+    // 2스택 이상일 때 카드 펄스 애니메이션 실행
+    if (stackCount >= 2) {
+        pulseStackedCards(month);
+    }
+    
     // 애니메이션 스타일 추가 (아직 없으면)
     if (!document.getElementById('stack-notification-style')) {
         const style = document.createElement('style');
@@ -1224,6 +1229,38 @@ function pulseCards() {
                 }, 300);
             }, 300);
         }, index * 30); // 각 카드마다 30ms 딜레이
+    });
+}
+
+// 스택된 카드만 펄스 애니메이션 (특정 월)
+function pulseStackedCards(month) {
+    // 바닥 카드들 중 해당 월 카드만 찾기
+    const floorArea = document.getElementById('floor-area');
+    if (!floorArea) return;
+    
+    // 모든 바닥 카드와 월 정보 매칭
+    const monthGroups = floorArea.querySelectorAll('.card-group');
+    monthGroups.forEach(group => {
+        const monthLabel = group.querySelector('.month-label');
+        if (monthLabel && monthLabel.textContent === `${month}월`) {
+            // 해당 월 그룹의 모든 카드에 펄스 적용
+            const cards = group.querySelectorAll('.card');
+            cards.forEach((card, index) => {
+                setTimeout(() => {
+                    card.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                    card.style.transform = 'scale(1.3)'; // 스택은 좀 더 크게
+                    
+                    // 원래 크기로 복귀
+                    setTimeout(() => {
+                        card.style.transform = 'scale(1)';
+                        // 애니메이션 후 transition 제거
+                        setTimeout(() => {
+                            card.style.transition = '';
+                        }, 300);
+                    }, 300);
+                }, index * 50); // 스택 카드는 더 명확한 웨이브 효과
+            });
+        }
     });
 }
 
