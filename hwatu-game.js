@@ -1332,6 +1332,11 @@ function calculateScore() {
     let points = 0;
     const achievedCombinations = []; // 달성한 족보 목록
     
+    // 낙장불입 효과 확인 (기본 점수 +5)
+    if (gameStateManager.state.treasures.includes('no_discard')) {
+        points += 5;
+    }
+    
     // 카드 타입별로 분류
     const cardsByType = {
         '광': [],
@@ -1852,10 +1857,17 @@ function endRound() {
             showEnhancementEffect(`완벽한 클리어! 보상 2배!`, '#ffd700');
         }
         
-        gameState.gold += clearGold;
+        // 쓰리고 효과 확인 (3스테이지마다 5골드 추가)
+        let tripleGoBonus = 0;
+        if (gameStateManager.state.treasures.includes('triple_go') && gameState.stage % 3 === 0) {
+            tripleGoBonus = 5;
+            showEnhancementEffect(`쓰리고 효과! +5골드`, '#ffd700');
+        }
         
-        // 총 획득 소지금 (이자 + 황 강화 보너스 + 클리어 보상)
-        const totalEarnedGold = interestGold + goldEnhancementBonus + clearGold;
+        gameState.gold += clearGold + tripleGoBonus;
+        
+        // 총 획득 소지금 (이자 + 황 강화 보너스 + 클리어 보상 + 쓰리고 보너스)
+        const totalEarnedGold = interestGold + goldEnhancementBonus + clearGold + tripleGoBonus;
         
         showMissionResult(true, gameState.totalScore, isPerfectClear, totalEarnedGold, interestGold, clearGold, goldEnhancementBonus);
         
@@ -2255,7 +2267,9 @@ function updateDisplay() {
     // 호랑이굴 효과 확인
     const hasTigerCave = gameState.upgrades.some(u => u.id === 'tiger_cave');
     const tigerCaveBlock = hasTigerCave && gameState.turn === 0;
-    document.getElementById('discard-btn').disabled = gameState.selectedCard === null || gameState.discardsLeft <= 0 || gameState.stageEnded || tigerCaveBlock;
+    // 낙장불입 효과 확인
+    const hasNoDiscard = gameStateManager.state.treasures.includes('no_discard');
+    document.getElementById('discard-btn').disabled = gameState.selectedCard === null || gameState.discardsLeft <= 0 || gameState.stageEnded || tigerCaveBlock || hasNoDiscard;
 }
 
 // 카드 엘리먼트 생성
@@ -3322,9 +3336,13 @@ function showUpgradeSelection() {
         !gameStateManager.state.purchasedItems.has(t.id)
     );
     
-    // 보물 추가 (최대 2개, 5개 제한 고려)
+    // 풍등 효과 확인 (보물 1개 추가)
+    const hasLantern = gameStateManager.state.treasures.includes('lantern');
+    const treasuresToAdd = hasLantern ? 3 : 2; // 풍등이 있으면 3개, 없으면 2개
+    
+    // 보물 추가 (최대 2-3개, 5개 제한 고려)
     if (canBuyTreasures && availableTreasures.length > 0) {
-        const treasuresToShow = Math.min(2, 5 - treasureCount, availableTreasures.length);
+        const treasuresToShow = Math.min(treasuresToAdd, 5 - treasureCount, availableTreasures.length);
         for (let i = 0; i < treasuresToShow; i++) {
             const index = Math.floor(Math.random() * availableTreasures.length);
             shopUpgrades.push(availableTreasures[index]);
@@ -3339,7 +3357,7 @@ function showUpgradeSelection() {
         shopUpgrades.push(shuffledMixed[i]);
     }
     
-    // 첫 번째 줄 (보물 2개)
+    // 첫 번째 줄 (보물 2-3개, 풍등 효과시 3개)
     const firstRow = document.createElement('div');
     firstRow.style.cssText = `
         display: flex;
@@ -3445,8 +3463,9 @@ function showUpgradeSelection() {
         // 소지금 관계없이 클릭 가능 (설명 보기)
         card.onclick = () => showPurchaseTooltip(upgrade, card);
         
-        // 첫 2개는 첫번째 줄, 나머지 3개는 두번째 줄
-        if (index < 2) {
+        // 첫 번째 줄에 보물 추가 (풍등 효과시 3개, 기본 2개)
+        const treasureLimit = hasLantern ? 3 : 2;
+        if (index < treasureLimit) {
             firstRow.appendChild(card);
         } else {
             secondRow.appendChild(card);

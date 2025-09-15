@@ -444,6 +444,52 @@ class ShopManager {
                         PopupComponent.showMessage(`${card.name}가 복제되어 덱에 추가되었습니다!`, 'success');
                     }
                 }
+            },
+            // 새로운 보물 아이템
+            {
+                id: 'no_discard',
+                name: '낙장불입',
+                category: 'treasure',
+                description: '카드 버리기 불가능, 기본 점수 +5',
+                price: 7,
+                rarity: 'rare',
+                icon: '🚫',
+                effect: function() {
+                    // 보물 효과는 gameStateManager에서 관리
+                    gameStateManager.state.treasures.push('no_discard');
+                    PopupComponent.showMessage('낙장불입 획득! 버리기 불가능, 기본 점수 +5', 'success');
+                    return true;
+                }
+            },
+            {
+                id: 'triple_go',
+                name: '쓰리고',
+                category: 'treasure',
+                description: '스테이지 3개 클리어마다 5골드 추가 획득',
+                price: 6,
+                rarity: 'rare',
+                icon: '3️⃣',
+                effect: function() {
+                    // 보물 효과는 gameStateManager에서 관리
+                    gameStateManager.state.treasures.push('triple_go');
+                    PopupComponent.showMessage('쓰리고 획득! 3스테이지마다 보너스 5골드', 'success');
+                    return true;
+                }
+            },
+            {
+                id: 'lantern',
+                name: '풍등',
+                category: 'treasure',
+                description: '모든 상점에서 보물이 1개 더 등장',
+                price: 8,
+                rarity: 'epic',
+                icon: '🏮',
+                effect: function() {
+                    // 보물 효과는 gameStateManager에서 관리
+                    gameStateManager.state.treasures.push('lantern');
+                    PopupComponent.showMessage('풍등 획득! 상점에 보물 1개 추가', 'success');
+                    return true;
+                }
             }
         ];
     }
