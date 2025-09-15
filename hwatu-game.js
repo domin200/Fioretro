@@ -866,7 +866,7 @@ function showDeckCardAnimation(card) {
     
     // 바닥으로 이동하면서 뒤집기 + 크기 100%로 확대
     setTimeout(() => {
-        cardContainer.style.left = floorRect.left + floorRect.width / 2 - 50 + 'px';
+        cardContainer.style.left = floorRect.left + floorRect.width - 120 + 'px';
         cardContainer.style.top = floorRect.top + floorRect.height / 2 - 75 + 'px';
         cardContainer.style.transform = 'rotateY(180deg) scale(1)';
     }, 50);
@@ -1192,7 +1192,7 @@ function showDrawAnimation(card) {
     
     // 손패로 이동하면서 뒤집기 + 크기 100%로 확대
     setTimeout(() => {
-        cardContainer.style.left = handRect.left + handRect.width / 2 - 50 + 'px';
+        cardContainer.style.left = handRect.left + handRect.width - 120 + 'px';
         cardContainer.style.top = handRect.top + handRect.height / 2 - 75 + 'px';
         cardContainer.style.transform = 'rotateY(180deg) scale(1)';
     }, 50);
