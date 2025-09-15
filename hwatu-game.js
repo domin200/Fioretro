@@ -275,6 +275,19 @@ function initFullGame() {
         gameState.upgrades = [];
     }
     
+    // 돼지 보스 효과: 라운드 시작 시 소지금 -10
+    if (gameState.currentBoss && gameState.currentBoss.id === 'pig') {
+        gameState.gold = Math.max(0, gameState.gold - 10);
+        setTimeout(() => {
+            showEnhancementEffect('돼지 효과: 소지금 -10!', '#ff0000');
+        }, 500);
+    }
+
+    // 말 보스 효과: 기본 점수 -5로 시작
+    if (gameState.currentBoss && gameState.currentBoss.id === 'horse') {
+        gameState.score = -5;
+    }
+
     // 덱 준비 및 섞기
     gameState.deck = [...HWATU_CARDS];
     gameState.removedCards = [];  // 제거된 카드 목록 초기화
@@ -470,9 +483,18 @@ function initGame() {
     // 보스 선택 (3의 배수 스테이지일 때)
     if (isBossStage) {
         const bossList = [
-            { id: 'rat', name: '쥐', icon: '🐀', description: '라운드 시작 시 핸드 -1장', image: 'boss/01.jpeg' },
-            { id: 'ox', name: '소', icon: '🐂', description: '버리기 횟수 1로 시작', image: 'boss/02.jpeg' },
-            { id: 'tiger', name: '호랑이', icon: '🐯', description: '광 점수 0점 처리', image: 'boss/03.jpeg' }
+            { id: 'rat', name: '쥐', icon: '🐭', description: '라운드 시작 시 핸드 -1장으로 시작', image: 'boss/01자.png' },
+            { id: 'ox', name: '소', icon: '🐂', description: '이 라운드에서 버리기 횟수 1로 고정', image: 'boss/02축.png' },
+            { id: 'tiger', name: '호랑이', icon: '🐯', description: '광(비광·3·4·5광) 점수 0점 처리', image: 'boss/03인.png' },
+            { id: 'rabbit', name: '토끼', icon: '🐇', description: '카드를 바닥에 낼때마다 손패 1장이 무작위로 다른 카드로 교체', image: 'boss/04묘.png' },
+            { id: 'dragon', name: '용', icon: '🐲', description: '바닥에서 같은 월이 2장만 겹친(2스택) 경우, 그 배수 효과가 0으로 적용', image: 'boss/05진.png' },
+            { id: 'snake', name: '뱀', icon: '🐍', description: '손패로 드로우되는 카드가 25% 확률로 뒷면(내용 미공개)으로 드로우', image: 'boss/06사.png' },
+            { id: 'horse', name: '말', icon: '🐎', description: '라운드 시작 시 기본 점수 -5로 시작', image: 'boss/07오.png' },
+            { id: 'sheep', name: '양', icon: '🐐', description: '피(피 카드)로 얻는 점수가 절반으로 계산', image: 'boss/08미.png' },
+            { id: 'monkey', name: '원숭이', icon: '🐒', description: '스테이지 시작 시 첫턴에 손패중 1장이 무작위로 바닥에 내려감', image: 'boss/09신.png' },
+            { id: 'rooster', name: '닭', icon: '🐔', description: '띠(초·청·홍단) 세트 점수가 0점 처리', image: 'boss/10유.png' },
+            { id: 'dog', name: '개', icon: '🐕', description: '이 라운드는 소모품 사용 불가', image: 'boss/11술.png' },
+            { id: 'pig', name: '돼지', icon: '🐖', description: '라운드 시작 시 소지금 -10', image: 'boss/12해.png' }
         ];
         gameState.currentBoss = bossList[Math.floor(Math.random() * bossList.length)];
         
@@ -502,6 +524,11 @@ function initGame() {
         // 쥐 보스 효과: 핸드 -1장
         if (gameState.currentBoss && gameState.currentBoss.id === 'rat') {
             handSize = Math.max(1, handSize - 1); // 최소 1장은 보장
+        }
+
+        // 소 보스 효과: 버리기 횟수 1로 고정
+        if (gameState.currentBoss && gameState.currentBoss.id === 'ox') {
+            gameState.discardsLeft = 1;
         }
         const hasNoPossession = gameState.upgrades && gameState.upgrades.some(u => u.id === 'no_possession');
         
@@ -584,7 +611,22 @@ function initGame() {
     
     // 보스 스테이지면 인트로 후 카드 분배, 아니면 즉시 분배
     if (isBossStage) {
-        setTimeout(dealCards, 2500);
+        setTimeout(() => {
+            dealCards();
+
+            // 원숭이 보스 효과: 스테이지 시작 시 첫턴에 손패 1장이 바닥에 내려감
+            if (gameState.currentBoss && gameState.currentBoss.id === 'monkey') {
+                setTimeout(() => {
+                    if (gameState.hand.length > 0) {
+                        const randomIndex = Math.floor(Math.random() * gameState.hand.length);
+                        const droppedCard = gameState.hand.splice(randomIndex, 1)[0];
+                        gameState.floor.push(droppedCard);
+                        showEnhancementEffect(`원숭이 효과: ${droppedCard.month}월 ${droppedCard.name}이(가) 바닥에 떨어짐!`, '#8b4513');
+                        updateDisplay();
+                    }
+                }, 1500); // 카드 분배 완료 후
+            }
+        }, 2500);
     } else {
         dealCards();
     }
@@ -717,9 +759,26 @@ function playCard() {
     const selectedCardElement = handArea.children[gameState.selectedCard];
     const floorArea = document.getElementById('floor-area');
     
+    // 토끼 보스 효과: 카드를 바닥에 낼 때마다 손패 1장이 무작위로 교체
+    if (gameState.currentBoss && gameState.currentBoss.id === 'rabbit' && gameState.hand.length > 1) {
+        const randomIndex = Math.floor(Math.random() * gameState.hand.length);
+        if (randomIndex !== gameState.selectedCard && gameState.deck.length > 0) {
+            const oldCard = gameState.hand[randomIndex];
+            const newCard = gameState.deck.pop();
+            gameState.hand[randomIndex] = newCard;
+            gameState.deck.push(oldCard);
+            shuffleDeck();
+
+            // 교체 효과 알림
+            setTimeout(() => {
+                showEnhancementEffect(`토끼 효과: ${oldCard.month}월 ${oldCard.name}이(가) 교체됨!`, '#ff69b4');
+            }, 500);
+        }
+    }
+
     // 손패 -> 바닥 애니메이션 표시
     showHandToFloorAnimation(selectedCardElement, playedCard);
-    
+
     // 상태 업데이트
     gameState.hand.splice(gameState.selectedCard, 1);
     
@@ -779,8 +838,14 @@ function playCard() {
                 // 추가 드로우 차단
                 console.log('놀부심보 효과: 추가 드로우 차단');
             } else if (gameState.deck.length > 0 && gameState.hand.length < 5) {
-                const newCard = gameState.deck.pop();
+                let newCard = gameState.deck.pop();
                 if (newCard) {  // 카드가 존재하는지 확인
+                    // 뱀 보스 효과: 25% 확률로 뒷면 카드로 드로우
+                    if (gameState.currentBoss && gameState.currentBoss.id === 'snake' && Math.random() < 0.25) {
+                        // 뒷면 카드로 표시 (실제로는 카드 정보는 있지만 표시하지 않음)
+                        newCard.isHidden = true;
+                        showEnhancementEffect('뱀 효과: 카드가 뒷면으로 드로우됨!', '#4a5568');
+                    }
                     // 손패 보충 애니메이션
                     showDrawAnimation(newCard);
                     gameState.hand.push(newCard);
@@ -1672,7 +1737,12 @@ function calculateScore() {
     
     // 피 점수 (1장당 1점, 쌍피는 2점) - 기본 점수는 피만
     const piCount = cardsByType['피'].length;
-    points += piCount;  // 피 1장당 1점 (쌍피는 이미 2장으로 계산됨)
+    // 양 보스 효과: 피 점수 절반
+    if (gameState.currentBoss && gameState.currentBoss.id === 'sheep') {
+        points += Math.floor(piCount / 2);  // 피 점수 절반 (소수점 버림)
+    } else {
+        points += piCount;  // 피 1장당 1점 (쌍피는 이미 2장으로 계산됨)
+    }
     
     // 카드 강화 효과 적용
     let enhancementMultiplier = 0;
@@ -1821,8 +1891,10 @@ function calculateScore() {
         }
     }
     
-    // 단 배수 (원래 3점씩이므로 3배)
-    if (hongdan === 3) {
+    // 단 배수 (원래 3점씩이므로 3배) - 닭 보스는 단 점수 무효화
+    const isRoosterBoss = gameState.currentBoss && gameState.currentBoss.id === 'rooster';
+
+    if (hongdan === 3 && !isRoosterBoss) {
         multiplier *= 3;  // 홍단 3배
         if (!gameState.shownCombinations.has('홍단')) {
             achievedCombinations.push('홍단!');
@@ -1835,7 +1907,7 @@ function calculateScore() {
             triggerUpgradeEffect('hongdan_blessing');
         }
     }
-    if (cheongdan === 3) {
+    if (cheongdan === 3 && !isRoosterBoss) {
         multiplier *= 3;  // 청단 3배
         if (!gameState.shownCombinations.has('청단')) {
             achievedCombinations.push('청단!');
@@ -1848,7 +1920,7 @@ function calculateScore() {
             triggerUpgradeEffect('cheongdan_blessing');
         }
     }
-    if (chodan === 3) {
+    if (chodan === 3 && !isRoosterBoss) {
         multiplier *= 3;  // 초단 3배
         if (!gameState.shownCombinations.has('초단')) {
             achievedCombinations.push('초단!');
@@ -1979,9 +2051,16 @@ function calculateMultiplier(floorCards) {
     // 삼족오 발 업그레이드 확인
     const hasSamjokohFoot = gameState.upgrades.some(u => u.id === 'samjokoh_foot');
     
+    // 용 보스 효과: 2스택은 배수 0으로 처리
+    const isDragonBoss = gameState.currentBoss && gameState.currentBoss.id === 'dragon';
+
     Object.values(monthCounts).forEach(count => {
         if (count === 2) {
-            multiplier *= 2;  // 같은 월 2장 → ×2
+            if (isDragonBoss) {
+                // 용 보스 효과: 2스택 배수 무효 (×1 유지)
+            } else {
+                multiplier *= 2;  // 같은 월 2장 → ×2
+            }
         } else if (count === 3) {
             // 같은 월 3장
             if (hasSamjokohFoot) {
@@ -2618,6 +2697,16 @@ window.createCardElement = function(card) {
 
     // 카드 데이터를 엘리먼트에 저장
     div.cardData = card;
+
+    // 뱀 보스 효과: 뒷면 카드 처리
+    if (card.isHidden) {
+        div.style.backgroundImage = 'url("card-back.png")';
+        div.style.backgroundSize = 'cover';
+        div.innerHTML = `<div style="width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; background: linear-gradient(45deg, #2c3e50 25%, #34495e 25%, #34495e 50%, #2c3e50 50%, #2c3e50 75%, #34495e 75%, #34495e); background-size: 20px 20px;">
+            <span style="font-size: 24px;">?</span>
+        </div>`;
+        return div;
+    }
     
     // 카드 강화 확인 및 적용
     const enhancement = gameState.cardEnhancements[card.id];
@@ -5169,7 +5258,13 @@ function selectConsumableCard(index) {
 // 소모품 카드 사용
 function useConsumableCard(index) {
     if (!gameState.consumableCards[index]) return;
-    
+
+    // 개 보스 효과: 소모품 사용 불가
+    if (gameState.currentBoss && gameState.currentBoss.id === 'dog') {
+        showEnhancementEffect('개 보스: 소모품 사용 불가!', '#ff0000');
+        return;
+    }
+
     const card = gameState.consumableCards[index];
     const slot = document.getElementById(`consumable-slot-${index + 1}`);
     
