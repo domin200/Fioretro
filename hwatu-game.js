@@ -2210,6 +2210,23 @@ function showMissionResult(success, score, isPerfectClear = false, earnedGold = 
     const soundEffect = new Audio(success ? 'SE/397_win.mp3' : 'SE/405_lose.mp3');
     soundEffect.play().catch(e => console.log('효과음 재생 실패:', e));
 
+    // 실패 시 회색 배경 추가
+    let overlay = null;
+    if (!success) {
+        overlay = document.createElement('div');
+        overlay.style.cssText = `
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0);
+            z-index: 2999;
+            animation: fadeInOverlay 1s ease forwards;
+        `;
+        document.body.appendChild(overlay);
+    }
+
     const message = document.createElement('div');
     message.style.cssText = `
         position: fixed;
@@ -2218,54 +2235,45 @@ function showMissionResult(success, score, isPerfectClear = false, earnedGold = 
         transform: translate(-50%, -50%);
         background: ${success ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' : 'linear-gradient(135deg, #f93b1d 0%, #ea1e63 100%)'};
         color: white;
-        padding: 40px 60px;
+        padding: 30px 50px;
         border-radius: 20px;
-        font-size: 32px;
+        font-size: 24px;
         font-weight: bold;
         z-index: 3000;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         text-align: center;
         animation: missionPopupIn 0.5s ease;
     `;
-    
+
     message.innerHTML = `
-        <div style="font-size: 48px; margin-bottom: 20px;">
+        <div style="font-size: 36px; margin-bottom: 15px;">
             ${success ? '🎉 미션 성공!' : (usingTwoHearts ? '💕 두개의 심장!' : '💔 미션 실패!')}
         </div>
-        <div style="font-size: 24px; margin-bottom: 10px;">
+        <div style="font-size: 20px; margin-bottom: 8px; opacity: 0.9;">
             스테이지 ${gameState.stage}
         </div>
-        <div style="font-size: 36px; color: #ffd700;">
+        <div style="font-size: 28px; color: #ffd700; margin-bottom: 5px;">
             최종 점수: ${score}
         </div>
-        <div style="font-size: 20px; margin-top: 10px; opacity: 0.9;">
-            목표 점수: ${gameState.targetScore}
-        </div>
-        ${success && earnedGold > 0 ? 
-            `<div style="margin-top: 15px; color: #ffd700;">
-                ${interestGold > 0 ? `<div style="font-size: 20px; margin-bottom: 5px;">
-                    이자: <span style="font-weight: bold;">+${interestGold}</span>${gameState.upgrades.some(u => u.id === 'piggy_bank') ? ' 🐷' : ''}
+        ${success && earnedGold > 0 ?
+            `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.3);">
+                ${clearGold > 0 ? `<div style="font-size: 18px; color: #ffd700; margin-bottom: 3px;">
+                    클리어 보상: +${clearGold}${isPerfectClear ? ' ⭐' : ''}
                 </div>` : ''}
-                ${goldEnhancementBonus > 0 ? `<div style="font-size: 20px; margin-bottom: 5px;">
-                    황 강화 보너스: <span style="font-weight: bold;">+${goldEnhancementBonus}</span>
+                ${interestGold > 0 ? `<div style="font-size: 16px; color: #ffd700; margin-bottom: 3px; opacity: 0.9;">
+                    이자: +${interestGold}
                 </div>` : ''}
-                <div style="font-size: 20px; margin-bottom: 5px;">
-                    클리어 보상: <span style="font-weight: bold;">+${clearGold}</span>${isPerfectClear ? ' ⭐x2' : ''}
-                </div>
-                <div style="font-size: 24px; margin-top: 10px; border-top: 1px solid rgba(255, 215, 0, 0.5); padding-top: 10px;">
-                    총 획득: <span style="font-weight: bold;">+${earnedGold}</span>
+                ${goldEnhancementBonus > 0 ? `<div style="font-size: 16px; color: #ffd700; margin-bottom: 3px; opacity: 0.9;">
+                    황 강화: +${goldEnhancementBonus}
+                </div>` : ''}
+                <div style="font-size: 20px; color: #ffd700; margin-top: 8px; font-weight: bold;">
+                    총 획득: +${earnedGold}
                 </div>
             </div>` : ''}
-        ${success ?
-            `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">다음 스테이지로 진행합니다!</div>` :
-            (usingTwoHearts ?
-                `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">두개의 심장으로 부활합니다!</div>` :
-                `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">게임이 초기화됩니다...</div>`)
-        }
         <button id="mission-result-confirm" style="
-            margin-top: 20px;
-            padding: 12px 30px;
-            font-size: 20px;
+            margin-top: 15px;
+            padding: 10px 25px;
+            font-size: 18px;
             font-weight: bold;
             background: rgba(255, 255, 255, 0.2);
             color: white;
@@ -2292,6 +2300,14 @@ function showMissionResult(success, score, isPerfectClear = false, earnedGold = 
                 transform: translate(-50%, -50%) scale(1) rotate(0deg);
             }
         }
+        @keyframes fadeInOverlay {
+            0% {
+                background: rgba(0, 0, 0, 0);
+            }
+            100% {
+                background: rgba(0, 0, 0, 0.5);
+            }
+        }
     `;
     document.head.appendChild(style);
 
@@ -2302,6 +2318,9 @@ function showMissionResult(success, score, isPerfectClear = false, earnedGold = 
     confirmButton.onclick = () => {
         message.remove();
         style.remove();
+        if (overlay) {
+            overlay.remove();
+        }
 
         // 성공/실패에 따른 처리
         if (success) {
