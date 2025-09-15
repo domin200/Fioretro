@@ -524,6 +524,75 @@ class OrbCardSelectionComponent {
             // 폴백: 직접 카드 이미지 생성
             cardElement.style.background = `url('cards/${card.id}.svg') center/cover`;
             
+            // 강화 효과가 있으면 표시
+            if (showEnhancement && gameState && gameState.cardEnhancements && gameState.cardEnhancements[card.id]) {
+                const enhancement = gameState.cardEnhancements[card.id];
+                const enhanceData = Object.values(ENHANCEMENT_TYPES).find(e => e.name === enhancement);
+                
+                if (enhanceData) {
+                    // 강화 효과 클래스 추가
+                    cardElement.classList.add(`enhanced-${enhancement.toLowerCase()}`);
+                    
+                    // 강화 아이콘 추가
+                    const enhanceIcon = document.createElement('div');
+                    enhanceIcon.style.cssText = `
+                        position: absolute;
+                        top: 5px;
+                        right: 5px;
+                        width: 28px;
+                        height: 28px;
+                        background: ${enhanceData.color};
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 14px;
+                        color: white;
+                        font-weight: bold;
+                        box-shadow: 0 3px 8px rgba(0,0,0,0.4);
+                        z-index: 10;
+                    `;
+                    enhanceIcon.textContent = enhanceData.icon;
+                    cardElement.appendChild(enhanceIcon);
+                    
+                    // 호버시 툴팁 표시
+                    let tooltip = null;
+                    enhanceIcon.onmouseenter = (e) => {
+                        e.stopPropagation();
+                        tooltip = document.createElement('div');
+                        tooltip.style.cssText = `
+                            position: fixed;
+                            background: linear-gradient(135deg, rgba(0,0,0,0.95) 0%, rgba(20,20,20,0.95) 100%);
+                            color: white;
+                            padding: 12px;
+                            border-radius: 8px;
+                            font-size: 13px;
+                            z-index: 10001;
+                            pointer-events: none;
+                            box-shadow: 0 5px 20px rgba(0,0,0,0.5);
+                            border: 1px solid ${enhanceData.color};
+                        `;
+                        tooltip.innerHTML = `
+                            <div style="color: ${enhanceData.color}; font-weight: bold; font-size: 14px;">${enhancement} 강화</div>
+                            <div style="margin-top: 6px; opacity: 0.9;">${enhanceData.effect}</div>
+                        `;
+                        document.body.appendChild(tooltip);
+                        
+                        // 위치 설정
+                        const rect = enhanceIcon.getBoundingClientRect();
+                        tooltip.style.left = rect.left - tooltip.offsetWidth - 10 + 'px';
+                        tooltip.style.top = rect.top + 'px';
+                    };
+                    
+                    enhanceIcon.onmouseleave = () => {
+                        if (tooltip) {
+                            tooltip.remove();
+                            tooltip = null;
+                        }
+                    };
+                }
+            }
+            
             // 카드 정보 오버레이
             const infoOverlay = DOMUtils.createElement('div', {
                 style: {
@@ -721,6 +790,71 @@ class CardSelectionComponent {
                     color: #333;
                 `;
                 cardElement.innerHTML = `${card.month}월<br>${card.name}`;
+            }
+            
+            // 강화 효과가 있으면 강화 툴팁 추가
+            if (showEnhancement && gameState && gameState.cardEnhancements && gameState.cardEnhancements[card.id]) {
+                const enhancement = gameState.cardEnhancements[card.id];
+                const enhanceData = Object.values(ENHANCEMENT_TYPES).find(e => e.name === enhancement);
+                
+                if (enhanceData) {
+                    // 강화 아이콘 추가
+                    const enhanceIcon = document.createElement('div');
+                    enhanceIcon.style.cssText = `
+                        position: absolute;
+                        top: 5px;
+                        right: 5px;
+                        width: 24px;
+                        height: 24px;
+                        background: ${enhanceData.color};
+                        border-radius: 50%;
+                        display: flex;
+                        align-items: center;
+                        justify-content: center;
+                        font-size: 12px;
+                        color: white;
+                        font-weight: bold;
+                        box-shadow: 0 2px 5px rgba(0,0,0,0.3);
+                        z-index: 10;
+                    `;
+                    enhanceIcon.textContent = enhanceData.icon;
+                    cardWrapper.appendChild(enhanceIcon);
+                    
+                    // 호버시 툴팁 표시
+                    let tooltip = null;
+                    enhanceIcon.onmouseenter = (e) => {
+                        e.stopPropagation();
+                        tooltip = document.createElement('div');
+                        tooltip.style.cssText = `
+                            position: fixed;
+                            background: rgba(0, 0, 0, 0.9);
+                            color: white;
+                            padding: 10px;
+                            border-radius: 5px;
+                            font-size: 12px;
+                            z-index: 10001;
+                            pointer-events: none;
+                            white-space: nowrap;
+                        `;
+                        tooltip.innerHTML = `
+                            <div style="color: ${enhanceData.color}; font-weight: bold;">${enhancement} 강화</div>
+                            <div style="margin-top: 5px;">${enhanceData.effect}</div>
+                        `;
+                        document.body.appendChild(tooltip);
+                        
+                        // 위치 설정
+                        const rect = enhanceIcon.getBoundingClientRect();
+                        tooltip.style.left = rect.left - tooltip.offsetWidth - 10 + 'px';
+                        tooltip.style.top = rect.top + 'px';
+                    };
+                    
+                    enhanceIcon.onmouseleave = () => {
+                        if (tooltip) {
+                            tooltip.remove();
+                            tooltip = null;
+                        }
+                    };
+                }
             }
             
             cardWrapper.appendChild(cardElement);
