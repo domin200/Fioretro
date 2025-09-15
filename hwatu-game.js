@@ -263,7 +263,8 @@ const gameState = {
     cardEnhancements: {},  // 카드 강화 정보 {cardId: 'blue'|'red'|'white'|'black'|'gold'}
     gold: 0,  // 소지금
     redEnhancementBonus: 0,  // 적 강화로 인한 추가 배수 (스테이지당 누적)
-    currentBoss: null  // 현재 보스 정보
+    currentBoss: null,  // 현재 보스 정보
+    tripleGoWins: 0  // 쓰리고를 위한 승리 카운터
 };
 
 
@@ -2156,13 +2157,23 @@ function endRound() {
             showEnhancementEffect(`완벽한 클리어! 보상 2배!`, '#ffd700');
         }
         
-        // 쓰리고 효과 확인 (3스테이지마다 5골드 추가)
+        // 쓰리고 효과 확인 (3번 승리마다 5골드 추가)
         let tripleGoBonus = 0;
-        if (gameStateManager && gameStateManager.state && gameStateManager.state.treasures && gameStateManager.state.treasures.includes('triple_go') && gameState.stage % 3 === 0) {
-            tripleGoBonus = 5;
-            showEnhancementEffect(`쓰리고 효과! +5골드`, '#ffd700');
+        if (gameStateManager && gameStateManager.state && gameStateManager.state.treasures && gameStateManager.state.treasures.includes('triple_go')) {
+            gameState.tripleGoWins = (gameState.tripleGoWins || 0) + 1;
+
+            // 3번째 승리마다 보너스
+            if (gameState.tripleGoWins % 3 === 0) {
+                tripleGoBonus = 5;
+                showEnhancementEffect(`쓰리고 효과! +5골드`, '#ffd700');
+            }
+
+            // gameStateManager에도 동기화
+            if (gameStateManager && gameStateManager.state) {
+                gameStateManager.state.tripleGoWins = gameState.tripleGoWins;
+            }
         }
-        
+
         gameState.gold += clearGold + tripleGoBonus;
         
         // 총 획득 소지금 (이자 + 황 강화 보너스 + 클리어 보상 + 쓰리고 보너스)
