@@ -874,7 +874,7 @@ function showDeckCardAnimation(card) {
             // 맨 우측 카드 위치 가져오기
             const rightmostCard = floorCards[floorCards.length - 1];
             const rightCardRect = rightmostCard.getBoundingClientRect();
-            targetLeft = rightCardRect.left + rightCardRect.width + 10; // 우측 카드 옆에 약간 간격
+            targetLeft = rightCardRect.left + rightCardRect.width/2; // 우측 카드와 겹쳐서 표시
             targetTop = rightCardRect.top;
         } else {
             // 카드가 없으면 바닥 영역 왼쪽부터 시작
@@ -1216,7 +1216,7 @@ function showDrawAnimation(card) {
             // 맨 우측 카드 위치 가져오기
             const rightmostCard = handCards[handCards.length - 1];
             const rightCardRect = rightmostCard.getBoundingClientRect();
-            targetLeft = rightCardRect.left + rightCardRect.width + 10; // 우측 카드 옆에 약간 간격
+            targetLeft = rightCardRect.left + rightCardRect.width/2; // 우측 카드와 겹쳐서 표시
             targetTop = rightCardRect.top;
         } else {
             // 카드가 없으면 손패 영역 왼쪽부터 시작
@@ -1299,10 +1299,22 @@ function showInitialDealAnimation(card, destination, onComplete) {
     
     // 목적지로 이동하면서 뒤집기 + 크기 100%로 확대
     setTimeout(() => {
-        // 목적지 계산 (손패는 가운데, 바닥패도 가운데)
-        const targetX = targetRect.left + targetRect.width / 2 - 50;
-        const targetY = targetRect.top + targetRect.height / 2 - 75;
-        
+        // 목적지 영역의 맨 우측 카드 위치 찾기
+        const existingCards = targetArea.querySelectorAll('.card');
+        let targetX, targetY;
+
+        if (existingCards.length > 0) {
+            // 맨 우측 카드 위치 가져오기
+            const rightmostCard = existingCards[existingCards.length - 1];
+            const rightCardRect = rightmostCard.getBoundingClientRect();
+            targetX = rightCardRect.left + rightCardRect.width/2; // 우측 카드와 겹쳐서 표시
+            targetY = rightCardRect.top;
+        } else {
+            // 카드가 없으면 영역 왼쪽부터 시작
+            targetX = targetRect.left + 10;
+            targetY = targetRect.top + targetRect.height / 2 - 75;
+        }
+
         cardContainer.style.left = `${targetX}px`;
         cardContainer.style.top = `${targetY}px`;
         cardContainer.style.transform = 'rotateY(180deg) scale(1)';
