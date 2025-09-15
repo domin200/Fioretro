@@ -290,6 +290,113 @@ function initFullGame() {
     initStage();
 }
 
+// 보스 인트로 애니메이션
+function showBossIntro(boss) {
+    // 보스 인트로 오버레이 생성
+    const overlay = document.createElement('div');
+    overlay.id = 'boss-intro-overlay';
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.9);
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        z-index: 10000;
+        animation: fadeIn 0.3s ease;
+    `;
+    
+    // 보스 이미지
+    const bossImage = document.createElement('img');
+    bossImage.src = boss.image;
+    bossImage.style.cssText = `
+        width: 400px;
+        height: 400px;
+        object-fit: cover;
+        border-radius: 20px;
+        border: 5px solid #ff0000;
+        box-shadow: 0 0 50px rgba(255, 0, 0, 0.8);
+        animation: bossAppear 2s ease;
+    `;
+    
+    // 보스 정보
+    const bossInfo = document.createElement('div');
+    bossInfo.style.cssText = `
+        margin-top: 30px;
+        text-align: center;
+        color: white;
+        animation: textAppear 2s ease;
+    `;
+    bossInfo.innerHTML = `
+        <div style="font-size: 48px; font-weight: bold; color: #ff0000; margin-bottom: 10px;">
+            ${boss.icon} ${boss.name}
+        </div>
+        <div style="font-size: 24px; color: #ffa500;">
+            ${boss.description}
+        </div>
+    `;
+    
+    overlay.appendChild(bossImage);
+    overlay.appendChild(bossInfo);
+    document.body.appendChild(overlay);
+    
+    // 애니메이션 CSS 추가
+    if (!document.getElementById('boss-intro-style')) {
+        const style = document.createElement('style');
+        style.id = 'boss-intro-style';
+        style.textContent = `
+            @keyframes fadeIn {
+                from { opacity: 0; }
+                to { opacity: 1; }
+            }
+            @keyframes bossAppear {
+                0% { 
+                    transform: scale(0.5) rotate(-10deg);
+                    opacity: 0;
+                }
+                50% { 
+                    transform: scale(1.1) rotate(5deg);
+                    opacity: 1;
+                }
+                100% { 
+                    transform: scale(1) rotate(0deg);
+                    opacity: 1;
+                }
+            }
+            @keyframes textAppear {
+                0% { 
+                    transform: translateY(50px);
+                    opacity: 0;
+                }
+                50% {
+                    opacity: 1;
+                }
+                100% { 
+                    transform: translateY(0);
+                    opacity: 1;
+                }
+            }
+            @keyframes fadeOut {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
+    // 2초 후 페이드아웃
+    setTimeout(() => {
+        overlay.style.animation = 'fadeOut 0.5s ease';
+        setTimeout(() => {
+            overlay.remove();
+        }, 500);
+    }, 2000);
+}
+
 // 스테이지 초기화 (매 스테이지마다)
 function initStage() {
     // 현재 덱 준비 (제거/복제 카드 반영)
@@ -482,10 +589,12 @@ function initGame() {
 }
 
 // 덱 섞기
-function shuffleDeck() {
-    for (let i = gameState.deck.length - 1; i > 0; i--) {
+function shuffleDeck(deck) {
+    // deck 파라미터가 있으면 사용, 없으면 gameState.deck 사용
+    const targetDeck = deck || gameState.deck;
+    for (let i = targetDeck.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
-        [gameState.deck[i], gameState.deck[j]] = [gameState.deck[j], gameState.deck[i]];
+        [targetDeck[i], targetDeck[j]] = [targetDeck[j], targetDeck[i]];
     }
 }
 
@@ -4511,113 +4620,6 @@ function applyUpgrade(upgrade) {
             break;
     }
     updateDisplay();
-}
-
-// 보스 인트로 애니메이션
-function showBossIntro(boss) {
-    // 보스 인트로 오버레이 생성
-    const overlay = document.createElement('div');
-    overlay.id = 'boss-intro-overlay';
-    overlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.9);
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        z-index: 10000;
-        animation: fadeIn 0.3s ease;
-    `;
-    
-    // 보스 이미지
-    const bossImage = document.createElement('img');
-    bossImage.src = boss.image;
-    bossImage.style.cssText = `
-        width: 400px;
-        height: 400px;
-        object-fit: cover;
-        border-radius: 20px;
-        border: 5px solid #ff0000;
-        box-shadow: 0 0 50px rgba(255, 0, 0, 0.8);
-        animation: bossAppear 2s ease;
-    `;
-    
-    // 보스 정보
-    const bossInfo = document.createElement('div');
-    bossInfo.style.cssText = `
-        margin-top: 30px;
-        text-align: center;
-        color: white;
-        animation: textAppear 2s ease;
-    `;
-    bossInfo.innerHTML = `
-        <div style="font-size: 48px; font-weight: bold; color: #ff0000; margin-bottom: 10px;">
-            ${boss.icon} ${boss.name}
-        </div>
-        <div style="font-size: 24px; color: #ffa500;">
-            ${boss.description}
-        </div>
-    `;
-    
-    overlay.appendChild(bossImage);
-    overlay.appendChild(bossInfo);
-    document.body.appendChild(overlay);
-    
-    // 애니메이션 CSS 추가
-    if (!document.getElementById('boss-intro-style')) {
-        const style = document.createElement('style');
-        style.id = 'boss-intro-style';
-        style.textContent = `
-            @keyframes fadeIn {
-                from { opacity: 0; }
-                to { opacity: 1; }
-            }
-            @keyframes bossAppear {
-                0% { 
-                    transform: scale(0.5) rotate(-10deg);
-                    opacity: 0;
-                }
-                50% { 
-                    transform: scale(1.1) rotate(5deg);
-                    opacity: 1;
-                }
-                100% { 
-                    transform: scale(1) rotate(0deg);
-                    opacity: 1;
-                }
-            }
-            @keyframes textAppear {
-                0% { 
-                    transform: translateY(50px);
-                    opacity: 0;
-                }
-                50% {
-                    opacity: 1;
-                }
-                100% { 
-                    transform: translateY(0);
-                    opacity: 1;
-                }
-            }
-            @keyframes fadeOut {
-                from { opacity: 1; }
-                to { opacity: 0; }
-            }
-        `;
-        document.head.appendChild(style);
-    }
-    
-    // 2초 후 페이드아웃
-    setTimeout(() => {
-        overlay.style.animation = 'fadeOut 0.5s ease';
-        setTimeout(() => {
-            overlay.remove();
-        }, 500);
-    }, 2000);
 }
 
 // 보스 정보 표시
