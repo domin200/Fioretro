@@ -4637,14 +4637,15 @@ function updateBossDisplay() {
                 position: absolute;
                 top: 20px;
                 right: 20px;
-                background: linear-gradient(135deg, rgba(255, 165, 0, 0.9) 0%, rgba(255, 69, 0, 0.9) 100%);
-                border: 3px solid #ffa500;
+                background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
+                border: 2px solid rgba(255, 215, 0, 0.3);
                 border-radius: 12px;
                 padding: 15px 20px;
                 color: white;
                 font-family: 'Nanum Gothic', sans-serif;
                 font-weight: bold;
-                box-shadow: 0 4px 20px rgba(255, 165, 0, 0.5);
+                box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+                backdrop-filter: blur(5px);
                 z-index: 100;
                 animation: warningPulse 2s infinite;
             `;
@@ -4656,7 +4657,7 @@ function updateBossDisplay() {
         }
         
         bossWarning.innerHTML = `
-            <div style="font-size: 18px;">
+            <div style="font-size: 18px; color: #ffa500; text-shadow: 0 0 10px rgba(255, 165, 0, 0.5);">
                 ⚠️ 다음 스테이지: 보스전
             </div>
         `;
@@ -4667,8 +4668,14 @@ function updateBossDisplay() {
             style.id = 'warning-pulse-style';
             style.textContent = `
                 @keyframes warningPulse {
-                    0%, 100% { box-shadow: 0 4px 20px rgba(255, 165, 0, 0.5); }
-                    50% { box-shadow: 0 4px 30px rgba(255, 165, 0, 0.8); }
+                    0%, 100% { 
+                        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+                        border-color: rgba(255, 215, 0, 0.3);
+                    }
+                    50% { 
+                        box-shadow: 0 4px 20px rgba(255, 165, 0, 0.4);
+                        border-color: rgba(255, 165, 0, 0.5);
+                    }
                 }
             `;
             document.head.appendChild(style);
@@ -4693,14 +4700,15 @@ function updateBossDisplay() {
             position: absolute;
             top: 20px;
             right: 20px;
-            background: linear-gradient(135deg, rgba(139, 0, 0, 0.9) 0%, rgba(0, 0, 0, 0.9) 100%);
-            border: 3px solid #ff0000;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.3);
             border-radius: 12px;
             padding: 15px 20px;
             color: white;
             font-family: 'Nanum Gothic', sans-serif;
             font-weight: bold;
-            box-shadow: 0 4px 20px rgba(255, 0, 0, 0.5);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
             z-index: 100;
             animation: bossPulse 2s infinite;
         `;
@@ -4713,10 +4721,10 @@ function updateBossDisplay() {
     }
     
     bossInfo.innerHTML = `
-        <div style="font-size: 24px; margin-bottom: 10px;">
+        <div style="font-size: 24px; margin-bottom: 10px; color: #ff6b6b; text-shadow: 0 0 10px rgba(255, 107, 107, 0.5);">
             ${gameState.currentBoss.icon} ${gameState.currentBoss.name}
         </div>
-        <div style="font-size: 14px; opacity: 0.9;">
+        <div style="font-size: 14px; color: rgba(255, 255, 255, 0.9);">
             ${gameState.currentBoss.description}
         </div>
     `;
@@ -4727,8 +4735,14 @@ function updateBossDisplay() {
         style.id = 'boss-pulse-style';
         style.textContent = `
             @keyframes bossPulse {
-                0%, 100% { box-shadow: 0 4px 20px rgba(255, 0, 0, 0.5); }
-                50% { box-shadow: 0 4px 30px rgba(255, 0, 0, 0.8); }
+                0%, 100% { 
+                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+                    border-color: rgba(255, 215, 0, 0.3);
+                }
+                50% { 
+                    box-shadow: 0 4px 20px rgba(255, 107, 107, 0.4);
+                    border-color: rgba(255, 107, 107, 0.5);
+                }
             }
         `;
         document.head.appendChild(style);
