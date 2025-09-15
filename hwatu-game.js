@@ -521,12 +521,13 @@ function initGame() {
         let dealDelay = 300;
     
         // 손패 카드 분배 애니메이션 (각 카드마다 순차적으로)
+        const totalHandCards = cardsToHand.length;
         cardsToHand.forEach((card, index) => {
             setTimeout(() => {
                 showInitialDealAnimation(card, 'hand', () => {
                     gameState.hand.push(card);
                     updateDisplay();
-                }, index); // index를 전달하여 순차적 위치 계산
+                }, index, totalHandCards); // index와 전체 카드 수를 전달
             }, dealDelay * index);
         });
         
@@ -1236,7 +1237,7 @@ function showDrawAnimation(card) {
 }
 
 // 초기 카드 분배 애니메이션
-function showInitialDealAnimation(card, destination, onComplete, cardIndex = 0) {
+function showInitialDealAnimation(card, destination, onComplete, cardIndex = 0, totalCards = 5) {
     // 시작 사운드 재생 (손패로 갈 때만 allow1)
     if (destination === 'hand') {
         playSound('SE/allow1.ogg');
@@ -1305,9 +1306,14 @@ function showInitialDealAnimation(card, destination, onComplete, cardIndex = 0) 
             // 손패로 가는 경우: 순차적으로 위치 계산
             const cardWidth = 100;
             const cardSpacing = 110; // 카드 간 간격
-            const maxCards = 5; // 최대 카드 수
-            const startX = targetRect.left + (targetRect.width - (cardSpacing * maxCards)) / 2; // 중앙 정렬
 
+            // 전체 카드들의 총 너비 계산
+            const totalWidth = cardWidth + (cardSpacing * (totalCards - 1));
+
+            // 중앙 정렬을 위한 시작 위치 계산
+            const startX = targetRect.left + (targetRect.width - totalWidth) / 2;
+
+            // 각 카드의 위치 계산
             targetX = startX + (cardIndex * cardSpacing);
             targetY = targetRect.top + targetRect.height / 2 - 75;
         } else {
