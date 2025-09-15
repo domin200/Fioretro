@@ -2180,14 +2180,9 @@ function endRound() {
         const totalEarnedGold = interestGold + goldEnhancementBonus + clearGold + tripleGoBonus;
         
         showMissionResult(true, gameState.totalScore, isPerfectClear, totalEarnedGold, interestGold, clearGold, goldEnhancementBonus);
-        
+
         // 소지금 UI 업데이트를 먼저 완료
         updateDisplay();
-        
-        setTimeout(() => {
-            // 소지금 계산이 완료된 후 상점 표시
-            showUpgradeSelection();
-        }, 3000);
     } else {
         // 두개의 심장 확인
         const twoHeartsIndex = gameState.upgrades.findIndex(u => u.id === 'two_hearts');
@@ -2195,42 +2190,16 @@ function endRound() {
         if (twoHeartsIndex !== -1) {
             // 두개의 심장 효과 발동
             showMissionResult(false, gameState.totalScore, false, 0, 0, 0, 0, true); // 두개의 심장 사용 알림
-            
+
             // 두개의 심장 제거
             gameState.upgrades.splice(twoHeartsIndex, 1);
-            
+
             // 효과 발동 알림
-            setTimeout(() => {
-                triggerUpgradeEffect('two_hearts');
-                showTwoHeartsUsed();
-            }, 1000);
-            
-            // 다음 스테이지로 진행
-            setTimeout(() => {
-                showUpgradeSelection();
-            }, 3500);
+            triggerUpgradeEffect('two_hearts');
+            showTwoHeartsUsed();
         } else {
             // 미션 실패
             showMissionResult(false, gameState.totalScore);
-            setTimeout(() => {
-                // 스테이지 1로 돌아올 때 기본 색상으로 복원
-                if (typeof updateBackgroundColors === 'function') {
-                    updateBackgroundColors(1);
-                }
-                
-                // 스테이지와 기본값 먼저 초기화
-                gameState.stage = 1;
-                gameState.targetScore = 25;  // 초기값 25
-                gameState.discardsLeft = 4;  // 버리기 횟수 초기화
-                gameState.gold = 0;  // 소지금 초기화
-                
-                // 업그레이드 초기화
-                gameState.upgrades = [];
-                
-                // 그 다음 게임 초기화
-                initFullGame();
-                updateDisplay();
-            }, 2500);
         }
     }
 }
@@ -2240,7 +2209,7 @@ function showMissionResult(success, score, isPerfectClear = false, earnedGold = 
     // 승리/패배 효과음 재생
     const soundEffect = new Audio(success ? 'SE/397_win.mp3' : 'SE/405_lose.mp3');
     soundEffect.play().catch(e => console.log('효과음 재생 실패:', e));
-    
+
     const message = document.createElement('div');
     message.style.cssText = `
         position: fixed;
@@ -2256,7 +2225,7 @@ function showMissionResult(success, score, isPerfectClear = false, earnedGold = 
         z-index: 3000;
         box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
         text-align: center;
-        animation: missionPopup 2.5s ease;
+        animation: missionPopupIn 0.5s ease;
     `;
     
     message.innerHTML = `
@@ -2287,48 +2256,84 @@ function showMissionResult(success, score, isPerfectClear = false, earnedGold = 
                     총 획득: <span style="font-weight: bold;">+${earnedGold}</span>
                 </div>
             </div>` : ''}
-        ${success ? 
-            `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">다음 스테이지로 진행합니다!</div>` : 
-            (usingTwoHearts ? 
-                `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">두개의 심장으로 부활합니다!</div>` : 
+        ${success ?
+            `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">다음 스테이지로 진행합니다!</div>` :
+            (usingTwoHearts ?
+                `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">두개의 심장으로 부활합니다!</div>` :
                 `<div style="font-size: 18px; margin-top: 15px; opacity: 0.8;">게임이 초기화됩니다...</div>`)
         }
+        <button id="mission-result-confirm" style="
+            margin-top: 20px;
+            padding: 12px 30px;
+            font-size: 20px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+           onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+            확인
+        </button>
     `;
     
     // 애니메이션 CSS 추가
     const style = document.createElement('style');
     style.textContent = `
-        @keyframes missionPopup {
-            0% { 
-                opacity: 0; 
+        @keyframes missionPopupIn {
+            0% {
+                opacity: 0;
                 transform: translate(-50%, -50%) scale(0.5) rotate(-10deg);
             }
-            30% { 
-                opacity: 1; 
-                transform: translate(-50%, -50%) scale(1.1) rotate(5deg);
-            }
-            50% { 
-                transform: translate(-50%, -50%) scale(1.05) rotate(-2deg);
-            }
-            70% { 
-                opacity: 1; 
+            100% {
+                opacity: 1;
                 transform: translate(-50%, -50%) scale(1) rotate(0deg);
-            }
-            100% { 
-                opacity: 0; 
-                transform: translate(-50%, -50%) scale(0.9) rotate(0deg);
             }
         }
     `;
     document.head.appendChild(style);
-    
+
     document.body.appendChild(message);
-    
-    // 2.5초 후 메시지 제거
-    setTimeout(() => {
+
+    // 확인 버튼 클릭 이벤트 처리
+    const confirmButton = document.getElementById('mission-result-confirm');
+    confirmButton.onclick = () => {
         message.remove();
         style.remove();
-    }, 2400);
+
+        // 성공/실패에 따른 처리
+        if (success) {
+            // 성공: 상점 표시
+            showUpgradeSelection();
+        } else if (usingTwoHearts) {
+            // 두개의 심장 사용: 다음 스테이지로 진행
+            showUpgradeSelection();
+        } else {
+            // 실패: 게임 초기화
+            // 스테이지 1로 돌아올 때 기본 색상으로 복원
+            if (typeof updateBackgroundColors === 'function') {
+                updateBackgroundColors(1);
+            }
+
+            // 스테이지와 기본값 먼저 초기화
+            gameState.stage = 1;
+            gameState.targetScore = 25;  // 초기값 25
+            gameState.discardsLeft = 4;  // 버리기 횟수 초기화
+            gameState.gold = 0;  // 소지금 초기화
+
+            // 업그레이드 초기화
+            gameState.upgrades = [];
+
+            // 보스 정보 초기화
+            gameState.currentBoss = null;
+
+            // 그 다음 게임 초기화
+            initFullGame();
+            updateDisplay();
+        }
+    };
 }
 
 // 화면 업데이트
