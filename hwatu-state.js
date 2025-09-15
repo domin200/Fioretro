@@ -36,7 +36,8 @@ class GameStateManager {
             selectedCard: null,
             selectedFloorCard: null,
             isProcessingAction: false,
-            consumableCards: []  // 소모품 카드 (최대 2장)
+            consumableCards: [],  // 소모품 카드 (최대 2장)
+            treasures: []  // 보물 아이템 목록
         };
     }
 
