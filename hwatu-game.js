@@ -1198,6 +1198,35 @@ function showStackNotification(month, stackCount) {
     setTimeout(() => notification.remove(), 1500);
 }
 
+// 카드 펄스 애니메이션
+function pulseCards() {
+    // 바닥 카드들
+    const floorArea = document.getElementById('floor-area');
+    const floorCards = floorArea ? floorArea.querySelectorAll('.card') : [];
+    
+    // 손패 카드들
+    const handArea = document.getElementById('hand-area');
+    const handCards = handArea ? handArea.querySelectorAll('.card') : [];
+    
+    // 모든 카드에 펄스 애니메이션 적용
+    [...floorCards, ...handCards].forEach((card, index) => {
+        // 약간의 딜레이를 주어 웨이브 효과
+        setTimeout(() => {
+            card.style.transition = 'transform 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+            card.style.transform = 'scale(1.2)';
+            
+            // 원래 크기로 복귀
+            setTimeout(() => {
+                card.style.transform = 'scale(1)';
+                // 애니메이션 후 transition 제거
+                setTimeout(() => {
+                    card.style.transition = '';
+                }, 300);
+            }, 300);
+        }, index * 30); // 각 카드마다 30ms 딜레이
+    });
+}
+
 // 족보 달성 애니메이션 표시
 function showCombinationAchievement(text) {
     const achievement = document.createElement('div');
@@ -1218,6 +1247,9 @@ function showCombinationAchievement(text) {
         animation: achievementFloat 2s ease-out forwards;
     `;
     achievement.textContent = text;
+    
+    // 카드 펄스 애니메이션 실행
+    pulseCards();
     
     // 애니메이션 스타일 추가
     if (!document.getElementById('achievement-animation-style')) {
