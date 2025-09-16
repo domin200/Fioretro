@@ -502,45 +502,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // 바닥 카드 및 스택 컨테이너
-            const floorElements = [];
-            const floorArea = document.getElementById('floor-area');
-
-            if (floorArea) {
-                // 직접 자식 요소들을 확인
-                Array.from(floorArea.children).forEach(child => {
-                    if (child.style.position === 'relative' && child.querySelector('.card')) {
-                        // 스택 컨테이너
-                        floorElements.push({
-                            element: child,
-                            type: 'stack',
-                            cards: child.querySelectorAll('.card')
-                        });
-                    } else if (child.classList.contains('card')) {
-                        // 단일 카드
-                        floorElements.push({
-                            element: child,
-                            type: 'single',
-                            cards: [child]
-                        });
-                    }
-                });
-            }
-
-            floorElements.forEach((item, index) => {
+            // 바닥 카드 (스택 여부와 상관없이 모든 카드 개별 처리)
+            document.querySelectorAll('#floor-area .card').forEach((card, index) => {
                 const cardId = `floor-${index}`;
-                const element = item.element;
-                const isStack = item.type === 'stack';
 
-                // 색상 클래스는 카드에만 적용
-                if (!isStack && element.classList && element.classList.contains('card')) {
-                    if (!element.classList.contains('card-blue') &&
-                        !element.classList.contains('card-red') &&
-                        !element.classList.contains('card-gold') &&
-                        !element.classList.contains('card-dark') &&
-                        !element.classList.contains('card-white')) {
-                        applyColorClass(element);
-                    }
+                // 색상 클래스 적용
+                if (!card.classList.contains('card-blue') &&
+                    !card.classList.contains('card-red') &&
+                    !card.classList.contains('card-gold') &&
+                    !card.classList.contains('card-dark') &&
+                    !card.classList.contains('card-white')) {
+                    applyColorClass(card);
                 }
 
                 // 카드별 고유 상태 초기화 (손패와 동일한 움직임)
@@ -580,25 +552,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     Math.cos(currentTime * state.speedFloat * 1.3 + state.phaseFloat) * state.ampFloat * 0.4 +
                     Math.sin(currentTime * state.speedFloat * 2.1 + state.phaseFloat) * state.ampFloat * 0.2;
 
-                // 그림자 동적 계산 (스택은 더 진한 그림자)
-                const shadowY = isStack ? 25 + floatY * 1.5 : 20 + floatY * 1.5;
-                const shadowBlur = isStack ? 30 + Math.abs(floatY) : 25 + Math.abs(floatY);
-                const shadowOpacity = isStack ? 0.35 + Math.abs(floatY) / 40 : 0.25 + Math.abs(floatY) / 40;
+                // 그림자 동적 계산
+                const shadowY = 20 + floatY * 1.5;
+                const shadowBlur = 25 + Math.abs(floatY);
+                const shadowOpacity = 0.25 + Math.abs(floatY) / 40;
 
                 // 호버나 특수 효과가 있는 경우 처리
-                if (!element.matches(':hover') && !element.classList.contains('same-month-hover')) {
-                    // 강화된 카드인지 확인 (스택의 경우 첫 번째 카드 확인)
-                    const checkCard = isStack ? item.cards[0] : element;
-                    const isEnhanced = checkCard && (
-                        checkCard.classList.contains('card-blue') ||
-                        checkCard.classList.contains('card-red') ||
-                        checkCard.classList.contains('card-gold') ||
-                        checkCard.classList.contains('card-dark') ||
-                        checkCard.classList.contains('card-white')
-                    );
+                if (!card.matches(':hover') && !card.classList.contains('same-month-hover')) {
+                    // 강화된 카드인지 확인
+                    const isEnhanced = card.classList.contains('card-blue') ||
+                                      card.classList.contains('card-red') ||
+                                      card.classList.contains('card-gold') ||
+                                      card.classList.contains('card-dark') ||
+                                      card.classList.contains('card-white');
 
-                    if (element.classList.contains('same-month-selected') ||
-                        (isStack && item.cards[0] && item.cards[0].classList.contains('same-month-selected'))) {
+                    if (card.classList.contains('same-month-selected')) {
                         // 선택된 같은 월 카드는 더 활발한 움직임
                         const selectedTransform = `
                             translateY(${floatY - 15}px)
@@ -608,8 +576,8 @@ document.addEventListener('DOMContentLoaded', () => {
                             rotateZ(${rotateZ * 2}deg)
                             scale(1.1)
                         `;
-                        element.style.transform = selectedTransform;
-                        element.style.boxShadow = `0 ${shadowY + 10}px ${shadowBlur + 10}px rgba(76, 175, 80, ${shadowOpacity + 0.2})`;
+                        card.style.transform = selectedTransform;
+                        card.style.boxShadow = `0 ${shadowY + 10}px ${shadowBlur + 10}px rgba(76, 175, 80, ${shadowOpacity + 0.2})`;
                     } else {
                         const transform = `
                             translateY(${floatY}px)
@@ -618,11 +586,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             rotateY(${rotateY}deg)
                             rotateZ(${rotateZ}deg)
                         `;
-                        element.style.transform = transform;
+                        card.style.transform = transform;
 
                         if (!isEnhanced) {
-                            // 일반 카드/스택은 그림자 효과
-                            element.style.boxShadow = `0 ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, ${shadowOpacity})`;
+                            // 일반 카드는 그림자 효과
+                            card.style.boxShadow = `0 ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, ${shadowOpacity})`;
                         }
                     }
                 }
@@ -632,7 +600,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (cardAnimationStates.size > 50) {
                 const activeIds = new Set();
                 document.querySelectorAll('#hand-area .card').forEach((_, i) => activeIds.add(`hand-${i}`));
-                floorElements.forEach((_, i) => activeIds.add(`floor-${i}`));
+                document.querySelectorAll('#floor-area .card').forEach((_, i) => activeIds.add(`floor-${i}`));
 
                 for (const [id] of cardAnimationStates) {
                     if (!activeIds.has(id)) {
