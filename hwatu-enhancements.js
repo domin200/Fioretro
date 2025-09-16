@@ -823,11 +823,11 @@ document.addEventListener('DOMContentLoaded', () => {
         // 바닥 충돌용 파티클 (카드 뒤에 표시)
         window.createFloorParticles = (x, y, color = '#FFFFFF') => {
             const isGold = color === '#FFD700';
-            const particleCount = isGold ? 25 : 15; // 바닥 충돌시 더 많은 파티클
+            const particleCount = isGold ? 30 : 20; // 바닥 충돌시 더 많은 파티클
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
-                const size = isGold ? (10 + Math.random() * 5) : (4 + Math.random() * 3);
+                const size = isGold ? (8 + Math.random() * 6) : (3 + Math.random() * 4);
 
                 particle.style.cssText = `
                     position: fixed;
@@ -845,33 +845,46 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.appendChild(particle);
 
                 const angle = (Math.PI * 2 * i) / particleCount;
-                const radius = isGold ? (30 + Math.random() * 20) : (20 + Math.random() * 15); // 원형 퍼짐 반경
-                const lifetime = isGold ? (1500 + Math.random() * 500) : (800 + Math.random() * 400);
+                const radius = isGold ? (60 + Math.random() * 30) : (40 + Math.random() * 20); // 더 넓게 퍼짐
+                const lifetime = isGold ? (1200 + Math.random() * 300) : (800 + Math.random() * 200);
 
                 let opacity = 1;
                 let currentX = x;
                 let currentY = y;
                 let scale = 1;
-                let velocityY = -3 - Math.random() * 2; // 초기 상승 속도
-                const gravity = 0.15; // 중력
+
+                // 초기 상승 속도 (작게)
+                let velocityY = -1.5 - Math.random() * 1;
+                const gravity = 0.08; // 약한 중력
+                const maxFallDistance = 20 + Math.random() * 15; // 최대 하강 거리
+
                 const startTime = performance.now();
+                const initialY = y;
 
                 const animate = (currentTime) => {
                     const elapsed = currentTime - startTime;
                     const progress = elapsed / lifetime;
 
                     if (progress < 1) {
-                        // 원형으로 퍼지면서 상승 후 하강
-                        const spreadProgress = Math.min(progress * 2, 1); // 빠르게 퍼짐
+                        // 물결처럼 원형으로 퍼짐
+                        const spreadProgress = 1 - Math.pow(1 - progress, 3); // easeOutCubic
                         currentX = x + Math.cos(angle) * radius * spreadProgress;
 
-                        // 상승 후 하강 효과
+                        // 살짝 상승 후 제한된 하강
                         velocityY += gravity;
                         currentY += velocityY;
 
-                        // 페이드 아웃과 크기 변화
-                        opacity = 1 - progress * 0.8;
-                        scale = 1 + progress * 0.3; // 조금만 커짐
+                        // 최대 하강 거리 제한
+                        if (currentY - initialY > maxFallDistance) {
+                            currentY = initialY + maxFallDistance;
+                            velocityY = 0; // 하강 멈춤
+                        }
+
+                        // 부드러운 페이드 아웃
+                        opacity = Math.pow(1 - progress, 2);
+
+                        // 크기는 점점 작아짐
+                        scale = 1 - progress * 0.5;
 
                         particle.style.left = currentX + 'px';
                         particle.style.top = currentY + 'px';
