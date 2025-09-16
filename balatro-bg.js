@@ -14,7 +14,7 @@ class BalatroBackground {
             spinAmount: options.spinAmount ?? 0.25,
             pixelFilter: options.pixelFilter ?? 745.0,
             spinEase: options.spinEase ?? 1.0,
-            isRotate: options.isRotate ?? false,
+            isRotate: options.isRotate ?? true,
             mouseInteraction: options.mouseInteraction ?? true
         };
         
