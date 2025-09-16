@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                const state = cardAnimationStates.get(cardId);
+                const state = cardAnimationStates.get(stackId);
 
                 // 여러 사인파 합성
                 const rotateX =
@@ -502,9 +502,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            // 바닥 카드 (스택 여부와 상관없이 모든 카드 개별 처리)
+            // 바닥 카드 (스택은 동일한 움직임)
             document.querySelectorAll('#floor-area .card').forEach((card, index) => {
-                const cardId = `floor-${index}`;
+                // 스택 컨테이너 찾기
+                const stackContainer = card.parentElement && card.parentElement.style.position === 'relative' &&
+                                      card.parentElement.parentElement === document.getElementById('floor-area')
+                                      ? card.parentElement : null;
+
+                // 스택 ID 생성 (스택이면 컨테이너 기준, 아니면 카드 인덱스)
+                const stackId = stackContainer ?
+                    `stack-${Array.from(stackContainer.parentElement.children).indexOf(stackContainer)}` :
+                    `floor-${index}`;
 
                 // 색상 클래스 적용
                 if (!card.classList.contains('card-blue') &&
@@ -515,9 +523,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     applyColorClass(card);
                 }
 
-                // 카드별 고유 상태 초기화 (손패와 동일한 움직임)
-                if (!cardAnimationStates.has(cardId)) {
-                    cardAnimationStates.set(cardId, {
+                // 스택별 공유 상태 또는 카드별 고유 상태 초기화
+                if (!cardAnimationStates.has(stackId)) {
+                    cardAnimationStates.set(stackId, {
                         phaseX: Math.random() * Math.PI * 2,
                         phaseY: Math.random() * Math.PI * 2,
                         phaseZ: Math.random() * Math.PI * 2,
@@ -533,7 +541,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                const state = cardAnimationStates.get(cardId);
+                const state = cardAnimationStates.get(stackId);
 
                 // 여러 사인파 합성 (손패와 동일한 움직임)
                 const rotateX =
