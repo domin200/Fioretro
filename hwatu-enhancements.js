@@ -187,25 +187,39 @@ document.addEventListener('DOMContentLoaded', () => {
                 will-change: transform, filter;
             }
 
-            /* 색상별 카드 효과 */
+            /* 색상별 카드 효과 - float 애니메이션 제거 */
             .card-blue {
-                animation: blueGlow 3s ease-in-out infinite !important;
+                filter: brightness(1.2) saturate(1.5) hue-rotate(-20deg) drop-shadow(0 0 20px rgba(0, 150, 255, 0.8)) !important;
+                box-shadow: 0 0 30px rgba(0, 150, 255, 0.6), inset 0 0 20px rgba(0, 150, 255, 0.3) !important;
             }
 
             .card-red {
-                animation: redGlow 3s ease-in-out infinite !important;
+                filter: brightness(1.2) saturate(1.5) drop-shadow(0 0 20px rgba(255, 50, 50, 0.8)) !important;
+                box-shadow: 0 0 30px rgba(255, 50, 50, 0.6), inset 0 0 20px rgba(255, 50, 50, 0.3) !important;
             }
 
             .card-gold {
-                animation: goldGlow 3s ease-in-out infinite !important;
+                filter: brightness(1.3) saturate(1.5) drop-shadow(0 0 25px rgba(255, 215, 0, 0.9)) !important;
+                box-shadow: 0 0 40px rgba(255, 215, 0, 0.7), inset 0 0 25px rgba(255, 215, 0, 0.4) !important;
             }
 
             .card-dark {
-                animation: darkGlow 3s ease-in-out infinite !important;
+                filter: brightness(0.8) contrast(1.5) drop-shadow(0 0 20px rgba(100, 0, 200, 0.8)) !important;
+                box-shadow: 0 0 30px rgba(100, 0, 200, 0.6), inset 0 0 20px rgba(50, 0, 100, 0.4) !important;
             }
 
             .card-white {
-                animation: whiteGlow 3s ease-in-out infinite !important;
+                filter: brightness(1.4) contrast(1.2) drop-shadow(0 0 20px rgba(255, 255, 255, 0.9)) !important;
+                box-shadow: 0 0 30px rgba(255, 255, 255, 0.7), inset 0 0 20px rgba(255, 255, 255, 0.4) !important;
+            }
+
+            /* 강화된 카드 호버 시 필터 유지 */
+            .card-blue:hover,
+            .card-red:hover,
+            .card-gold:hover,
+            .card-dark:hover,
+            .card-white:hover {
+                transition: transform 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
             }
 
             /* 손패 호버 시 더 부드러운 전환 */
@@ -317,7 +331,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const y = rect.top + rect.height / 2;
 
                     if (window.createParticles) {
-                        window.createParticles(x, y, '#FFFFFF');
+                        window.createParticles(x, y, '#FFFFFF', true); // 클릭 이벤트
                     }
 
                     // 잠시 후 별 표시 업데이트 (선택 상태가 변경된 후)
@@ -333,7 +347,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     const y = rect.top + rect.height / 2;
 
                     if (window.createParticles) {
-                        window.createParticles(x, y, '#FFFFFF');
+                        window.createParticles(x, y, '#FFFFFF', true); // 클릭 이벤트
                     }
                 }
             }
@@ -427,15 +441,29 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rotateX = Math.sin(progress * Math.PI * 2) * 2;
                 const rotateY = Math.cos(progress * Math.PI * 2) * 1;
 
+                // 강화된 카드인지 확인
+                const isEnhanced = card.classList.contains('card-blue') ||
+                                  card.classList.contains('card-red') ||
+                                  card.classList.contains('card-gold') ||
+                                  card.classList.contains('card-dark') ||
+                                  card.classList.contains('card-white');
+
                 if (!card.matches(':hover')) {
                     if (card.classList.contains('selected')) {
                         // 선택된 카드는 float + 추가 상승 + 10% 확대
                         card.style.transform = `translateY(${floatY - 10}px) scale(1.1) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
                         // filter는 CSS에서 이미 적용됨
+                    } else if (isEnhanced) {
+                        // 강화된 카드는 transform만 적용 (filter는 CSS에서 관리)
+                        card.style.transform = `translateY(${floatY}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
                     } else {
+                        // 일반 카드
                         card.style.transform = `translateY(${floatY}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
                         card.style.filter = `drop-shadow(0 ${15 + floatY/2}px ${20 + floatY/3}px rgba(0, 0, 0, ${0.3 - floatY/80}))`;
                     }
+                } else if (card.classList.contains('selected')) {
+                    // 호버 중이면서 선택된 카드도 float 효과 유지
+                    card.style.transform = `translateY(${floatY - 10}px) scale(1.1) translateZ(10px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
                 }
             });
 
@@ -470,11 +498,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 // 호버나 특수 효과가 있는 경우 처리
                 if (!card.matches(':hover') && !card.classList.contains('same-month-hover')) {
+                    // 강화된 카드인지 확인
+                    const isEnhanced = card.classList.contains('card-blue') ||
+                                      card.classList.contains('card-red') ||
+                                      card.classList.contains('card-gold') ||
+                                      card.classList.contains('card-dark') ||
+                                      card.classList.contains('card-white');
+
                     if (card.classList.contains('same-month-selected')) {
                         // 선택된 같은 월 카드는 float + 추가 상승 + 10% 확대
                         card.style.transform = `translateY(${floatY - 10}px) scale(1.1) translateZ(20px)`;
                         // filter는 CSS에서 이미 적용됨
+                    } else if (isEnhanced) {
+                        // 강화된 카드는 transform만 적용
+                        card.style.transform = `translateY(${floatY}px) translateZ(20px)`;
                     } else {
+                        // 일반 카드
                         card.style.transform = `translateY(${floatY}px) translateZ(20px)`;
                         card.style.filter = `drop-shadow(0 ${shadowOffset}px ${shadowBlur}px rgba(0, 0, 0, 0.4))`;
                     }
@@ -714,7 +753,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === 5. 파티클 효과 (간단한 버전) ===
     const addParticleEffects = () => {
-        window.createParticles = (x, y, color = '#FFD700') => {
+        window.createParticles = (x, y, color = '#FFD700', isClick = false) => {
             const isGold = color === '#FFD700';
             const isWhite = color === '#FFFFFF';
             const particleCount = isGold ? 20 : 8; // 황금색은 20개, 흰색은 8개
@@ -723,6 +762,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 const particle = document.createElement('div');
                 const size = isGold ? (8 + Math.random() * 4) : (3 + Math.random() * 2);
 
+                // 클릭 파티클은 카드 위에(z-index 9999), 바닥 충돌 파티클은 카드 뒤에(z-index 90)
+                const zIndex = isClick ? '9999' : '90';
+
                 particle.style.cssText = `
                     position: fixed;
                     width: ${size}px;
@@ -730,7 +772,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     background: radial-gradient(circle, ${color}, transparent);
                     border-radius: 50%;
                     pointer-events: none;
-                    z-index: 9999;
+                    z-index: ${zIndex};
                     left: ${x}px;
                     top: ${y}px;
                     box-shadow: 0 0 ${size}px ${color};
@@ -865,7 +907,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const x = rect.left + rect.width / 2;
                                 const y = rect.top + rect.height / 2;
                                 console.log(`Creating GOLD particles at matching card: ${x}, ${y}`);
-                                window.createParticles(x, y, '#FFD700');
+                                window.createParticles(x, y, '#FFD700', false); // 바닥 충돌
                             } else {
                                 // 파란색 파티클 - 새로 놓인 카드 위치 찾기
                                 // 방금 플레이한 카드의 월과 같은 카드 찾기 (가장 마지막 것)
@@ -904,7 +946,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const x = rect.left + rect.width / 2;
                                     const y = rect.top + rect.height / 2;
                                     console.log(`Creating WHITE particles at new card: ${x}, ${y}`);
-                                    window.createParticles(x, y, '#FFFFFF');
+                                    window.createParticles(x, y, '#FFFFFF', false); // 바닥 충돌
                                 }
                             }
 
@@ -987,7 +1029,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const color = hasSameMonth ? '#FFD700' : '#FFFFFF';
 
                                 console.log(`Creating deck card particles at: ${x}, ${y}, Color: ${color}`);
-                                window.createParticles(x, y, color);
+                                window.createParticles(x, y, color, false); // 바닥 충돌
 
                                 // 사운드 효과
                                 if (window.soundManager) {
@@ -1113,7 +1155,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 console.log('Creating particles NOW at:', targetX, targetY, 'Color:', particleColor);
 
                                 if (window.createParticles) {
-                                    window.createParticles(targetX, targetY, particleColor);
+                                    window.createParticles(targetX, targetY, particleColor, false); // 바닥 충돌
                                     console.log('Particles should be visible now!');
 
                                     // 사운드 효과
@@ -1168,9 +1210,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const y = window.innerHeight / 2;
         console.log('Testing particles at center:', x, y);
         if (window.createParticles) {
-            window.createParticles(x, y, '#FFD700');
+            window.createParticles(x, y, '#FFD700', true); // 테스트용
             setTimeout(() => {
-                window.createParticles(x + 100, y, '#4169E1');
+                window.createParticles(x + 100, y, '#4169E1', true); // 테스트용
             }, 500);
             console.log('Particles created successfully');
         } else {
