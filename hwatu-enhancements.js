@@ -752,7 +752,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === 5. 파티클 효과 (간단한 버전) ===
     const addParticleEffects = () => {
-        window.createParticles = (x, y, color = '#FFD700', isClick = false) => {
+        // 클릭용 파티클 (카드 위에 표시)
+        window.createParticles = (x, y, color = '#FFD700', isClick = true) => {
+            // 기본값을 true로 변경하여 기존 클릭 이벤트가 카드 위에 표시되도록 유지
+            if (!isClick) {
+                // 바닥 충돌용은 별도 함수 사용
+                window.createFloorParticles(x, y, color);
+                return;
+            }
+
             const isGold = color === '#FFD700';
             const isWhite = color === '#FFFFFF';
             const particleCount = isGold ? 20 : 8; // 황금색은 20개, 흰색은 8개
@@ -761,9 +769,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 const particle = document.createElement('div');
                 const size = isGold ? (8 + Math.random() * 4) : (3 + Math.random() * 2);
 
-                // 클릭 파티클은 카드 위에(z-index 9999), 바닥 충돌 파티클은 카드 뒤에(z-index 90)
-                const zIndex = isClick ? '9999' : '90';
-
                 particle.style.cssText = `
                     position: fixed;
                     width: ${size}px;
@@ -771,7 +776,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     background: radial-gradient(circle, ${color}, transparent);
                     border-radius: 50%;
                     pointer-events: none;
-                    z-index: ${zIndex};
+                    z-index: 9999;
                     left: ${x}px;
                     top: ${y}px;
                     box-shadow: 0 0 ${size}px ${color};
@@ -799,6 +804,69 @@ document.addEventListener('DOMContentLoaded', () => {
                         currentY += Math.sin(angle) * velocity - progress * 3; // 위로 올라가는 효과
                         opacity = 1 - progress * 0.8;
                         scale = 1 + progress * 0.5; // 점점 커짐
+
+                        particle.style.left = currentX + 'px';
+                        particle.style.top = currentY + 'px';
+                        particle.style.opacity = opacity;
+                        particle.style.transform = `scale(${scale})`;
+
+                        requestAnimationFrame(animate);
+                    } else {
+                        particle.remove();
+                    }
+                };
+
+                requestAnimationFrame(animate);
+            }
+        };
+
+        // 바닥 충돌용 파티클 (카드 뒤에 표시)
+        window.createFloorParticles = (x, y, color = '#FFFFFF') => {
+            const isGold = color === '#FFD700';
+            const particleCount = isGold ? 25 : 15; // 바닥 충돌시 더 많은 파티클
+
+            for (let i = 0; i < particleCount; i++) {
+                const particle = document.createElement('div');
+                const size = isGold ? (10 + Math.random() * 5) : (4 + Math.random() * 3);
+
+                particle.style.cssText = `
+                    position: fixed;
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: radial-gradient(circle, ${color}, transparent);
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 90;
+                    left: ${x}px;
+                    top: ${y}px;
+                    box-shadow: 0 0 ${size * 1.5}px ${color};
+                `;
+
+                document.body.appendChild(particle);
+
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const velocity = isGold ? (5 + Math.random() * 4) : (2 + Math.random() * 2);
+                const lifetime = isGold ? (2000 + Math.random() * 500) : (1000 + Math.random() * 400);
+
+                let opacity = 1;
+                let currentX = x;
+                let currentY = y;
+                let scale = 1;
+                const gravity = 0.2; // 중력 효과
+                let velocityY = -Math.random() * 2 - 1; // 초기 위쪽 속도
+                const startTime = performance.now();
+
+                const animate = (currentTime) => {
+                    const elapsed = currentTime - startTime;
+                    const progress = elapsed / lifetime;
+
+                    if (progress < 1) {
+                        // 바닥 충돌 효과: 튀어오르면서 퍼짐
+                        currentX += Math.cos(angle) * velocity * (1 - progress * 0.3);
+                        velocityY += gravity; // 중력 적용
+                        currentY += velocityY;
+                        opacity = 1 - progress * 0.7;
+                        scale = 1 + progress * 0.8; // 더 크게 퍼짐
 
                         particle.style.left = currentX + 'px';
                         particle.style.top = currentY + 'px';
