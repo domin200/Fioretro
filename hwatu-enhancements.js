@@ -283,11 +283,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.appendChild(flash);
                 setTimeout(() => flash.remove(), 500);
 
-                // 토스트 메시지
-                if (window.uiManager) {
-                    window.showToast('카드를 플레이했습니다!', 'success', 2000);
-                }
-
                 // 원래 동작 실행
                 if (originalClick) originalClick.call(this, e);
             };
@@ -313,11 +308,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 `;
                 document.body.appendChild(flash);
                 setTimeout(() => flash.remove(), 500);
-
-                // 토스트 메시지
-                if (window.uiManager) {
-                    window.showToast('카드를 버렸습니다', 'warning', 2000);
-                }
 
                 // 원래 동작 실행
                 if (originalClick) originalClick.call(this, e);
@@ -417,13 +407,6 @@ document.addEventListener('DOMContentLoaded', () => {
     addGameFeedback();
     addParticleEffects();
 
-    // 초기화 완료 메시지
-    setTimeout(() => {
-        if (window.uiManager) {
-            window.showToast('🎮 게임 개선 기능이 활성화되었습니다!', 'success', 3000);
-            window.showToast('⭐ 선택한 카드와 같은 월의 바닥패가 하이라이트됩니다', 'info', 4000);
-        }
-    }, 1000);
 
     console.log('✨ 게임 개선 기능 초기화 완료!');
 });
