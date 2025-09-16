@@ -792,6 +792,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 let currentX = x;
                 let currentY = y;
                 let scale = 1;
+                let velocityY = Math.sin(angle) * velocity - 3; // 초기 상승 속도
+                const gravity = 0.2; // 중력
                 const startTime = performance.now();
 
                 const animate = (currentTime) => {
@@ -799,9 +801,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     const progress = elapsed / lifetime;
 
                     if (progress < 1) {
-                        // 파티클이 위로 올라가면서 퍼짐
+                        // 파티클이 옆으로 퍼짐
                         currentX += Math.cos(angle) * velocity * (1 - progress * 0.5);
-                        currentY += Math.sin(angle) * velocity - progress * 3; // 위로 올라가는 효과
+
+                        // 50% 지점까지는 위로, 그 이후는 아래로
+                        if (progress < 0.5) {
+                            // 위로 올라감
+                            currentY -= (3 - progress * 6); // 점점 느려짐
+                        } else {
+                            // 아래로 떨어짐 (중력 효과)
+                            velocityY += gravity;
+                            currentY += velocityY * (progress - 0.5) * 2;
+                        }
+
                         opacity = 1 - progress * 0.8;
                         scale = 1 + progress * 0.5; // 점점 커짐
 
