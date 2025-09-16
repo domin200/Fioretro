@@ -786,7 +786,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 const angle = (Math.PI * 2 * i) / particleCount;
                 const velocity = isGold ? (5 + Math.random() * 3) : (2.5 + Math.random() * 1.5); // 중간 속도
-                const lifetime = isGold ? (1200 + Math.random() * 400) : (700 + Math.random() * 250); // 중간 수명
+                const lifetime = isGold ? (600 + Math.random() * 200) : (350 + Math.random() * 125); // 2배 빠르게 사라짐
 
                 let opacity = 1;
                 let currentX = x;
