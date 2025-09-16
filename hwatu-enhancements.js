@@ -1144,7 +1144,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                     }
                                 }
                             }
-                        }, 800); // 덱 카드 애니메이션이 좀 더 긴 시간이 필요
+                        }, 700); // 덱 카드 애니메이션 (0.1초 빠르게)
                     }
 
                     return result;
