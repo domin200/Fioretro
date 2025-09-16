@@ -680,7 +680,7 @@
             font-size: clamp(14px, 1.8vw, 16px);
             font-weight: bold;
             border: none;
-            border-radius: 8px;
+            border-radius: 10px !important;
             cursor: pointer;
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
             color: white;
@@ -688,15 +688,15 @@
             flex: 1;
             max-width: 160px;
         }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            border-radius: 10px;
+
+        .btn-primary, #play-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-radius: 10px !important;
         }
-        
-        .btn-secondary {
-            background: linear-gradient(135deg, #ff6b6b 0%, #e74c3c 100%);
-            border-radius: 10px;
+
+        .btn-secondary, #discard-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #d32f2f 100%) !important;
+            border-radius: 10px !important;
         }
         
         .btn:hover:not(:disabled) {

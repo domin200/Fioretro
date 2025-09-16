@@ -448,12 +448,18 @@ document.addEventListener('DOMContentLoaded', () => {
                                   card.classList.contains('card-dark') ||
                                   card.classList.contains('card-white');
 
-                if (!card.matches(':hover')) {
-                    if (card.classList.contains('selected')) {
-                        // 선택된 카드는 float + 추가 상승 + 10% 확대
+                if (card.classList.contains('selected')) {
+                    // 선택된 카드는 항상 float + 추가 상승 + 10% 확대
+                    if (card.matches(':hover')) {
+                        // 호버 중이면서 선택된 카드
+                        card.style.transform = `translateY(${floatY - 15}px) scale(1.15) translateZ(10px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                    } else {
+                        // 선택만 된 카드
                         card.style.transform = `translateY(${floatY - 10}px) scale(1.1) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-                        // filter는 CSS에서 이미 적용됨
-                    } else if (isEnhanced) {
+                    }
+                    // filter는 CSS에서 이미 적용됨
+                } else if (!card.matches(':hover')) {
+                    if (isEnhanced) {
                         // 강화된 카드는 transform만 적용 (filter는 CSS에서 관리)
                         card.style.transform = `translateY(${floatY}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
                     } else {
@@ -461,9 +467,6 @@ document.addEventListener('DOMContentLoaded', () => {
                         card.style.transform = `translateY(${floatY}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
                         card.style.filter = `drop-shadow(0 ${15 + floatY/2}px ${20 + floatY/3}px rgba(0, 0, 0, ${0.3 - floatY/80}))`;
                     }
-                } else if (card.classList.contains('selected')) {
-                    // 호버 중이면서 선택된 카드도 float 효과 유지
-                    card.style.transform = `translateY(${floatY - 10}px) scale(1.1) translateZ(10px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
                 }
             });
 
