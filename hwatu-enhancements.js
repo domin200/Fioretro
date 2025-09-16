@@ -441,7 +441,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     });
                 }
 
-                const state = cardAnimationStates.get(stackId);
+                const state = cardAnimationStates.get(cardId);
 
                 // 여러 사인파 합성
                 const rotateX =
