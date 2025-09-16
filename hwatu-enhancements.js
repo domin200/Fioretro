@@ -568,13 +568,12 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                             }
 
-                                // 사운드 효과
-                                if (window.soundManager) {
-                                    if (hasSameMonth) {
-                                        window.soundManager.playRareCard();
-                                    } else {
-                                        window.soundManager.playCardPlay();
-                                    }
+                            // 사운드 효과
+                            if (window.soundManager) {
+                                if (hasSameMonth) {
+                                    window.soundManager.playRareCard();
+                                } else {
+                                    window.soundManager.playCardPlay();
                                 }
                             }
                         }
