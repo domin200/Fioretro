@@ -1,1 +1,1 @@
-� spinRotation � �� 0� d1
+🎨 play 컨테이너 배경 박스 제거
