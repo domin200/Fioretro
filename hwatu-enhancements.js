@@ -414,77 +414,103 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        // 플레이 버튼 클릭시 파티클 효과를 위한 이벤트 리스너
+        // 바닥에 카드가 추가될 때 파티클 효과
+        let lastFloorCardCount = 0;
+        let lastPlayedCard = null;
+
+        // 플레이 버튼 클릭 시 선택된 카드 정보 저장
         const playBtn = document.getElementById('play-btn');
         if (playBtn) {
-            playBtn.addEventListener('click', function(e) {
-                console.log('Play button clicked - particle effect triggered');
-
-                // 선택된 카드 정보 가져오기
+            // onclick 이벤트가 이미 있으므로 감싸기
+            const originalOnclick = playBtn.onclick;
+            playBtn.onclick = function(e) {
+                // 선택된 카드 정보 저장
                 const selectedCard = document.querySelector('#hand-area .card.selected');
                 if (selectedCard && selectedCard.cardData) {
-                    const selectedMonth = selectedCard.cardData.month;
-                    console.log('Selected card month:', selectedMonth);
+                    lastPlayedCard = {
+                        month: selectedCard.cardData.month,
+                        type: selectedCard.cardData.type,
+                        name: selectedCard.cardData.name
+                    };
+                    console.log('Card will be played:', lastPlayedCard);
+                }
 
-                    // 바닥에 같은 월 카드가 있는지 확인
-                    const hasSameMonth = Array.from(document.querySelectorAll('#floor-area .card'))
-                        .some(card => card.cardData && card.cardData.month === selectedMonth);
-                    console.log('Has same month card on floor:', hasSameMonth);
+                // 원래 함수 실행
+                if (originalOnclick) {
+                    return originalOnclick.call(this, e);
+                }
+            };
+        }
 
-                    // 0.5초 후 파티클 효과 (카드가 바닥에 도착할 때)
-                    setTimeout(() => {
-                        // 바닥에 있는 같은 월 카드 찾기
-                        let targetX, targetY;
+        // MutationObserver로 바닥 영역 감시
+        const floorArea = document.getElementById('floor-area');
+        if (floorArea) {
+            const observer = new MutationObserver((mutations) => {
+                const currentFloorCards = floorArea.querySelectorAll('.card');
+                const currentCount = currentFloorCards.length;
 
-                        if (hasSameMonth) {
-                            // 같은 월 카드 위치 찾기
-                            const sameMonthCard = Array.from(document.querySelectorAll('#floor-area .card'))
-                                .find(card => card.cardData && card.cardData.month === selectedMonth);
-                            if (sameMonthCard) {
-                                const rect = sameMonthCard.getBoundingClientRect();
-                                targetX = rect.left + rect.width / 2;
-                                targetY = rect.top + rect.height / 2;
-                            }
-                        } else {
-                            // 마지막 바닥 카드 위치 (새로 놓인 카드)
-                            const floorCards = document.querySelectorAll('#floor-area .card');
-                            if (floorCards.length > 0) {
-                                const lastCard = floorCards[floorCards.length - 1];
-                                const rect = lastCard.getBoundingClientRect();
-                                targetX = rect.left + rect.width / 2;
-                                targetY = rect.top + rect.height / 2;
-                            } else {
-                                // 바닥 중앙
-                                const floorArea = document.getElementById('floor-area');
-                                const rect = floorArea.getBoundingClientRect();
-                                targetX = rect.left + rect.width / 2;
-                                targetY = rect.top + rect.height / 2;
-                            }
-                        }
+                // 카드가 추가되었을 때
+                if (currentCount > lastFloorCardCount && lastPlayedCard) {
+                    console.log('Card added to floor!', lastPlayedCard);
 
-                        // 같은 월 카드가 있으면 황금색, 없으면 파란색
-                        const particleColor = hasSameMonth ? '#FFD700' : '#4169E1';
-                        console.log('Creating particles at:', targetX, targetY, 'Color:', particleColor);
+                    // 같은 월 카드 찾기
+                    const hasSameMonth = Array.from(currentFloorCards).some(card =>
+                        card.cardData &&
+                        card.cardData.month === lastPlayedCard.month &&
+                        card !== currentFloorCards[currentFloorCards.length - 1] // 방금 놓인 카드 제외
+                    );
 
-                        if (targetX && targetY && window.createParticles) {
-                            window.createParticles(targetX, targetY, particleColor);
+                    // 파티클 생성 위치 결정
+                    let targetX, targetY;
+                    let targetCard = null;
 
-                            // 사운드 효과도 추가
-                            if (window.soundManager) {
-                                if (hasSameMonth) {
-                                    window.soundManager.playRareCard(); // 황금색일 때는 특별한 사운드
-                                } else {
-                                    window.soundManager.playCardPlay(); // 일반 사운드
+                    if (hasSameMonth) {
+                        // 같은 월 카드 위치
+                        targetCard = Array.from(currentFloorCards).find(card =>
+                            card.cardData &&
+                            card.cardData.month === lastPlayedCard.month
+                        );
+                    } else {
+                        // 새로 놓인 카드 위치
+                        targetCard = currentFloorCards[currentFloorCards.length - 1];
+                    }
+
+                    if (targetCard) {
+                        // 애니메이션이 완료될 때까지 대기
+                        setTimeout(() => {
+                            const rect = targetCard.getBoundingClientRect();
+                            targetX = rect.left + rect.width / 2;
+                            targetY = rect.top + rect.height / 2;
+
+                            // 파티클 생성
+                            const particleColor = hasSameMonth ? '#FFD700' : '#4169E1';
+                            console.log('Creating particles at:', targetX, targetY, 'Color:', particleColor);
+
+                            if (window.createParticles) {
+                                window.createParticles(targetX, targetY, particleColor);
+
+                                // 사운드 효과
+                                if (window.soundManager) {
+                                    if (hasSameMonth) {
+                                        window.soundManager.playRareCard();
+                                    } else {
+                                        window.soundManager.playCardPlay();
+                                    }
                                 }
                             }
-                        } else {
-                            console.warn('Cannot create particles - missing position or function');
-                        }
-                    }, 500);
+                        }, 600); // 카드 애니메이션 완료 대기
+                    }
+
+                    lastPlayedCard = null; // 처리 완료
                 }
+
+                lastFloorCardCount = currentCount;
             });
-        } else {
-            console.warn('Play button not found')
+
+            observer.observe(floorArea, { childList: true, subtree: true });
+
+            // 초기 카드 수 저장
+            lastFloorCardCount = floorArea.querySelectorAll('.card').length;
         }
     };
 
