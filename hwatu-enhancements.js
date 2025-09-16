@@ -22,28 +22,58 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             @keyframes blueGlow {
-                0%, 100% { filter: brightness(1) saturate(1.2) hue-rotate(-10deg) drop-shadow(0 0 10px rgba(0, 100, 255, 0.3)); }
-                50% { filter: brightness(1.1) saturate(1.4) hue-rotate(0deg) drop-shadow(0 0 20px rgba(0, 150, 255, 0.5)); }
+                0%, 100% {
+                    filter: brightness(1.2) saturate(1.5) hue-rotate(-20deg) drop-shadow(0 0 20px rgba(0, 150, 255, 0.8));
+                    box-shadow: 0 0 30px rgba(0, 150, 255, 0.6), inset 0 0 20px rgba(0, 150, 255, 0.3);
+                }
+                50% {
+                    filter: brightness(1.4) saturate(2) hue-rotate(0deg) drop-shadow(0 0 35px rgba(0, 200, 255, 1));
+                    box-shadow: 0 0 50px rgba(0, 200, 255, 0.8), inset 0 0 30px rgba(0, 200, 255, 0.5);
+                }
             }
 
             @keyframes redGlow {
-                0%, 100% { filter: brightness(1) saturate(1.3) drop-shadow(0 0 10px rgba(255, 50, 50, 0.3)); }
-                50% { filter: brightness(1.15) saturate(1.5) drop-shadow(0 0 20px rgba(255, 100, 100, 0.5)); }
+                0%, 100% {
+                    filter: brightness(1.2) saturate(1.5) drop-shadow(0 0 20px rgba(255, 50, 50, 0.8));
+                    box-shadow: 0 0 30px rgba(255, 50, 50, 0.6), inset 0 0 20px rgba(255, 50, 50, 0.3);
+                }
+                50% {
+                    filter: brightness(1.4) saturate(2) drop-shadow(0 0 35px rgba(255, 100, 100, 1));
+                    box-shadow: 0 0 50px rgba(255, 100, 100, 0.8), inset 0 0 30px rgba(255, 100, 100, 0.5);
+                }
             }
 
             @keyframes goldGlow {
-                0%, 100% { filter: brightness(1.1) saturate(1.2) drop-shadow(0 0 15px rgba(255, 215, 0, 0.4)); }
-                50% { filter: brightness(1.25) saturate(1.4) drop-shadow(0 0 25px rgba(255, 235, 50, 0.6)); }
+                0%, 100% {
+                    filter: brightness(1.3) saturate(1.5) drop-shadow(0 0 25px rgba(255, 215, 0, 0.9));
+                    box-shadow: 0 0 40px rgba(255, 215, 0, 0.7), inset 0 0 25px rgba(255, 215, 0, 0.4);
+                }
+                50% {
+                    filter: brightness(1.5) saturate(2) drop-shadow(0 0 40px rgba(255, 235, 50, 1));
+                    box-shadow: 0 0 60px rgba(255, 235, 50, 0.9), inset 0 0 35px rgba(255, 235, 50, 0.6);
+                }
             }
 
             @keyframes darkGlow {
-                0%, 100% { filter: brightness(0.9) contrast(1.2) drop-shadow(0 0 10px rgba(50, 0, 100, 0.4)); }
-                50% { filter: brightness(1) contrast(1.3) drop-shadow(0 0 20px rgba(100, 0, 200, 0.6)); }
+                0%, 100% {
+                    filter: brightness(0.8) contrast(1.5) drop-shadow(0 0 20px rgba(100, 0, 200, 0.8));
+                    box-shadow: 0 0 30px rgba(100, 0, 200, 0.6), inset 0 0 20px rgba(50, 0, 100, 0.4);
+                }
+                50% {
+                    filter: brightness(1) contrast(2) drop-shadow(0 0 35px rgba(150, 0, 255, 1));
+                    box-shadow: 0 0 50px rgba(150, 0, 255, 0.8), inset 0 0 30px rgba(100, 0, 200, 0.6);
+                }
             }
 
             @keyframes whiteGlow {
-                0%, 100% { filter: brightness(1.2) contrast(1.1) drop-shadow(0 0 10px rgba(255, 255, 255, 0.5)); }
-                50% { filter: brightness(1.35) contrast(1.2) drop-shadow(0 0 20px rgba(255, 255, 255, 0.8)); }
+                0%, 100% {
+                    filter: brightness(1.4) contrast(1.2) drop-shadow(0 0 20px rgba(255, 255, 255, 0.9));
+                    box-shadow: 0 0 30px rgba(255, 255, 255, 0.7), inset 0 0 20px rgba(255, 255, 255, 0.4);
+                }
+                50% {
+                    filter: brightness(1.6) contrast(1.3) drop-shadow(0 0 35px rgba(255, 255, 255, 1));
+                    box-shadow: 0 0 50px rgba(255, 255, 255, 0.9), inset 0 0 30px rgba(255, 255, 255, 0.6);
+                }
             }
 
             @keyframes floatAnimation {
@@ -309,49 +339,56 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 카드 색상 감지 함수
+        // 카드 색상 감지 함수 (보주 강화된 카드만)
         const detectCardColor = (card) => {
-            // 카드 이미지나 데이터에서 색상 추출
-            if (card.cardData) {
-                const month = card.cardData.month;
-                const type = card.cardData.type;
+            // gameState에서 카드 강화 정보 확인
+            if (window.gameState && window.gameState.cardEnhancements && card.cardData) {
+                const cardId = card.cardData.id;
+                const enhancement = window.gameState.cardEnhancements[cardId];
 
-                // 광 카드는 황금색
-                if (type === '광') return 'gold';
-
-                // 월별 색상 매핑 (화투 전통 색상 기준)
-                if ([1, 2, 11, 12].includes(month)) return 'red';    // 송학, 매조, 동백, 비
-                if ([3, 4, 5].includes(month)) return 'blue';        // 벚꽃, 흑싸리, 난초
-                if ([6, 7, 8].includes(month)) return 'gold';        // 모란, 홍싸리, 공산
-                if ([9, 10].includes(month)) return 'dark';          // 국화, 단풍
-
-                return 'white'; // 기본값
-            }
-
-            // cardData가 없으면 이미지 경로에서 추출
-            const img = card.querySelector('img');
-            if (img && img.src) {
-                if (img.src.includes('back')) return 'dark';
-                const match = img.src.match(/(\d+)-\d+\.png/);
-                if (match) {
-                    const month = parseInt(match[1]);
-                    if ([1, 2, 11, 12].includes(month)) return 'red';
-                    if ([3, 4, 5].includes(month)) return 'blue';
-                    if ([6, 7, 8].includes(month)) return 'gold';
-                    if ([9, 10].includes(month)) return 'dark';
+                // 강화된 카드만 색상 반환
+                if (enhancement) {
+                    console.log(`Card ${cardId} has ${enhancement} enhancement`);
+                    switch(enhancement) {
+                        case 'blue':
+                        case '청색':
+                            return 'blue';
+                        case 'red':
+                        case '적색':
+                            return 'red';
+                        case 'gold':
+                        case '황색':
+                        case '황금':
+                            return 'gold';
+                        case 'black':
+                        case '흑색':
+                            return 'dark';
+                        case 'white':
+                        case '백색':
+                            return 'white';
+                        default:
+                            return null;
+                    }
                 }
             }
 
-            return 'white';
+            return null; // 강화되지 않은 카드는 null 반환
         };
 
         // 카드에 색상 클래스 적용
         const applyColorClass = (card) => {
             const color = detectCardColor(card);
+
             // 기존 색상 클래스 제거
             card.classList.remove('card-blue', 'card-red', 'card-gold', 'card-dark', 'card-white');
-            // 새 색상 클래스 추가
-            card.classList.add(`card-${color}`);
+
+            // 강화된 카드에만 색상 클래스 추가
+            if (color) {
+                card.classList.add(`card-${color}`);
+                // 강화 효과가 보이도록 z-index 상승
+                card.style.zIndex = '10';
+            }
+
             return color;
         };
 
