@@ -103,7 +103,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
                 border: 3px solid #4CAF50 !important;
                 filter: drop-shadow(0 20px 30px rgba(76, 175, 80, 0.6)) !important;
-                transform: translateY(-10px) scale(1.05) !important;
+                /* transform은 JS에서 float와 함께 적용 */
             }
 
             /* 같은 월 카드 하이라이트 효과 (호버) - 손패와 완전 동일 */
@@ -120,7 +120,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
                 border: 3px solid #4CAF50 !important;
                 filter: drop-shadow(0 20px 30px rgba(76, 175, 80, 0.6)) !important;
-                transform: translateY(-10px) scale(1.05) !important;
+                /* transform은 JS에서 float와 함께 적용 */
                 z-index: 80 !important;
             }
 
@@ -185,27 +185,46 @@ document.addEventListener('DOMContentLoaded', () => {
             });
         };
 
-        // 손패 카드 호버 이벤트
-        document.addEventListener('mouseenter', (e) => {
+        // 손패 카드 호버 이벤트 (더 안정적으로)
+        document.addEventListener('mouseover', (e) => {
             // e.target이 Element인지 확인
             if (e.target && e.target.nodeType === 1) {
+                // 손패 카드 또는 그 자식 요소에 마우스가 올라갔을 때
                 const handCard = e.target.closest ? e.target.closest('#hand-area .card') : null;
-                if (handCard) {
-                    highlightSameMonthCardsHover(handCard);
+                if (handCard && handCard.cardData) {
+                    // 이미 호버 중인 카드가 아닐 때만 처리
+                    if (!handCard.classList.contains('hovering')) {
+                        // 모든 hovering 클래스 제거
+                        document.querySelectorAll('.card.hovering').forEach(c => c.classList.remove('hovering'));
+                        handCard.classList.add('hovering');
+                        highlightSameMonthCardsHover(handCard);
+                    }
                 }
             }
         }, true);
 
         // 손패 영역 벗어날 때 호버 효과 제거
-        document.addEventListener('mouseleave', (e) => {
+        document.addEventListener('mouseout', (e) => {
             // e.target이 Element인지 확인
             if (e.target && e.target.nodeType === 1) {
                 const handCard = e.target.closest ? e.target.closest('#hand-area .card') : null;
-                if (handCard) {
-                    // 호버 효과만 제거 (선택 효과는 유지)
-                    document.querySelectorAll('.card.same-month-hover').forEach(card => {
-                        card.classList.remove('same-month-hover');
-                    });
+
+                // 손패 카드에서 완전히 벗어났는지 확인
+                if (handCard && handCard.classList.contains('hovering')) {
+                    // 마우스가 다른 손패 카드로 이동했는지 확인
+                    const relatedTarget = e.relatedTarget;
+                    const newHandCard = relatedTarget && relatedTarget.closest ? relatedTarget.closest('#hand-area .card') : null;
+
+                    if (!newHandCard || newHandCard !== handCard) {
+                        handCard.classList.remove('hovering');
+
+                        // 다른 손패 카드로 이동하지 않았다면 호버 효과 제거
+                        if (!newHandCard) {
+                            document.querySelectorAll('.card.same-month-hover').forEach(card => {
+                                card.classList.remove('same-month-hover');
+                            });
+                        }
+                    }
                 }
             }
         }, true);
@@ -270,9 +289,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const rotateX = Math.sin(progress * Math.PI * 2) * 2;
                 const rotateY = Math.cos(progress * Math.PI * 2) * 1;
 
-                if (!card.matches(':hover') && !card.classList.contains('selected')) {
-                    card.style.transform = `translateY(${floatY}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-                    card.style.filter = `drop-shadow(0 ${15 + floatY/2}px ${20 + floatY/3}px rgba(0, 0, 0, ${0.3 - floatY/80}))`;
+                if (!card.matches(':hover')) {
+                    if (card.classList.contains('selected')) {
+                        // 선택된 카드는 float + 추가 상승 + 10% 확대
+                        card.style.transform = `translateY(${floatY - 10}px) scale(1.1) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                        // filter는 CSS에서 이미 적용됨
+                    } else {
+                        card.style.transform = `translateY(${floatY}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                        card.style.filter = `drop-shadow(0 ${15 + floatY/2}px ${20 + floatY/3}px rgba(0, 0, 0, ${0.3 - floatY/80}))`;
+                    }
                 }
             });
 
@@ -294,10 +319,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 const shadowOffset = 10 + floatY/2;
                 const shadowBlur = 15 + floatY/3;
 
-                // same-month-hover나 same-month-selected 클래스가 있으면 float 애니메이션 건너뛰기
-                if (!card.matches(':hover') && !card.classList.contains('same-month-hover') && !card.classList.contains('same-month-selected')) {
-                    card.style.transform = `translateY(${floatY}px) translateZ(20px)`;
-                    card.style.filter = `drop-shadow(0 ${shadowOffset}px ${shadowBlur}px rgba(0, 0, 0, 0.4))`;
+                // 호버나 특수 효과가 있는 경우 처리
+                if (!card.matches(':hover') && !card.classList.contains('same-month-hover')) {
+                    if (card.classList.contains('same-month-selected')) {
+                        // 선택된 같은 월 카드는 float + 추가 상승 + 10% 확대
+                        card.style.transform = `translateY(${floatY - 10}px) scale(1.1) translateZ(20px)`;
+                        // filter는 CSS에서 이미 적용됨
+                    } else {
+                        card.style.transform = `translateY(${floatY}px) translateZ(20px)`;
+                        card.style.filter = `drop-shadow(0 ${shadowOffset}px ${shadowBlur}px rgba(0, 0, 0, 0.4))`;
+                    }
                 }
             });
 
