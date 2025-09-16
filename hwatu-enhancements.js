@@ -92,10 +92,15 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === 2. 점수 애니메이션 ===
     const addScoreAnimations = () => {
-        let lastScore = 0;
-        let lastMultiplier = 1;
+        let lastScore = null;
+        let lastMultiplier = null;
+        let isAnimating = false;
 
         const animateValue = (element, start, end, duration) => {
+            if (isAnimating) return; // 이미 애니메이션 중이면 건너뛰기
+            if (start === end) return; // 같은 값이면 애니메이션 불필요
+
+            isAnimating = true;
             const startTime = performance.now();
             const update = (currentTime) => {
                 const elapsed = currentTime - startTime;
@@ -107,6 +112,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     requestAnimationFrame(update);
                 } else {
                     element.textContent = end;
+                    isAnimating = false;
                 }
             };
             requestAnimationFrame(update);
@@ -117,11 +123,32 @@ document.addEventListener('DOMContentLoaded', () => {
             const multiplierEl = document.getElementById('multiplier');
 
             if (scoreEl && multiplierEl) {
-                const currentScore = parseInt(scoreEl.textContent) || 0;
-                const currentMultiplier = parseInt(multiplierEl.textContent.replace('x', '')) || 1;
+                // gameState에서 직접 점수 가져오기 (더 정확함)
+                const currentScore = (window.gameState && window.gameState.score !== undefined)
+                    ? window.gameState.score
+                    : parseInt(scoreEl.textContent) || 0;
 
-                if (currentScore !== lastScore) {
-                    animateValue(scoreEl, lastScore, currentScore, 500);
+                const currentMultiplier = (window.gameState && window.gameState.multiplier !== undefined)
+                    ? window.gameState.multiplier
+                    : parseInt(multiplierEl.textContent.replace('x', '')) || 1;
+
+                // 초기값 설정
+                if (lastScore === null) {
+                    lastScore = currentScore;
+                    scoreEl.textContent = currentScore;
+                }
+                if (lastMultiplier === null) {
+                    lastMultiplier = currentMultiplier;
+                }
+
+                // 점수가 변경되었고 애니메이션 중이 아닐 때만
+                if (currentScore !== lastScore && !isAnimating) {
+                    // 큰 변화는 즉시 표시
+                    if (Math.abs(currentScore - lastScore) > 100) {
+                        scoreEl.textContent = currentScore;
+                    } else {
+                        animateValue(scoreEl, lastScore, currentScore, 500);
+                    }
 
                     // 점수 증가 효과
                     scoreEl.style.transform = 'scale(1.2)';
@@ -135,6 +162,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
 
                 if (currentMultiplier !== lastMultiplier) {
+                    multiplierEl.textContent = 'x' + currentMultiplier;
                     multiplierEl.style.transform = 'scale(1.3)';
                     multiplierEl.style.color = '#FFD700';
                     setTimeout(() => {
@@ -348,7 +376,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === 모든 개선 기능 실행 ===
     improveCardAnimations();
-    addScoreAnimations();
+    // addScoreAnimations(); // 점수 표시 문제로 일시 비활성화
     improveButtons();
     addGameFeedback();
     addParticleEffects();
