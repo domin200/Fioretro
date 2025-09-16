@@ -450,13 +450,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                 if (card.classList.contains('selected')) {
                     // 선택된 카드는 항상 float + 추가 상승 + 10% 확대
-                    if (card.matches(':hover')) {
-                        // 호버 중이면서 선택된 카드
-                        card.style.transform = `translateY(${floatY - 15}px) scale(1.15) translateZ(10px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-                    } else {
-                        // 선택만 된 카드
-                        card.style.transform = `translateY(${floatY - 10}px) scale(1.1) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-                    }
+                    const selectedTransform = `translateY(${floatY - 10}px) scale(1.1) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                    card.style.transform = selectedTransform;
+                    card.style.zIndex = '200'; // 선택된 카드를 위로
                     // filter는 CSS에서 이미 적용됨
                 } else if (!card.matches(':hover')) {
                     if (isEnhanced) {
@@ -1154,7 +1150,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const targetY = rect.top + rect.height / 2;
 
                                 // 파티클 생성
-                                const particleColor = hasSameMonth ? '#FFD700' : '#4169E1';
+                                const particleColor = hasSameMonth ? '#FFD700' : '#FFFFFF';
                                 console.log('Creating particles NOW at:', targetX, targetY, 'Color:', particleColor);
 
                                 if (window.createParticles) {
@@ -1215,7 +1211,7 @@ document.addEventListener('DOMContentLoaded', () => {
         if (window.createParticles) {
             window.createParticles(x, y, '#FFD700', true); // 테스트용
             setTimeout(() => {
-                window.createParticles(x + 100, y, '#4169E1', true); // 테스트용
+                window.createParticles(x + 100, y, '#FFFFFF', true); // 테스트용
             }, 500);
             console.log('Particles created successfully');
         } else {

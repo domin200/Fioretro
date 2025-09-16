@@ -656,7 +656,8 @@ function selectHandCard(index) {
         // 인라인 스타일 제거하여 원래 상태로
         card.style.border = '';
         card.style.boxShadow = '';
-        card.style.transform = '';
+        // transform은 float 애니메이션에서 관리하므로 제거하지 않음
+        // card.style.transform = '';
     });
     
     // 소모품 슬롯에서도 selected 효과 제거
@@ -3166,7 +3167,8 @@ function highlightCard(cardId, isHighlight) {
             // 호버 해제시 완전히 초기화
             card.style.border = '';
             card.style.boxShadow = '';
-            card.style.transform = '';
+            // transform은 float 애니메이션에서 관리하므로 제거하지 않음
+            // card.style.transform = '';
         }
     });
 }
@@ -5284,7 +5286,8 @@ function selectConsumableCard(index) {
         card.classList.remove('selected');
         card.style.border = '';
         card.style.boxShadow = '';
-        card.style.transform = '';
+        // transform은 float 애니메이션에서 관리하므로 제거하지 않음
+        // card.style.transform = '';
     });
     
     // 소모품 슬롯에서도 selected 클래스 제거
