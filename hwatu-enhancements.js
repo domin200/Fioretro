@@ -515,13 +515,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                                 console.log(`Card ${i}: month=${cardMonth}, selectedMonth=${selectedMonth}, match=${cardMonth === selectedMonth}`);
 
-                                // 자기 자신은 제외하고 같은 월 찾기 (2개 이상 있어야 매칭)
+                                // 같은 월 카드 찾기
                                 if (cardMonth === selectedMonth) {
-                                    // 이미 매칭된 카드가 있으면 같은 월이 2개 이상 있음
-                                    if (matchingCard === null) {
-                                        matchingCard = card;
-                                    } else {
+                                    // 방금 놓인 카드가 아닌 기존 카드 중에 같은 월이 있는지 확인
+                                    // 마지막 카드가 방금 놓인 카드일 가능성이 높음
+                                    if (i < afterFloorCards.length - 1 || afterFloorCount <= beforeFloorCount) {
                                         hasSameMonth = true;
+                                        matchingCard = card;
                                         console.log(`Found matching month! Card at index ${i} matches month ${selectedMonth}`);
                                         break;
                                     }
