@@ -5,6 +5,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === 1. 카드 애니메이션 개선 ===
     const improveCardAnimations = () => {
+        // 애니메이션 시작 시간 추적
+        const animationStartTimes = new Map();
+
         // 카드 호버 효과 강화
         const style = document.createElement('style');
         style.innerHTML = `
@@ -56,37 +59,16 @@ document.addEventListener('DOMContentLoaded', () => {
                 perspective: 1000px;
             }
 
-            /* 손패 카드 부유 효과 */
+            /* 손패 카드 기본 설정 (애니메이션은 JS로 제어) */
             #hand-area .card {
-                animation: floatAnimation 4s ease-in-out infinite;
-                filter: drop-shadow(0 15px 20px rgba(0, 0, 0, 0.3));
+                transition: none !important;
+                will-change: transform, filter;
             }
 
-            /* 각 카드마다 다른 애니메이션 딜레이 */
-            #hand-area .card:nth-child(1) { animation-delay: 0s; }
-            #hand-area .card:nth-child(2) { animation-delay: 0.5s; }
-            #hand-area .card:nth-child(3) { animation-delay: 1s; }
-            #hand-area .card:nth-child(4) { animation-delay: 1.5s; }
-            #hand-area .card:nth-child(5) { animation-delay: 2s; }
-
-            /* 바닥 카드 부유 효과 (좀 더 부드럽게) */
+            /* 바닥 카드 기본 설정 (애니메이션은 JS로 제어) */
             #floor-area .card {
-                animation: gentleFloat 5s ease-in-out infinite;
-                filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.4));
-            }
-
-            /* 바닥 카드도 랜덤한 딜레이 */
-            #floor-area .card:nth-child(odd) {
-                animation-duration: 4.5s;
-                animation-delay: 0.3s;
-            }
-            #floor-area .card:nth-child(even) {
-                animation-duration: 5.5s;
-                animation-delay: 0.8s;
-            }
-            #floor-area .card:nth-child(3n) {
-                animation-duration: 6s;
-                animation-delay: 1.2s;
+                transition: none !important;
+                will-change: transform, filter;
             }
 
             .card::before {
@@ -111,14 +93,14 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             .card:hover {
-                animation-play-state: paused !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
                 transform: translateY(-15px) scale(1.1) rotateX(0deg) rotateY(0deg) !important;
                 filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.5)) !important;
                 z-index: 100 !important;
             }
 
             .card.selected {
-                animation: floatAnimation 3s ease-in-out infinite !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
                 border: 3px solid #4CAF50 !important;
                 filter: drop-shadow(0 20px 30px rgba(76, 175, 80, 0.6)) !important;
                 transform: translateY(-10px) scale(1.05) !important;
@@ -154,20 +136,10 @@ document.addEventListener('DOMContentLoaded', () => {
                 z-index: 10;
             }
 
-            /* 스택된 카드 컨테이너도 부유 효과 */
+            /* 스택된 카드 컨테이너 기본 설정 */
             #floor-area > div[style*="position: relative"] {
-                animation: gentleFloat 5.5s ease-in-out infinite;
-                filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.35));
-            }
-
-            /* 스택 컨테이너도 랜덤 딜레이 */
-            #floor-area > div[style*="position: relative"]:nth-child(odd) {
-                animation-delay: 0.6s;
-                animation-duration: 6s;
-            }
-            #floor-area > div[style*="position: relative"]:nth-child(even) {
-                animation-delay: 1.3s;
-                animation-duration: 5s;
+                transition: none !important;
+                will-change: transform, filter;
             }
 
             /* 손패 호버 시 더 부드러운 전환 */
@@ -281,6 +253,83 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             }
         });
+
+        // 애니메이션 상태 유지 함수
+        const maintainAnimationState = () => {
+            const currentTime = Date.now();
+
+            // 손패 카드
+            document.querySelectorAll('#hand-area .card').forEach((card, index) => {
+                const cardId = `hand-${index}`;
+
+                if (!animationStartTimes.has(cardId)) {
+                    // 새 카드면 현재 시간 저장
+                    animationStartTimes.set(cardId, currentTime);
+                }
+
+                // 애니메이션 진행 시간 계산
+                const elapsed = currentTime - animationStartTimes.get(cardId);
+                const animationDelay = index * 500; // 기존 딜레이
+                const animationDuration = 4000; // 4초
+
+                // 애니메이션 진행률 계산
+                const progress = ((elapsed + animationDelay) % animationDuration) / animationDuration;
+
+                // CSS 애니메이션 대신 직접 transform 적용
+                const floatY = Math.sin(progress * Math.PI * 2) * 8;
+                const rotateX = Math.sin(progress * Math.PI * 2) * 2;
+                const rotateY = Math.cos(progress * Math.PI * 2) * 1;
+
+                if (!card.matches(':hover') && !card.classList.contains('selected')) {
+                    card.style.transform = `translateY(${floatY}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                    card.style.filter = `drop-shadow(0 ${15 + floatY/2}px ${20 + floatY/3}px rgba(0, 0, 0, ${0.3 - floatY/80}))`;
+                }
+            });
+
+            // 바닥 카드
+            document.querySelectorAll('#floor-area .card, #floor-area > div[style*="position: relative"]').forEach((card, index) => {
+                const cardId = `floor-${index}`;
+
+                if (!animationStartTimes.has(cardId)) {
+                    animationStartTimes.set(cardId, currentTime);
+                }
+
+                const elapsed = currentTime - animationStartTimes.get(cardId);
+                const animationDelay = (index % 3) * 400;
+                const animationDuration = 5000 + (index % 3) * 500;
+
+                const progress = ((elapsed + animationDelay) % animationDuration) / animationDuration;
+
+                const floatY = Math.sin(progress * Math.PI * 2) * 5;
+                const shadowOffset = 10 + floatY/2;
+                const shadowBlur = 15 + floatY/3;
+
+                if (!card.matches(':hover')) {
+                    card.style.transform = `translateY(${floatY}px) translateZ(20px)`;
+                    card.style.filter = `drop-shadow(0 ${shadowOffset}px ${shadowBlur}px rgba(0, 0, 0, 0.4))`;
+                }
+            });
+
+            // 사용하지 않는 ID 정리
+            if (animationStartTimes.size > 50) {
+                const activeIds = new Set();
+                document.querySelectorAll('#hand-area .card').forEach((_, i) => activeIds.add(`hand-${i}`));
+                document.querySelectorAll('#floor-area .card, #floor-area > div[style*="position: relative"]').forEach((_, i) => activeIds.add(`floor-${i}`));
+
+                for (const [id] of animationStartTimes) {
+                    if (!activeIds.has(id)) {
+                        animationStartTimes.delete(id);
+                    }
+                }
+            }
+        };
+
+        // 애니메이션 루프 시작
+        const animationFrame = () => {
+            maintainAnimationState();
+            requestAnimationFrame(animationFrame);
+        };
+        requestAnimationFrame(animationFrame);
 
         // 주기적으로 선택 상태만 체크 (게임 상태 변경 대응)
         setInterval(() => highlightSameMonthCardsSelected(), 500);
