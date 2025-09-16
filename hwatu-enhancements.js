@@ -411,11 +411,11 @@ document.addEventListener('DOMContentLoaded', () => {
         window.createParticles = (x, y, color = '#FFD700') => {
             const isGold = color === '#FFD700';
             const isWhite = color === '#FFFFFF';
-            const particleCount = isGold ? 20 : (isWhite ? 8 : 12); // 황금색 > 파란색 > 흰색 순으로 파티클 수
+            const particleCount = isGold ? 20 : 8; // 황금색은 20개, 흰색은 8개
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
-                const size = isGold ? (8 + Math.random() * 4) : (isWhite ? (3 + Math.random() * 2) : (4 + Math.random() * 3));
+                const size = isGold ? (8 + Math.random() * 4) : (3 + Math.random() * 2);
 
                 particle.style.cssText = `
                     position: fixed;
@@ -433,8 +433,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.appendChild(particle);
 
                 const angle = (Math.PI * 2 * i) / particleCount;
-                const velocity = isGold ? (4 + Math.random() * 3) : (isWhite ? (1.5 + Math.random() * 1) : (2 + Math.random() * 2));
-                const lifetime = isGold ? (1500 + Math.random() * 500) : (isWhite ? (800 + Math.random() * 300) : (1000 + Math.random() * 500));
+                const velocity = isGold ? (4 + Math.random() * 3) : (1.5 + Math.random() * 1);
+                const lifetime = isGold ? (1500 + Math.random() * 500) : (800 + Math.random() * 300);
 
                 let opacity = 1;
                 let currentX = x;
@@ -597,8 +597,8 @@ document.addEventListener('DOMContentLoaded', () => {
                                     const rect = newCardElement.getBoundingClientRect();
                                     const x = rect.left + rect.width / 2;
                                     const y = rect.top + rect.height / 2;
-                                    console.log(`Creating BLUE particles at new card: ${x}, ${y}`);
-                                    window.createParticles(x, y, '#4169E1');
+                                    console.log(`Creating WHITE particles at new card: ${x}, ${y}`);
+                                    window.createParticles(x, y, '#FFFFFF');
                                 }
                             }
 
@@ -678,7 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 const rect = targetCard.getBoundingClientRect();
                                 const x = rect.left + rect.width / 2;
                                 const y = rect.top + rect.height / 2;
-                                const color = hasSameMonth ? '#FFD700' : '#4169E1';
+                                const color = hasSameMonth ? '#FFD700' : '#FFFFFF';
 
                                 console.log(`Creating deck card particles at: ${x}, ${y}, Color: ${color}`);
                                 window.createParticles(x, y, color);

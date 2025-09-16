@@ -1370,12 +1370,19 @@ function showDrawAnimation(card) {
             // 맨 우측 카드 위치 가져오기
             const rightmostCard = handCards[handCards.length - 1];
             const rightCardRect = rightmostCard.getBoundingClientRect();
-            targetLeft = rightCardRect.left + rightCardRect.width/2; // 우측 카드와 겹쳐서 표시
+            // 마지막 카드의 오른쪽에 10px 간격으로 배치
+            targetLeft = rightCardRect.right + 10;
             targetTop = rightCardRect.top;
+
+            // 화면을 벗어나지 않도록 조정
+            const maxLeft = window.innerWidth - 110; // 카드 너비 + 여백
+            if (targetLeft > maxLeft) {
+                targetLeft = maxLeft;
+            }
         } else {
-            // 카드가 없으면 손패 영역 중앙으로
-            targetLeft = handRect.left + handRect.width / 2 - 50;
-            targetTop = handRect.top + handRect.height / 2 - 75;
+            // 카드가 없으면 손패 영역 왼쪽에서 시작
+            targetLeft = handRect.left + 10;
+            targetTop = handRect.top + (handRect.height - 150) / 2;
         }
 
         cardContainer.style.left = targetLeft + 'px';
