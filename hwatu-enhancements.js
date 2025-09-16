@@ -785,8 +785,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.appendChild(particle);
 
                 const angle = (Math.PI * 2 * i) / particleCount;
-                const velocity = isGold ? (4 + Math.random() * 3) : (1.5 + Math.random() * 1);
-                const lifetime = isGold ? (1500 + Math.random() * 500) : (800 + Math.random() * 300);
+                const velocity = isGold ? (6 + Math.random() * 4) : (3 + Math.random() * 2); // 속도 증가
+                const lifetime = isGold ? (1000 + Math.random() * 300) : (600 + Math.random() * 200); // 수명 감소
 
                 let opacity = 1;
                 let currentX = x;
@@ -797,7 +797,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const horizontalVelocity = Math.cos(angle) * velocity;
                 const verticalVelocity = Math.sin(angle) * velocity; // sin을 사용해 위아래로도 퍼짐
                 let velocityY = verticalVelocity - 2; // 초기 속도 (위쪽 바이어스 약간)
-                const gravity = 0.2; // 중력
+                const gravity = 0.25; // 중력 약간 증가
                 const startTime = performance.now();
 
                 const animate = (currentTime) => {
@@ -805,21 +805,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     const progress = elapsed / lifetime;
 
                     if (progress < 1) {
-                        // 파티클이 원형으로 퍼짐
-                        currentX += horizontalVelocity * (1 - progress * 0.5);
+                        // 파티클이 원형으로 퍼짐 (더 빠르게)
+                        currentX += horizontalVelocity * (1 - progress * 0.3); // 0.5에서 0.3으로 감소
 
                         // 50% 지점까지는 초기 방향대로, 그 이후는 아래로
                         if (progress < 0.5) {
                             // 초기 방향으로 이동
                             currentY += velocityY;
-                            velocityY *= 0.95; // 점점 느려짐
+                            velocityY *= 0.92; // 더 빠르게 감속
                         } else {
                             // 아래로 떨어짐 (중력 효과)
                             velocityY += gravity;
                             currentY += velocityY;
                         }
 
-                        opacity = 1 - progress * 0.8;
+                        opacity = 1 - progress * 0.9; // 더 빨리 페이드 아웃
                         scale = 1 + progress * 0.5; // 점점 커짐
 
                         particle.style.left = currentX + 'px';
@@ -862,8 +862,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.appendChild(particle);
 
                 const angle = (Math.PI * 2 * i) / particleCount;
-                const velocity = isGold ? (4 + Math.random() * 3) : (1.5 + Math.random() * 1); // 클릭과 동일한 속도
-                const lifetime = isGold ? (1500 + Math.random() * 500) : (800 + Math.random() * 300);
+                const velocity = isGold ? (6 + Math.random() * 4) : (3 + Math.random() * 2); // 클릭과 동일한 속도
+                const lifetime = isGold ? (1000 + Math.random() * 300) : (600 + Math.random() * 200); // 클릭과 동일한 수명
 
                 let opacity = 1;
                 let currentX = x;
