@@ -1362,27 +1362,33 @@ function showDrawAnimation(card) {
     
     // 손패로 이동하면서 뒤집기 + 크기 100%로 확대
     setTimeout(() => {
-        // 손패 영역의 맨 우측 카드 위치 찾기
+        // 손패 영역의 카드 위치 찾기
         const handCards = handArea.querySelectorAll('.card');
         let targetLeft, targetTop;
 
-        if (handCards.length > 0) {
-            // 맨 우측 카드 위치 가져오기
-            const rightmostCard = handCards[handCards.length - 1];
-            const rightCardRect = rightmostCard.getBoundingClientRect();
-            // 마지막 카드의 오른쪽에 10px 간격으로 배치
-            targetLeft = rightCardRect.right + 10;
-            targetTop = rightCardRect.top;
-
-            // 화면을 벗어나지 않도록 조정
-            const maxLeft = window.innerWidth - 110; // 카드 너비 + 여백
-            if (targetLeft > maxLeft) {
-                targetLeft = maxLeft;
-            }
+        if (handCards.length > 1) {
+            // 카드가 2장 이상 있으면 마지막에서 두 번째 카드 위치 가져오기
+            const targetCard = handCards[handCards.length - 1]; // 현재 마지막 카드
+            const targetRect = targetCard.getBoundingClientRect();
+            // 마지막 카드 위치로 배치 (새 카드가 들어올 자리)
+            targetLeft = targetRect.left;
+            targetTop = targetRect.top;
+        } else if (handCards.length === 1) {
+            // 카드가 1장만 있으면 그 카드 오른쪽에 배치
+            const firstCard = handCards[0];
+            const firstRect = firstCard.getBoundingClientRect();
+            targetLeft = firstRect.right + 10;
+            targetTop = firstRect.top;
         } else {
             // 카드가 없으면 손패 영역 왼쪽에서 시작
             targetLeft = handRect.left + 10;
             targetTop = handRect.top + (handRect.height - 150) / 2;
+        }
+
+        // 화면을 벗어나지 않도록 조정
+        const maxLeft = window.innerWidth - 110; // 카드 너비 + 여백
+        if (targetLeft > maxLeft) {
+            targetLeft = maxLeft;
         }
 
         cardContainer.style.left = targetLeft + 'px';
