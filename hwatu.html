@@ -57,6 +57,19 @@
             position: relative;
             overflow: hidden;
         }
+
+        /* 메인 배경 위 검은색 오버레이 50% */
+        body::after {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+            z-index: 0;
+        }
         
         #game-container {
             max-width: 1400px;
