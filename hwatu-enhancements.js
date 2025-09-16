@@ -21,6 +21,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 100% { background-position: 200% center; }
             }
 
+            @keyframes blueGlow {
+                0%, 100% { filter: brightness(1) saturate(1.2) hue-rotate(-10deg) drop-shadow(0 0 10px rgba(0, 100, 255, 0.3)); }
+                50% { filter: brightness(1.1) saturate(1.4) hue-rotate(0deg) drop-shadow(0 0 20px rgba(0, 150, 255, 0.5)); }
+            }
+
+            @keyframes redGlow {
+                0%, 100% { filter: brightness(1) saturate(1.3) drop-shadow(0 0 10px rgba(255, 50, 50, 0.3)); }
+                50% { filter: brightness(1.15) saturate(1.5) drop-shadow(0 0 20px rgba(255, 100, 100, 0.5)); }
+            }
+
+            @keyframes goldGlow {
+                0%, 100% { filter: brightness(1.1) saturate(1.2) drop-shadow(0 0 15px rgba(255, 215, 0, 0.4)); }
+                50% { filter: brightness(1.25) saturate(1.4) drop-shadow(0 0 25px rgba(255, 235, 50, 0.6)); }
+            }
+
+            @keyframes darkGlow {
+                0%, 100% { filter: brightness(0.9) contrast(1.2) drop-shadow(0 0 10px rgba(50, 0, 100, 0.4)); }
+                50% { filter: brightness(1) contrast(1.3) drop-shadow(0 0 20px rgba(100, 0, 200, 0.6)); }
+            }
+
+            @keyframes whiteGlow {
+                0%, 100% { filter: brightness(1.2) contrast(1.1) drop-shadow(0 0 10px rgba(255, 255, 255, 0.5)); }
+                50% { filter: brightness(1.35) contrast(1.2) drop-shadow(0 0 20px rgba(255, 255, 255, 0.8)); }
+            }
+
             @keyframes floatAnimation {
                 0%, 100% {
                     transform: translateY(0px) rotateX(2deg) rotateY(-1deg);
@@ -130,6 +155,27 @@ document.addEventListener('DOMContentLoaded', () => {
             #floor-area > div[style*="position: relative"] {
                 transition: none !important;
                 will-change: transform, filter;
+            }
+
+            /* 색상별 카드 효과 */
+            .card-blue {
+                animation: blueGlow 3s ease-in-out infinite !important;
+            }
+
+            .card-red {
+                animation: redGlow 3s ease-in-out infinite !important;
+            }
+
+            .card-gold {
+                animation: goldGlow 3s ease-in-out infinite !important;
+            }
+
+            .card-dark {
+                animation: darkGlow 3s ease-in-out infinite !important;
+            }
+
+            .card-white {
+                animation: whiteGlow 3s ease-in-out infinite !important;
             }
 
             /* 손패 호버 시 더 부드러운 전환 */
@@ -263,6 +309,52 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
+        // 카드 색상 감지 함수
+        const detectCardColor = (card) => {
+            // 카드 이미지나 데이터에서 색상 추출
+            if (card.cardData) {
+                const month = card.cardData.month;
+                const type = card.cardData.type;
+
+                // 광 카드는 황금색
+                if (type === '광') return 'gold';
+
+                // 월별 색상 매핑 (화투 전통 색상 기준)
+                if ([1, 2, 11, 12].includes(month)) return 'red';    // 송학, 매조, 동백, 비
+                if ([3, 4, 5].includes(month)) return 'blue';        // 벚꽃, 흑싸리, 난초
+                if ([6, 7, 8].includes(month)) return 'gold';        // 모란, 홍싸리, 공산
+                if ([9, 10].includes(month)) return 'dark';          // 국화, 단풍
+
+                return 'white'; // 기본값
+            }
+
+            // cardData가 없으면 이미지 경로에서 추출
+            const img = card.querySelector('img');
+            if (img && img.src) {
+                if (img.src.includes('back')) return 'dark';
+                const match = img.src.match(/(\d+)-\d+\.png/);
+                if (match) {
+                    const month = parseInt(match[1]);
+                    if ([1, 2, 11, 12].includes(month)) return 'red';
+                    if ([3, 4, 5].includes(month)) return 'blue';
+                    if ([6, 7, 8].includes(month)) return 'gold';
+                    if ([9, 10].includes(month)) return 'dark';
+                }
+            }
+
+            return 'white';
+        };
+
+        // 카드에 색상 클래스 적용
+        const applyColorClass = (card) => {
+            const color = detectCardColor(card);
+            // 기존 색상 클래스 제거
+            card.classList.remove('card-blue', 'card-red', 'card-gold', 'card-dark', 'card-white');
+            // 새 색상 클래스 추가
+            card.classList.add(`card-${color}`);
+            return color;
+        };
+
         // 애니메이션 상태 유지 함수
         const maintainAnimationState = () => {
             const currentTime = Date.now();
@@ -270,6 +362,15 @@ document.addEventListener('DOMContentLoaded', () => {
             // 손패 카드
             document.querySelectorAll('#hand-area .card').forEach((card, index) => {
                 const cardId = `hand-${index}`;
+
+                // 색상 클래스 적용
+                if (!card.classList.contains('card-blue') &&
+                    !card.classList.contains('card-red') &&
+                    !card.classList.contains('card-gold') &&
+                    !card.classList.contains('card-dark') &&
+                    !card.classList.contains('card-white')) {
+                    applyColorClass(card);
+                }
 
                 if (!animationStartTimes.has(cardId)) {
                     // 새 카드면 현재 시간 저장
@@ -304,6 +405,17 @@ document.addEventListener('DOMContentLoaded', () => {
             // 바닥 카드
             document.querySelectorAll('#floor-area .card, #floor-area > div[style*="position: relative"]').forEach((card, index) => {
                 const cardId = `floor-${index}`;
+
+                // 실제 카드 요소에만 색상 적용 (스택 컨테이너 제외)
+                if (card.classList && card.classList.contains('card')) {
+                    if (!card.classList.contains('card-blue') &&
+                        !card.classList.contains('card-red') &&
+                        !card.classList.contains('card-gold') &&
+                        !card.classList.contains('card-dark') &&
+                        !card.classList.contains('card-white')) {
+                        applyColorClass(card);
+                    }
+                }
 
                 if (!animationStartTimes.has(cardId)) {
                     animationStartTimes.set(cardId, currentTime);
