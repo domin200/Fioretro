@@ -106,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 transform: translateY(-10px) scale(1.05) !important;
             }
 
-            /* 같은 월 카드 하이라이트 효과 (호버) */
+            /* 같은 월 카드 하이라이트 효과 (호버) - JS로 제어 */
             .card.same-month-hover {
                 background: linear-gradient(135deg,
                     rgba(76, 175, 80, 0.2),
@@ -114,8 +114,6 @@ document.addEventListener('DOMContentLoaded', () => {
                     rgba(76, 175, 80, 0.2)
                 );
                 border: 2px solid rgba(76, 175, 80, 0.6) !important;
-                box-shadow: 0 0 20px rgba(76, 175, 80, 0.5) !important;
-                transition: all 0.3s ease !important;
             }
 
             /* 같은 월 카드 선택 효과 (클릭) */
@@ -129,12 +127,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 z-index: 10;
             }
 
-            /* 바닥 카드 컨테이너 하이라이트 */
-            #floor-area .card.same-month-hover {
-                animation-play-state: paused !important;
-                transform: translateY(-8px) scale(1.02) !important;
-                z-index: 10;
-            }
+            /* 바닥 카드 컨테이너 하이라이트 - JS로 제어하므로 제거 */
 
             /* 스택된 카드 컨테이너 기본 설정 */
             #floor-area > div[style*="position: relative"] {
@@ -161,16 +154,27 @@ document.addEventListener('DOMContentLoaded', () => {
             // 모든 hover 클래스 제거
             document.querySelectorAll('.card.same-month-hover').forEach(card => {
                 card.classList.remove('same-month-hover');
+                // 호버 효과 제거
+                if (!card.matches(':hover')) {
+                    card.style.transition = 'none';
+                    card.style.transform = '';
+                    card.style.filter = '';
+                }
             });
 
             if (!targetCard || !targetCard.cardData) return;
 
             const targetMonth = targetCard.cardData.month;
 
-            // 바닥의 같은 월 카드에 호버 하이라이트 적용
+            // 바닥의 같은 월 카드에 호버 효과 적용
             document.querySelectorAll('#floor-area .card').forEach(card => {
                 if (card.cardData && card.cardData.month === targetMonth) {
                     card.classList.add('same-month-hover');
+                    // 손패 호버와 동일한 효과 적용
+                    card.style.transition = 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)';
+                    card.style.transform = 'translateY(-20px) scale(1.12) rotateZ(-2deg)';
+                    card.style.filter = 'drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45))';
+                    card.style.zIndex = '50';
                 }
             });
         };
@@ -215,6 +219,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     // 호버 효과만 제거 (선택 효과는 유지)
                     document.querySelectorAll('.card.same-month-hover').forEach(card => {
                         card.classList.remove('same-month-hover');
+                        // 스타일 초기화
+                        card.style.transition = 'none';
+                        card.style.transform = '';
+                        card.style.filter = '';
+                        card.style.zIndex = '';
                     });
                 }
             }
@@ -304,7 +313,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const shadowOffset = 10 + floatY/2;
                 const shadowBlur = 15 + floatY/3;
 
-                if (!card.matches(':hover')) {
+                // same-month-hover 클래스가 있으면 float 애니메이션 건너뛰기
+                if (!card.matches(':hover') && !card.classList.contains('same-month-hover')) {
                     card.style.transform = `translateY(${floatY}px) translateZ(20px)`;
                     card.style.filter = `drop-shadow(0 ${shadowOffset}px ${shadowBlur}px rgba(0, 0, 0, 0.4))`;
                 }
