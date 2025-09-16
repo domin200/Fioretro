@@ -93,22 +93,28 @@ class SoundManager {
             }
         };
 
-        // Howl 인스턴스 생성
+        // Howl 인스턴스 생성 (에러 무시)
         for (const [key, def] of Object.entries(soundDefinitions)) {
-            // 파일이 실제로 존재하는지 확인하고 폴백 처리
-            this.sounds[key] = new Howl({
-                src: def.src,
-                volume: def.volume * this.volume,
-                rate: def.rate,
-                preload: true,
-                onloaderror: () => {
-                    console.warn(`Failed to load sound: ${key}`);
-                    // 폴백: 기본 사운드 사용
-                    if (key !== 'cardDraw' && key !== 'cardPlay') {
-                        this.sounds[key] = this.sounds.cardDraw || this.createSilentSound();
+            try {
+                this.sounds[key] = new Howl({
+                    src: def.src,
+                    volume: def.volume * this.volume,
+                    rate: def.rate,
+                    preload: false, // 프리로드 비활성화로 에러 방지
+                    html5: true, // HTML5 Audio 사용
+                    onloaderror: (id, error) => {
+                        // 에러를 조용히 처리
+                        this.sounds[key] = this.createSilentSound();
+                    },
+                    onplayerror: (id, error) => {
+                        // 재생 에러도 조용히 처리
+                        this.sounds[key] = this.createSilentSound();
                     }
-                }
-            });
+                });
+            } catch (e) {
+                // 생성 실패시 무음 사운드로 대체
+                this.sounds[key] = this.createSilentSound();
+            }
         }
 
         // 기존 사운드 파일에 대한 폴백 (allow1, allow2)
