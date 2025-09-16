@@ -1264,10 +1264,30 @@ function showHandToFloorAnimation(cardElement, card) {
             }
         }
 
-        // 동일한 월 카드가 없으면 중앙으로
+        // 동일한 월 카드가 없으면 바닥의 맨 오른쪽으로
         if (!foundSameMonth) {
-            targetLeft = floorRect.left + floorRect.width / 2 - 50;
-            targetTop = floorRect.top + floorRect.height / 2 - 75;
+            // 바닥에 있는 모든 카드/스택 찾기
+            const allFloorElements = floorArea.querySelectorAll('.card, div[style*="position: relative"]');
+
+            if (allFloorElements.length > 0) {
+                // 마지막 카드/스택의 오른쪽에 배치
+                const lastElement = allFloorElements[allFloorElements.length - 1];
+                const lastRect = lastElement.getBoundingClientRect();
+                targetLeft = lastRect.right + 15; // 15px 간격
+                targetTop = lastRect.top;
+
+                // 화면을 벗어나지 않도록 조정
+                const maxLeft = window.innerWidth - 120; // 카드 너비 + 여백
+                if (targetLeft > maxLeft) {
+                    // 다음 줄로 이동
+                    targetLeft = floorRect.left + 10;
+                    targetTop = lastRect.bottom + 15;
+                }
+            } else {
+                // 바닥에 카드가 하나도 없으면 바닥 영역의 왼쪽 상단
+                targetLeft = floorRect.left + 10;
+                targetTop = floorRect.top + 10;
+            }
         }
 
         tempCard.style.left = targetLeft + 'px';
