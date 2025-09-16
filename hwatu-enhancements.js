@@ -115,15 +115,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 z-index: 100 !important;
             }
 
-            /* 같은 월 카드 선택 효과 (클릭) */
-            .card.same-month-selected::after {
-                content: '⭐';
-                position: absolute;
-                top: 5px;
-                right: 5px;
-                font-size: 20px;
-                animation: cardPulse 2s ease-in-out infinite;
-                z-index: 10;
+            /* 같은 월 카드 선택 효과 (클릭) - 손패와 완전 동일 */
+            .card.same-month-selected {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                border: 3px solid #4CAF50 !important;
+                filter: drop-shadow(0 20px 30px rgba(76, 175, 80, 0.6)) !important;
+                transform: translateY(-10px) scale(1.05) !important;
+                z-index: 80 !important;
             }
 
             /* 바닥 카드 컨테이너 하이라이트 - JS로 제어하므로 제거 */
@@ -296,8 +294,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 const shadowOffset = 10 + floatY/2;
                 const shadowBlur = 15 + floatY/3;
 
-                // same-month-hover 클래스가 있으면 float 애니메이션 건너뛰기
-                if (!card.matches(':hover') && !card.classList.contains('same-month-hover')) {
+                // same-month-hover나 same-month-selected 클래스가 있으면 float 애니메이션 건너뛰기
+                if (!card.matches(':hover') && !card.classList.contains('same-month-hover') && !card.classList.contains('same-month-selected')) {
                     card.style.transform = `translateY(${floatY}px) translateZ(20px)`;
                     card.style.filter = `drop-shadow(0 ${shadowOffset}px ${shadowBlur}px rgba(0, 0, 0, 0.4))`;
                 }
