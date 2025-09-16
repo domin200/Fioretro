@@ -1,1 +1,1 @@
-🎆 파티클 효과 수정 - MutationObserver로 바닥 카드 추가 감지
+🐛 e.target.closest 에러 수정 - nodeType 체크 및 메서드 존재 확인

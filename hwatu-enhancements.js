@@ -119,27 +119,36 @@ document.addEventListener('DOMContentLoaded', () => {
 
         // 손패 카드 호버 이벤트
         document.addEventListener('mouseenter', (e) => {
-            const handCard = e.target.closest('#hand-area .card');
-            if (handCard) {
-                highlightSameMonthCards(handCard);
+            // e.target이 Element인지 확인
+            if (e.target && e.target.nodeType === 1) {
+                const handCard = e.target.closest ? e.target.closest('#hand-area .card') : null;
+                if (handCard) {
+                    highlightSameMonthCards(handCard);
+                }
             }
         }, true);
 
         // 손패 영역 벗어날 때 선택된 카드로 복원
         document.addEventListener('mouseleave', (e) => {
-            const handCard = e.target.closest('#hand-area .card');
-            if (handCard) {
-                // 선택된 카드가 있으면 그걸로 복원, 없으면 하이라이트 제거
-                highlightSameMonthCards();
+            // e.target이 Element인지 확인
+            if (e.target && e.target.nodeType === 1) {
+                const handCard = e.target.closest ? e.target.closest('#hand-area .card') : null;
+                if (handCard) {
+                    // 선택된 카드가 있으면 그걸로 복원, 없으면 하이라이트 제거
+                    highlightSameMonthCards();
+                }
             }
         }, true);
 
         // 손패 카드 클릭 이벤트 감지
         document.addEventListener('click', (e) => {
-            const handCard = e.target.closest('#hand-area .card');
-            if (handCard) {
-                // 잠시 후 하이라이트 업데이트 (선택 상태가 변경된 후)
-                setTimeout(() => highlightSameMonthCards(), 50);
+            // e.target이 Element인지 확인
+            if (e.target && e.target.nodeType === 1 && e.target.closest) {
+                const handCard = e.target.closest('#hand-area .card');
+                if (handCard) {
+                    // 잠시 후 하이라이트 업데이트 (선택 상태가 변경된 후)
+                    setTimeout(() => highlightSameMonthCards(), 50);
+                }
             }
         });
 
