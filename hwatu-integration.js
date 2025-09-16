@@ -9,7 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
         const originalCreateCard = window.createCardElement;
 
         // 3D 카드 사용 옵션
-        const use3DCards = true; // 설정으로 변경 가능
+        const use3DCards = false; // 일단 비활성화 (문제 해결 후 활성화)
 
         // createCardElement 오버라이드
         window.createCardElement = function(card) {

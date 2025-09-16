@@ -9,24 +9,32 @@ class VisualEffectsManager {
 
     // Pixi.js 초기화
     init() {
-        if (this.initialized || typeof PIXI === 'undefined') return;
+        if (this.initialized || typeof PIXI === 'undefined') {
+            console.warn('Pixi.js not loaded, visual effects disabled');
+            return;
+        }
 
-        // Pixi 애플리케이션 생성
-        this.app = new PIXI.Application({
-            width: window.innerWidth,
-            height: window.innerHeight,
-            transparent: true,
-            resolution: window.devicePixelRatio || 1,
-            autoDensity: true
-        });
+        try {
+            // Pixi 애플리케이션 생성
+            this.app = new PIXI.Application({
+                width: window.innerWidth,
+                height: window.innerHeight,
+                transparent: true,
+                resolution: window.devicePixelRatio || 1,
+                autoDensity: true
+            });
 
-        // 오버레이 캔버스를 body에 추가
-        this.app.view.style.position = 'fixed';
-        this.app.view.style.top = '0';
-        this.app.view.style.left = '0';
-        this.app.view.style.pointerEvents = 'none';
-        this.app.view.style.zIndex = '9999';
-        document.body.appendChild(this.app.view);
+            // 오버레이 캔버스를 body에 추가
+            this.app.view.style.position = 'fixed';
+            this.app.view.style.top = '0';
+            this.app.view.style.left = '0';
+            this.app.view.style.pointerEvents = 'none';
+            this.app.view.style.zIndex = '9999';
+            document.body.appendChild(this.app.view);
+        } catch (e) {
+            console.error('Failed to initialize Pixi.js:', e);
+            return;
+        }
 
         // Bloom 필터 생성
         if (PIXI.filters && PIXI.filters.AdvancedBloomFilter) {
