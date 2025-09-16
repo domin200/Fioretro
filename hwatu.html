@@ -74,7 +74,7 @@
                 rgba(0,0,0,0.4) 100%);
         }
 
-        /* CRT 효과 2: 스캔라인 + RGB 서브픽셀 */
+        /* CRT 효과 2: 스캔라인 */
         body::after {
             content: "";
             position: fixed;
@@ -87,12 +87,12 @@
             background-image:
                 repeating-linear-gradient(
                     0deg,
-                    rgba(0, 0, 0, 0.15) 0px,
+                    rgba(0, 0, 0, 0.25) 0px,
+                    rgba(0, 0, 0, 0.25) 1px,
                     transparent 1px,
-                    transparent 2px,
-                    rgba(0, 0, 0, 0.15) 3px
+                    transparent 2px
                 );
-            opacity: 0.5;
+            opacity: 1;
         }
 
         /* CRT 효과 3: RGB 서브픽셀 (별도 요소) */
@@ -1683,8 +1683,24 @@
     -->
 </head>
 <body>
-    <!-- CRT RGB 서브픽셀 효과 -->
+    <!-- CRT 효과들 -->
     <div id="crt-rgb"></div>
+    <div id="crt-scanlines" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 10003;
+        background-image: repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.15) 0px,
+            rgba(0, 0, 0, 0.15) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+    "></div>
 
     <div id="game-container">
         <div id="main-game-layout">
