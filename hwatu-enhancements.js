@@ -489,8 +489,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         console.log(`Floor cards: before=${beforeFloorCount}, after=${afterFloorCount}`);
 
-                        // 카드가 추가되었을 때만
-                        if (afterFloorCount > beforeFloorCount && selectedMonth !== null) {
+                        // 선택된 카드가 있었을 때
+                        if (selectedMonth !== null) {
                             // 같은 월 카드가 있는지 확인 (새로 추가된 카드 제외)
                             let hasSameMonth = false;
                             let matchingCard = null;
@@ -519,16 +519,54 @@ document.addEventListener('DOMContentLoaded', () => {
                             }
 
                             // 파티클 생성 위치 결정
-                            const targetCard = hasSameMonth ? matchingCard : afterFloorCards[afterFloorCards.length - 1];
-
-                            if (targetCard) {
-                                const rect = targetCard.getBoundingClientRect();
+                            if (hasSameMonth && matchingCard) {
+                                // 황금색 파티클 - 매칭된 카드 위치
+                                const rect = matchingCard.getBoundingClientRect();
                                 const x = rect.left + rect.width / 2;
                                 const y = rect.top + rect.height / 2;
-                                const color = hasSameMonth ? '#FFD700' : '#4169E1';
+                                console.log(`Creating GOLD particles at matching card: ${x}, ${y}`);
+                                window.createParticles(x, y, '#FFD700');
+                            } else {
+                                // 파란색 파티클 - 새로 놓인 카드 위치 찾기
+                                // 방금 플레이한 카드의 월과 같은 카드 찾기 (가장 마지막 것)
+                                let newCardElement = null;
 
-                                console.log(`Creating particles at: ${x}, ${y}, Color: ${color}, Same month: ${hasSameMonth}`);
-                                window.createParticles(x, y, color);
+                                // 역순으로 검색하여 방금 추가된 카드 찾기
+                                for (let i = afterFloorCards.length - 1; i >= 0; i--) {
+                                    const card = afterFloorCards[i];
+                                    let cardMonth = null;
+
+                                    if (card.cardData) {
+                                        cardMonth = card.cardData.month;
+                                    } else {
+                                        const img = card.querySelector('img');
+                                        if (img && img.src) {
+                                            const match = img.src.match(/(\d+)-\d+\.png/);
+                                            if (match) {
+                                                cardMonth = parseInt(match[1]);
+                                            }
+                                        }
+                                    }
+
+                                    if (cardMonth === selectedMonth) {
+                                        newCardElement = card;
+                                        break;
+                                    }
+                                }
+
+                                // 못 찾았으면 마지막 카드 사용
+                                if (!newCardElement) {
+                                    newCardElement = afterFloorCards[afterFloorCards.length - 1];
+                                }
+
+                                if (newCardElement) {
+                                    const rect = newCardElement.getBoundingClientRect();
+                                    const x = rect.left + rect.width / 2;
+                                    const y = rect.top + rect.height / 2;
+                                    console.log(`Creating BLUE particles at new card: ${x}, ${y}`);
+                                    window.createParticles(x, y, '#4169E1');
+                                }
+                            }
 
                                 // 사운드 효과
                                 if (window.soundManager) {
