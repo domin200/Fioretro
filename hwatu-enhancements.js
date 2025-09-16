@@ -491,11 +491,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // 선택된 카드가 있었을 때
                         if (selectedMonth !== null) {
-                            // 같은 월 카드가 있는지 확인 (새로 추가된 카드 제외)
+                            // 같은 월 카드가 있는지 확인
                             let hasSameMonth = false;
                             let matchingCard = null;
 
-                            for (let i = 0; i < afterFloorCards.length - 1; i++) {
+                            console.log(`Checking for same month cards. Selected month: ${selectedMonth}, Total floor cards: ${afterFloorCards.length}`);
+
+                            for (let i = 0; i < afterFloorCards.length; i++) {
                                 const card = afterFloorCards[i];
                                 let cardMonth = null;
 
@@ -511,16 +513,26 @@ document.addEventListener('DOMContentLoaded', () => {
                                     }
                                 }
 
+                                console.log(`Card ${i}: month=${cardMonth}, selectedMonth=${selectedMonth}, match=${cardMonth === selectedMonth}`);
+
+                                // 자기 자신은 제외하고 같은 월 찾기 (2개 이상 있어야 매칭)
                                 if (cardMonth === selectedMonth) {
-                                    hasSameMonth = true;
-                                    matchingCard = card;
-                                    break;
+                                    // 이미 매칭된 카드가 있으면 같은 월이 2개 이상 있음
+                                    if (matchingCard === null) {
+                                        matchingCard = card;
+                                    } else {
+                                        hasSameMonth = true;
+                                        console.log(`Found matching month! Card at index ${i} matches month ${selectedMonth}`);
+                                        break;
+                                    }
                                 }
                             }
 
+                            console.log(`Has same month: ${hasSameMonth}, Matching card: ${matchingCard ? 'found' : 'not found'}`);
+
                             // 파티클 생성 위치 결정
                             if (hasSameMonth && matchingCard) {
-                                // 황금색 파티클 - 매칭된 카드 위치
+                                // 황금색 파티클 - 첫 번째 매칭된 카드 위치
                                 const rect = matchingCard.getBoundingClientRect();
                                 const x = rect.left + rect.width / 2;
                                 const y = rect.top + rect.height / 2;
