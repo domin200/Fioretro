@@ -146,8 +146,30 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target && e.target.nodeType === 1 && e.target.closest) {
                 const handCard = e.target.closest('#hand-area .card');
                 if (handCard) {
+                    // 흰색 파티클 효과 추가
+                    const rect = handCard.getBoundingClientRect();
+                    const x = rect.left + rect.width / 2;
+                    const y = rect.top + rect.height / 2;
+
+                    if (window.createParticles) {
+                        window.createParticles(x, y, '#FFFFFF');
+                    }
+
                     // 잠시 후 하이라이트 업데이트 (선택 상태가 변경된 후)
                     setTimeout(() => highlightSameMonthCards(), 50);
+                }
+
+                // 바닥 카드 클릭
+                const floorCard = e.target.closest('#floor-area .card');
+                if (floorCard) {
+                    // 흰색 파티클 효과 추가
+                    const rect = floorCard.getBoundingClientRect();
+                    const x = rect.left + rect.width / 2;
+                    const y = rect.top + rect.height / 2;
+
+                    if (window.createParticles) {
+                        window.createParticles(x, y, '#FFFFFF');
+                    }
                 }
             }
         });
@@ -366,11 +388,12 @@ document.addEventListener('DOMContentLoaded', () => {
     const addParticleEffects = () => {
         window.createParticles = (x, y, color = '#FFD700') => {
             const isGold = color === '#FFD700';
-            const particleCount = isGold ? 20 : 12; // 황금색은 더 많은 파티클
+            const isWhite = color === '#FFFFFF';
+            const particleCount = isGold ? 20 : (isWhite ? 8 : 12); // 황금색 > 파란색 > 흰색 순으로 파티클 수
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
-                const size = isGold ? (8 + Math.random() * 4) : (4 + Math.random() * 3);
+                const size = isGold ? (8 + Math.random() * 4) : (isWhite ? (3 + Math.random() * 2) : (4 + Math.random() * 3));
 
                 particle.style.cssText = `
                     position: fixed;
@@ -388,8 +411,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.appendChild(particle);
 
                 const angle = (Math.PI * 2 * i) / particleCount;
-                const velocity = isGold ? (4 + Math.random() * 3) : (2 + Math.random() * 2);
-                const lifetime = isGold ? (1500 + Math.random() * 500) : (1000 + Math.random() * 500);
+                const velocity = isGold ? (4 + Math.random() * 3) : (isWhite ? (1.5 + Math.random() * 1) : (2 + Math.random() * 2));
+                const lifetime = isGold ? (1500 + Math.random() * 500) : (isWhite ? (800 + Math.random() * 300) : (1000 + Math.random() * 500));
 
                 let opacity = 1;
                 let currentX = x;
@@ -529,23 +552,120 @@ document.addEventListener('DOMContentLoaded', () => {
             return false;
         }
 
+        // showDeckCardAnimation 함수 래핑을 위한 함수
+        function wrapDeckCardFunction() {
+            if (typeof window.showDeckCardAnimation === 'function' && !window.showDeckCardAnimation._particleWrapped) {
+                console.log('Wrapping showDeckCardAnimation function for particles');
+                const originalShowDeckCard = window.showDeckCardAnimation;
+
+                window.showDeckCardAnimation = function(card) {
+                    console.log('Deck card animation called - preparing particles');
+
+                    // 덱에서 나온 카드의 월 정보
+                    const deckCardMonth = card ? card.month : null;
+                    console.log('Deck card month:', deckCardMonth);
+
+                    // 원래 함수 실행
+                    const result = originalShowDeckCard.apply(this, arguments);
+
+                    // 파티클 효과
+                    if (deckCardMonth !== null) {
+                        setTimeout(() => {
+                            const floorCards = document.querySelectorAll('#floor-area .card');
+
+                            // 같은 월 카드가 있는지 확인 (방금 추가된 카드 제외)
+                            let hasSameMonth = false;
+                            let matchingCard = null;
+
+                            for (let i = 0; i < floorCards.length - 1; i++) {
+                                const card = floorCards[i];
+                                let cardMonth = null;
+
+                                if (card.cardData) {
+                                    cardMonth = card.cardData.month;
+                                } else {
+                                    const img = card.querySelector('img');
+                                    if (img && img.src) {
+                                        const match = img.src.match(/(\d+)-\d+\.png/);
+                                        if (match) {
+                                            cardMonth = parseInt(match[1]);
+                                        }
+                                    }
+                                }
+
+                                if (cardMonth === deckCardMonth) {
+                                    hasSameMonth = true;
+                                    matchingCard = card;
+                                    break;
+                                }
+                            }
+
+                            // 파티클 생성 위치 결정
+                            const targetCard = hasSameMonth ? matchingCard : floorCards[floorCards.length - 1];
+
+                            if (targetCard) {
+                                const rect = targetCard.getBoundingClientRect();
+                                const x = rect.left + rect.width / 2;
+                                const y = rect.top + rect.height / 2;
+                                const color = hasSameMonth ? '#FFD700' : '#4169E1';
+
+                                console.log(`Creating deck card particles at: ${x}, ${y}, Color: ${color}`);
+                                window.createParticles(x, y, color);
+
+                                // 사운드 효과
+                                if (window.soundManager) {
+                                    if (hasSameMonth) {
+                                        window.soundManager.playRareCard();
+                                    } else {
+                                        window.soundManager.playCardPlay();
+                                    }
+                                }
+                            }
+                        }, 800); // 덱 카드 애니메이션이 좀 더 긴 시간이 필요
+                    }
+
+                    return result;
+                };
+
+                window.showDeckCardAnimation._particleWrapped = true;
+                console.log('showDeckCardAnimation function wrapped successfully');
+                return true;
+            }
+            return false;
+        }
+
         // 초기 시도
         if (!wrapPlayCardFunction()) {
             console.log('playCard not found, setting up retry...');
-
-            // 여러 번 재시도
-            let retryCount = 0;
-            const retryInterval = setInterval(() => {
-                retryCount++;
-                if (wrapPlayCardFunction()) {
-                    clearInterval(retryInterval);
-                    console.log(`playCard wrapped after ${retryCount} retries`);
-                } else if (retryCount > 20) {
-                    clearInterval(retryInterval);
-                    console.warn('Failed to wrap playCard after 20 retries');
-                }
-            }, 500); // 0.5초마다 재시도
         }
+
+        if (!wrapDeckCardFunction()) {
+            console.log('showDeckCardAnimation not found, setting up retry...');
+        }
+
+        // 여러 번 재시도
+        let retryCount = 0;
+        const retryInterval = setInterval(() => {
+            retryCount++;
+            let playCardWrapped = window.playCard && window.playCard._particleWrapped;
+            let deckCardWrapped = window.showDeckCardAnimation && window.showDeckCardAnimation._particleWrapped;
+
+            if (!playCardWrapped) {
+                playCardWrapped = wrapPlayCardFunction();
+            }
+
+            if (!deckCardWrapped) {
+                deckCardWrapped = wrapDeckCardFunction();
+            }
+
+            if (playCardWrapped && deckCardWrapped) {
+                clearInterval(retryInterval);
+                console.log(`All functions wrapped after ${retryCount} retries`);
+            } else if (retryCount > 20) {
+                clearInterval(retryInterval);
+                console.warn(`Failed to wrap functions after 20 retries. playCard: ${playCardWrapped}, deckCard: ${deckCardWrapped}`);
+            }
+        }, 500); // 0.5초마다 재시도
 
         // MutationObserver로 바닥 영역 감시
         const floorArea = document.getElementById('floor-area');
