@@ -785,8 +785,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.appendChild(particle);
 
                 const angle = (Math.PI * 2 * i) / particleCount;
-                const velocity = isGold ? (6 + Math.random() * 4) : (3 + Math.random() * 2); // 속도 증가
-                const lifetime = isGold ? (1000 + Math.random() * 300) : (600 + Math.random() * 200); // 수명 감소
+                const velocity = isGold ? (5 + Math.random() * 3) : (2.5 + Math.random() * 1.5); // 중간 속도
+                const lifetime = isGold ? (1200 + Math.random() * 400) : (700 + Math.random() * 250); // 중간 수명
 
                 let opacity = 1;
                 let currentX = x;
@@ -840,37 +840,46 @@ document.addEventListener('DOMContentLoaded', () => {
         // 바닥 충돌용 파티클 (카드 뒤에 표시)
         window.createFloorParticles = (x, y, color = '#FFFFFF') => {
             const isGold = color === '#FFD700';
-            const particleCount = isGold ? 20 : 8; // 클릭 파티클과 동일한 개수
+            const particleCount = isGold ? 30 : 8; // 황금색은 더 많이 (화려하게)
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
-                const size = isGold ? (8 + Math.random() * 4) : (3 + Math.random() * 2);
+                const size = isGold ? (10 + Math.random() * 5) : (3 + Math.random() * 2); // 황금색은 더 크게
+
+                // 황금색은 더 화려한 그라데이션
+                const gradient = isGold ?
+                    `radial-gradient(circle, #FFFF00, ${color}, transparent)` :
+                    `radial-gradient(circle, ${color}, transparent)`;
 
                 particle.style.cssText = `
                     position: fixed;
                     width: ${size}px;
                     height: ${size}px;
-                    background: radial-gradient(circle, ${color}, transparent);
+                    background: ${gradient};
                     border-radius: 50%;
                     pointer-events: none;
                     z-index: 50;
                     left: ${x}px;
                     top: ${y}px;
-                    box-shadow: 0 0 ${size}px ${color};
+                    box-shadow: 0 0 ${size * (isGold ? 2 : 1)}px ${color};
                 `;
 
                 document.body.appendChild(particle);
 
                 const angle = (Math.PI * 2 * i) / particleCount;
-                const velocity = isGold ? (6 + Math.random() * 4) : (3 + Math.random() * 2); // 클릭과 동일한 속도
-                const lifetime = isGold ? (1000 + Math.random() * 300) : (600 + Math.random() * 200); // 클릭과 동일한 수명
+                const velocity = isGold ? (5 + Math.random() * 3) : (2.5 + Math.random() * 1.5); // 클릭과 동일한 속도
+                const lifetime = isGold ? (1200 + Math.random() * 400) : (700 + Math.random() * 250); // 클릭과 동일한 수명
 
                 let opacity = 1;
                 let currentX = x;
                 let currentY = y;
                 let scale = 1;
-                let velocityY = -2; // 초기 상승 속도
-                const gravity = 0.3; // 중력 (아래로 떨어지게)
+
+                // 클릭 파티클과 동일한 움직임
+                const horizontalVelocity = Math.cos(angle) * velocity;
+                const verticalVelocity = Math.sin(angle) * velocity;
+                let velocityY = verticalVelocity - 2;
+                const gravity = 0.25;
                 const startTime = performance.now();
 
                 const animate = (currentTime) => {
@@ -878,15 +887,24 @@ document.addEventListener('DOMContentLoaded', () => {
                     const progress = elapsed / lifetime;
 
                     if (progress < 1) {
-                        // 클릭 파티클처럼 퍼짐
-                        currentX += Math.cos(angle) * velocity * (1 - progress * 0.5);
+                        // 클릭 파티클과 동일한 움직임
+                        currentX += horizontalVelocity * (1 - progress * 0.3);
 
-                        // 위로 살짝 올라갔다가 아래로 떨어짐
-                        velocityY += gravity;
-                        currentY += velocityY;
+                        if (progress < 0.5) {
+                            currentY += velocityY;
+                            velocityY *= 0.92;
+                        } else {
+                            velocityY += gravity;
+                            currentY += velocityY;
+                        }
 
-                        opacity = 1 - progress * 0.8;
-                        scale = 1 + progress * 0.5; // 점점 커짐
+                        opacity = 1 - progress * 0.9;
+                        scale = 1 + progress * 0.5;
+
+                        // 황금색은 반짝임 효과 추가
+                        if (isGold && Math.random() > 0.7) {
+                            particle.style.filter = `brightness(${1.5 + Math.random() * 0.5})`;
+                        }
 
                         particle.style.left = currentX + 'px';
                         particle.style.top = currentY + 'px';
