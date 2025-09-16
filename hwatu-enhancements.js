@@ -752,8 +752,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === 5. 파티클 효과 (간단한 버전) ===
     const addParticleEffects = () => {
-        // 클릭용 파티클 (카드 위에 표시)
-        window.createParticles = (x, y, color = '#FFD700', isClick = true) => {
+        // 클릭용 파티클 (카드 위에 표시) - 항상 흰색
+        window.createParticles = (x, y, color = '#FFFFFF', isClick = true) => {
             // 기본값을 true로 변경하여 기존 클릭 이벤트가 카드 위에 표시되도록 유지
             if (!isClick) {
                 // 바닥 충돌용은 별도 함수 사용
@@ -761,32 +761,31 @@ document.addEventListener('DOMContentLoaded', () => {
                 return;
             }
 
-            const isGold = color === '#FFD700';
-            const isWhite = color === '#FFFFFF';
-            const particleCount = isGold ? 20 : 8; // 황금색은 20개, 흰색은 8개
+            // 클릭 파티클은 항상 흰색, 8개
+            const particleCount = 8;
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
-                const size = isGold ? (8 + Math.random() * 4) : (3 + Math.random() * 2);
+                const size = 3 + Math.random() * 2; // 작은 크기
 
                 particle.style.cssText = `
                     position: fixed;
                     width: ${size}px;
                     height: ${size}px;
-                    background: radial-gradient(circle, ${color}, transparent);
+                    background: radial-gradient(circle, #FFFFFF, transparent);
                     border-radius: 50%;
                     pointer-events: none;
                     z-index: 9999;
                     left: ${x}px;
                     top: ${y}px;
-                    box-shadow: 0 0 ${size}px ${color};
+                    box-shadow: 0 0 ${size}px #FFFFFF;
                 `;
 
                 document.body.appendChild(particle);
 
                 const angle = (Math.PI * 2 * i) / particleCount;
-                const velocity = isGold ? (5 + Math.random() * 3) : (2.5 + Math.random() * 1.5); // 중간 속도
-                const lifetime = isGold ? (600 + Math.random() * 200) : (350 + Math.random() * 125); // 2배 빠르게 사라짐
+                const velocity = 2.5 + Math.random() * 1.5; // 중간 속도
+                const lifetime = 350 + Math.random() * 125; // 빠르게 사라짐
 
                 let opacity = 1;
                 let currentX = x;
