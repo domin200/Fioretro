@@ -66,6 +66,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 );
                 border: 2px solid rgba(76, 175, 80, 0.6) !important;
                 box-shadow: 0 0 20px rgba(76, 175, 80, 0.5) !important;
+                transition: all 0.3s ease !important;
             }
 
             .card.same-month::after {
@@ -82,41 +83,68 @@ document.addEventListener('DOMContentLoaded', () => {
                 transform: translateY(-5px);
                 z-index: 10;
             }
+
+            /* 손패 호버 시 더 부드러운 전환 */
+            #hand-area .card {
+                transition: all 0.2s ease;
+            }
+
+            #hand-area .card:hover {
+                cursor: pointer;
+                transform: translateY(-12px) scale(1.1) !important;
+            }
         `;
         document.head.appendChild(style);
 
         // 선택된 카드와 같은 월의 바닥 카드 하이라이트
-        const highlightSameMonthCards = () => {
+        const highlightSameMonthCards = (targetCard = null) => {
             // 모든 same-month 클래스 제거
             document.querySelectorAll('.card.same-month').forEach(card => {
                 card.classList.remove('same-month');
             });
 
-            // 선택된 손패 카드 찾기
-            const selectedCard = document.querySelector('#hand-area .card.selected');
-            if (!selectedCard || !selectedCard.cardData) return;
+            // 대상 카드 결정 (호버된 카드 또는 선택된 카드)
+            const cardToCheck = targetCard || document.querySelector('#hand-area .card.selected');
+            if (!cardToCheck || !cardToCheck.cardData) return;
 
-            const selectedMonth = selectedCard.cardData.month;
+            const targetMonth = cardToCheck.cardData.month;
 
             // 바닥의 같은 월 카드에 하이라이트 적용
             document.querySelectorAll('#floor-area .card').forEach(card => {
-                if (card.cardData && card.cardData.month === selectedMonth) {
+                if (card.cardData && card.cardData.month === targetMonth) {
                     card.classList.add('same-month');
                 }
             });
         };
+
+        // 손패 카드 호버 이벤트
+        document.addEventListener('mouseenter', (e) => {
+            const handCard = e.target.closest('#hand-area .card');
+            if (handCard) {
+                highlightSameMonthCards(handCard);
+            }
+        }, true);
+
+        // 손패 영역 벗어날 때 선택된 카드로 복원
+        document.addEventListener('mouseleave', (e) => {
+            const handCard = e.target.closest('#hand-area .card');
+            if (handCard) {
+                // 선택된 카드가 있으면 그걸로 복원, 없으면 하이라이트 제거
+                highlightSameMonthCards();
+            }
+        }, true);
 
         // 손패 카드 클릭 이벤트 감지
         document.addEventListener('click', (e) => {
             const handCard = e.target.closest('#hand-area .card');
             if (handCard) {
                 // 잠시 후 하이라이트 업데이트 (선택 상태가 변경된 후)
-                setTimeout(highlightSameMonthCards, 50);
+                setTimeout(() => highlightSameMonthCards(), 50);
             }
         });
 
         // 주기적으로 체크 (게임 상태 변경 대응)
-        setInterval(highlightSameMonthCards, 500);
+        setInterval(() => highlightSameMonthCards(), 500);
     };
 
     // === 2. 점수 애니메이션 ===
