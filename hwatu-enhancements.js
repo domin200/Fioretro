@@ -793,11 +793,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 let currentY = y;
                 let scale = 1;
 
-                // 세로 방향 속도를 더 크게 설정
-                const verticalVelocity = (4 + Math.random() * 3); // 상승 속도 증가
-                const horizontalVelocity = Math.cos(angle) * velocity * 0.7; // 가로 속도는 줄임
-                let velocityY = -verticalVelocity; // 초기 상승 속도
-                const gravity = 0.25; // 중력
+                // 원형으로 모든 방향으로 퍼지도록 설정
+                const horizontalVelocity = Math.cos(angle) * velocity;
+                const verticalVelocity = Math.sin(angle) * velocity; // sin을 사용해 위아래로도 퍼짐
+                let velocityY = verticalVelocity - 2; // 초기 속도 (위쪽 바이어스 약간)
+                const gravity = 0.2; // 중력
                 const startTime = performance.now();
 
                 const animate = (currentTime) => {
@@ -805,17 +805,18 @@ document.addEventListener('DOMContentLoaded', () => {
                     const progress = elapsed / lifetime;
 
                     if (progress < 1) {
-                        // 파티클이 옆으로 퍼짐 (속도 감소)
+                        // 파티클이 원형으로 퍼짐
                         currentX += horizontalVelocity * (1 - progress * 0.5);
 
-                        // 50% 지점까지는 위로, 그 이후는 아래로
+                        // 50% 지점까지는 초기 방향대로, 그 이후는 아래로
                         if (progress < 0.5) {
-                            // 위로 올라감 (더 높이)
-                            currentY -= (verticalVelocity * 2 - progress * verticalVelocity * 4); // 점점 느려짐
+                            // 초기 방향으로 이동
+                            currentY += velocityY;
+                            velocityY *= 0.95; // 점점 느려짐
                         } else {
                             // 아래로 떨어짐 (중력 효과)
                             velocityY += gravity;
-                            currentY += velocityY * (progress - 0.5) * 2;
+                            currentY += velocityY;
                         }
 
                         opacity = 1 - progress * 0.8;
