@@ -18,10 +18,75 @@ document.addEventListener('DOMContentLoaded', () => {
                 100% { background-position: 200% center; }
             }
 
+            @keyframes floatAnimation {
+                0%, 100% {
+                    transform: translateY(0px) rotateX(2deg) rotateY(-1deg);
+                    filter: drop-shadow(0 15px 20px rgba(0, 0, 0, 0.3));
+                }
+                25% {
+                    transform: translateY(-8px) rotateX(1deg) rotateY(1deg);
+                    filter: drop-shadow(0 20px 25px rgba(0, 0, 0, 0.25));
+                }
+                50% {
+                    transform: translateY(-4px) rotateX(-1deg) rotateY(0deg);
+                    filter: drop-shadow(0 18px 22px rgba(0, 0, 0, 0.28));
+                }
+                75% {
+                    transform: translateY(-10px) rotateX(0deg) rotateY(-2deg);
+                    filter: drop-shadow(0 22px 28px rgba(0, 0, 0, 0.22));
+                }
+            }
+
+            @keyframes gentleFloat {
+                0%, 100% {
+                    transform: translateY(0px) translateZ(20px);
+                    filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.4));
+                }
+                50% {
+                    transform: translateY(-5px) translateZ(25px);
+                    filter: drop-shadow(0 15px 20px rgba(0, 0, 0, 0.35));
+                }
+            }
+
             .card {
                 transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
                 position: relative;
                 overflow: hidden;
+                transform-style: preserve-3d;
+                perspective: 1000px;
+            }
+
+            /* 손패 카드 부유 효과 */
+            #hand-area .card {
+                animation: floatAnimation 4s ease-in-out infinite;
+                filter: drop-shadow(0 15px 20px rgba(0, 0, 0, 0.3));
+            }
+
+            /* 각 카드마다 다른 애니메이션 딜레이 */
+            #hand-area .card:nth-child(1) { animation-delay: 0s; }
+            #hand-area .card:nth-child(2) { animation-delay: 0.5s; }
+            #hand-area .card:nth-child(3) { animation-delay: 1s; }
+            #hand-area .card:nth-child(4) { animation-delay: 1.5s; }
+            #hand-area .card:nth-child(5) { animation-delay: 2s; }
+
+            /* 바닥 카드 부유 효과 (좀 더 부드럽게) */
+            #floor-area .card {
+                animation: gentleFloat 5s ease-in-out infinite;
+                filter: drop-shadow(0 10px 15px rgba(0, 0, 0, 0.4));
+            }
+
+            /* 바닥 카드도 랜덤한 딜레이 */
+            #floor-area .card:nth-child(odd) {
+                animation-duration: 4.5s;
+                animation-delay: 0.3s;
+            }
+            #floor-area .card:nth-child(even) {
+                animation-duration: 5.5s;
+                animation-delay: 0.8s;
+            }
+            #floor-area .card:nth-child(3n) {
+                animation-duration: 6s;
+                animation-delay: 1.2s;
             }
 
             .card::before {
@@ -46,15 +111,17 @@ document.addEventListener('DOMContentLoaded', () => {
             }
 
             .card:hover {
-                transform: translateY(-10px) scale(1.08) !important;
-                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4) !important;
+                animation-play-state: paused !important;
+                transform: translateY(-15px) scale(1.1) rotateX(0deg) rotateY(0deg) !important;
+                filter: drop-shadow(0 25px 35px rgba(0, 0, 0, 0.5)) !important;
                 z-index: 100 !important;
             }
 
             .card.selected {
-                animation: cardPulse 2s ease-in-out infinite;
+                animation: floatAnimation 3s ease-in-out infinite !important;
                 border: 3px solid #4CAF50 !important;
-                box-shadow: 0 0 30px rgba(76, 175, 80, 0.6) !important;
+                filter: drop-shadow(0 20px 30px rgba(76, 175, 80, 0.6)) !important;
+                transform: translateY(-10px) scale(1.05) !important;
             }
 
             /* 같은 월 카드 하이라이트 효과 (호버) */
@@ -82,8 +149,25 @@ document.addEventListener('DOMContentLoaded', () => {
 
             /* 바닥 카드 컨테이너 하이라이트 */
             #floor-area .card.same-month-hover {
-                transform: translateY(-5px);
+                animation-play-state: paused !important;
+                transform: translateY(-8px) scale(1.02) !important;
                 z-index: 10;
+            }
+
+            /* 스택된 카드 컨테이너도 부유 효과 */
+            #floor-area > div[style*="position: relative"] {
+                animation: gentleFloat 5.5s ease-in-out infinite;
+                filter: drop-shadow(0 12px 18px rgba(0, 0, 0, 0.35));
+            }
+
+            /* 스택 컨테이너도 랜덤 딜레이 */
+            #floor-area > div[style*="position: relative"]:nth-child(odd) {
+                animation-delay: 0.6s;
+                animation-duration: 6s;
+            }
+            #floor-area > div[style*="position: relative"]:nth-child(even) {
+                animation-delay: 1.3s;
+                animation-duration: 5s;
             }
 
             /* 손패 호버 시 더 부드러운 전환 */
@@ -93,7 +177,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
             #hand-area .card:hover {
                 cursor: pointer;
-                transform: translateY(-12px) scale(1.1) !important;
+                animation-play-state: paused !important;
+                transform: translateY(-20px) scale(1.12) rotateZ(-2deg) !important;
+                filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45)) !important;
             }
         `;
         document.head.appendChild(style);
