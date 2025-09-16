@@ -57,37 +57,66 @@ document.addEventListener('DOMContentLoaded', () => {
                 box-shadow: 0 0 30px rgba(76, 175, 80, 0.6) !important;
             }
 
-            /* 희귀 카드 효과 */
-            .card.rare {
+            /* 같은 월 카드 하이라이트 효과 */
+            .card.same-month {
                 background: linear-gradient(135deg,
-                    rgba(255, 215, 0, 0.1),
+                    rgba(76, 175, 80, 0.2),
                     rgba(255, 255, 255, 0.1),
-                    rgba(255, 215, 0, 0.1)
+                    rgba(76, 175, 80, 0.2)
                 );
+                border: 2px solid rgba(76, 175, 80, 0.6) !important;
+                box-shadow: 0 0 20px rgba(76, 175, 80, 0.5) !important;
             }
 
-            .card.rare::after {
-                content: '✨';
+            .card.same-month::after {
+                content: '⭐';
                 position: absolute;
                 top: 5px;
                 right: 5px;
                 font-size: 20px;
                 animation: cardPulse 2s ease-in-out infinite;
             }
+
+            /* 바닥 카드 컨테이너 하이라이트 */
+            #floor-area .card.same-month {
+                transform: translateY(-5px);
+                z-index: 10;
+            }
         `;
         document.head.appendChild(style);
 
-        // 카드에 희귀도 표시
-        const markRareCards = () => {
-            document.querySelectorAll('.card').forEach(card => {
-                if (card.cardData?.type === '광') {
-                    card.classList.add('rare');
+        // 선택된 카드와 같은 월의 바닥 카드 하이라이트
+        const highlightSameMonthCards = () => {
+            // 모든 same-month 클래스 제거
+            document.querySelectorAll('.card.same-month').forEach(card => {
+                card.classList.remove('same-month');
+            });
+
+            // 선택된 손패 카드 찾기
+            const selectedCard = document.querySelector('#hand-area .card.selected');
+            if (!selectedCard || !selectedCard.cardData) return;
+
+            const selectedMonth = selectedCard.cardData.month;
+
+            // 바닥의 같은 월 카드에 하이라이트 적용
+            document.querySelectorAll('#floor-area .card').forEach(card => {
+                if (card.cardData && card.cardData.month === selectedMonth) {
+                    card.classList.add('same-month');
                 }
             });
         };
 
-        // 주기적으로 카드 확인 (동적 생성 대응)
-        setInterval(markRareCards, 1000);
+        // 손패 카드 클릭 이벤트 감지
+        document.addEventListener('click', (e) => {
+            const handCard = e.target.closest('#hand-area .card');
+            if (handCard) {
+                // 잠시 후 하이라이트 업데이트 (선택 상태가 변경된 후)
+                setTimeout(highlightSameMonthCards, 50);
+            }
+        });
+
+        // 주기적으로 체크 (게임 상태 변경 대응)
+        setInterval(highlightSameMonthCards, 500);
     };
 
     // === 2. 점수 애니메이션 ===
@@ -365,10 +394,17 @@ document.addEventListener('DOMContentLoaded', () => {
                 const x = rect.left + rect.width / 2;
                 const y = rect.top + rect.height / 2;
 
-                if (card.classList.contains('rare')) {
+                // 같은 월 카드는 특별한 색상
+                if (card.classList.contains('same-month')) {
                     window.createParticles(x, y, '#FFD700');
-                } else {
+                }
+                // 선택된 카드는 녹색
+                else if (card.classList.contains('selected')) {
                     window.createParticles(x, y, '#4CAF50');
+                }
+                // 일반 카드는 흰색
+                else {
+                    window.createParticles(x, y, '#87CEEB');
                 }
             }
         });
@@ -385,7 +421,7 @@ document.addEventListener('DOMContentLoaded', () => {
     setTimeout(() => {
         if (window.uiManager) {
             window.showToast('🎮 게임 개선 기능이 활성화되었습니다!', 'success', 3000);
-            window.showToast('💫 카드 호버, 점수 애니메이션, 파티클 효과 추가', 'info', 4000);
+            window.showToast('⭐ 선택한 카드와 같은 월의 바닥패가 하이라이트됩니다', 'info', 4000);
         }
     }, 1000);
 
