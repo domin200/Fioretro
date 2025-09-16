@@ -106,18 +106,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 transform: translateY(-10px) scale(1.05) !important;
             }
 
-            /* 같은 월 카드 하이라이트 효과 (호버) */
+            /* 같은 월 카드 하이라이트 효과 (호버) - 손패와 완전 동일 */
             .card.same-month-hover {
-                background: linear-gradient(135deg,
-                    rgba(76, 175, 80, 0.2),
-                    rgba(255, 255, 255, 0.1),
-                    rgba(76, 175, 80, 0.2)
-                );
-                border: 2px solid rgba(76, 175, 80, 0.6) !important;
-                transition: all 0.3s ease !important;
-                transform: translateY(-12px) scale(1.05) !important;
-                filter: drop-shadow(0 20px 25px rgba(76, 175, 80, 0.4)) !important;
-                z-index: 50 !important;
+                animation-play-state: paused !important;
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                transform: translateY(-20px) scale(1.12) rotateZ(-2deg) !important;
+                filter: drop-shadow(0 30px 40px rgba(0, 0, 0, 0.45)) !important;
+                z-index: 100 !important;
             }
 
             /* 같은 월 카드 선택 효과 (클릭) */
