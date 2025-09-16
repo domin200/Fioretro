@@ -836,7 +836,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     background: radial-gradient(circle, ${color}, transparent);
                     border-radius: 50%;
                     pointer-events: none;
-                    z-index: 90;
+                    z-index: 50;
                     left: ${x}px;
                     top: ${y}px;
                     box-shadow: 0 0 ${size * 1.5}px ${color};
@@ -845,15 +845,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.appendChild(particle);
 
                 const angle = (Math.PI * 2 * i) / particleCount;
-                const velocity = isGold ? (5 + Math.random() * 4) : (2 + Math.random() * 2);
-                const lifetime = isGold ? (2000 + Math.random() * 500) : (1000 + Math.random() * 400);
+                const radius = isGold ? (30 + Math.random() * 20) : (20 + Math.random() * 15); // 원형 퍼짐 반경
+                const lifetime = isGold ? (1500 + Math.random() * 500) : (800 + Math.random() * 400);
 
                 let opacity = 1;
                 let currentX = x;
                 let currentY = y;
                 let scale = 1;
-                const gravity = 0.2; // 중력 효과
-                let velocityY = -Math.random() * 2 - 1; // 초기 위쪽 속도
+                let velocityY = -3 - Math.random() * 2; // 초기 상승 속도
+                const gravity = 0.15; // 중력
                 const startTime = performance.now();
 
                 const animate = (currentTime) => {
@@ -861,12 +861,17 @@ document.addEventListener('DOMContentLoaded', () => {
                     const progress = elapsed / lifetime;
 
                     if (progress < 1) {
-                        // 바닥 충돌 효과: 튀어오르면서 퍼짐
-                        currentX += Math.cos(angle) * velocity * (1 - progress * 0.3);
-                        velocityY += gravity; // 중력 적용
+                        // 원형으로 퍼지면서 상승 후 하강
+                        const spreadProgress = Math.min(progress * 2, 1); // 빠르게 퍼짐
+                        currentX = x + Math.cos(angle) * radius * spreadProgress;
+
+                        // 상승 후 하강 효과
+                        velocityY += gravity;
                         currentY += velocityY;
-                        opacity = 1 - progress * 0.7;
-                        scale = 1 + progress * 0.8; // 더 크게 퍼짐
+
+                        // 페이드 아웃과 크기 변화
+                        opacity = 1 - progress * 0.8;
+                        scale = 1 + progress * 0.3; // 조금만 커짐
 
                         particle.style.left = currentX + 'px';
                         particle.style.top = currentY + 'px';

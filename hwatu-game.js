@@ -907,7 +907,7 @@ function showDeckCardAnimation(card) {
         z-index: 1000;
         transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
         transform-style: preserve-3d;
-        transform: scale(0.5);
+        transform: scale(1);
         perspective: 1000px;
     `;
     
@@ -974,14 +974,19 @@ function showDeckCardAnimation(card) {
 
         cardContainer.style.left = targetLeft + 'px';
         cardContainer.style.top = targetTop + 'px';
-        cardContainer.style.transform = 'rotateY(180deg) scale(1)';
+        cardContainer.style.transform = 'rotateY(180deg) scale(0.85)'; // 뒤집으면서 15% 작아짐
     }, 50);
-    
+
+    // 0.65초 후 원래 크기로 복원
+    setTimeout(() => {
+        cardContainer.style.transform = 'rotateY(180deg) scale(1)';
+    }, 650);
+
     // 도착 사운드 재생 (0.1초 일찍)
     setTimeout(() => {
         playSound('SE/allow2.ogg');
     }, 750);
-    
+
     // 애니메이션 후 제거
     setTimeout(() => {
         cardContainer.remove();
@@ -1241,6 +1246,8 @@ function showHandToFloorAnimation(cardElement, card) {
     tempCard.style.height = startRect.height + 'px';
     tempCard.style.transition = 'all 0.5s cubic-bezier(0.4, 0, 0.2, 1)';
     tempCard.style.zIndex = '1000';
+    tempCard.style.transform = 'scale(1)';
+    tempCard.style.transformOrigin = 'center center';
     document.body.appendChild(tempCard);
     
     // 원본 카드 숨기기
@@ -1293,14 +1300,19 @@ function showHandToFloorAnimation(cardElement, card) {
 
         tempCard.style.left = targetLeft + 'px';
         tempCard.style.top = targetTop + 'px';
-        tempCard.style.transform = 'rotate(360deg)';
+        tempCard.style.transform = 'rotate(360deg) scale(0.85)'; // 회전하면서 15% 작아짐
     }, 50);
-    
+
+    // 0.4초 후 원래 크기로 복원 (회전은 유지)
+    setTimeout(() => {
+        tempCard.style.transform = 'rotate(360deg) scale(1)';
+    }, 400);
+
     // 도착 사운드 재생 (0.1초 일찍)
     setTimeout(() => {
         playSound('SE/allow2.ogg');
     }, 450);
-    
+
     // 애니메이션 후 제거
     setTimeout(() => {
         tempCard.remove();
