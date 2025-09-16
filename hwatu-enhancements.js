@@ -844,7 +844,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
             for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
-                const size = isGold ? (10 + Math.random() * 5) : (3 + Math.random() * 2); // 황금색은 더 크게
+                const size = isGold ? (6 + Math.random() * 3) : (3 + Math.random() * 2); // 황금색 크기 줄임
 
                 // 황금색은 더 화려한 그라데이션
                 const gradient = isGold ?
@@ -858,7 +858,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     background: ${gradient};
                     border-radius: 50%;
                     pointer-events: none;
-                    z-index: 50;
+                    z-index: 30;
                     left: ${x}px;
                     top: ${y}px;
                     box-shadow: 0 0 ${size * (isGold ? 2 : 1)}px ${color};
