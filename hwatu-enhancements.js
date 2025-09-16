@@ -57,8 +57,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 box-shadow: 0 0 30px rgba(76, 175, 80, 0.6) !important;
             }
 
-            /* 같은 월 카드 하이라이트 효과 */
-            .card.same-month {
+            /* 같은 월 카드 하이라이트 효과 (호버) */
+            .card.same-month-hover {
                 background: linear-gradient(135deg,
                     rgba(76, 175, 80, 0.2),
                     rgba(255, 255, 255, 0.1),
@@ -69,17 +69,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 transition: all 0.3s ease !important;
             }
 
-            .card.same-month::after {
+            /* 같은 월 카드 선택 효과 (클릭) */
+            .card.same-month-selected::after {
                 content: '⭐';
                 position: absolute;
                 top: 5px;
                 right: 5px;
                 font-size: 20px;
                 animation: cardPulse 2s ease-in-out infinite;
+                z-index: 10;
             }
 
             /* 바닥 카드 컨테이너 하이라이트 */
-            #floor-area .card.same-month {
+            #floor-area .card.same-month-hover {
                 transform: translateY(-5px);
                 z-index: 10;
             }
@@ -96,23 +98,41 @@ document.addEventListener('DOMContentLoaded', () => {
         `;
         document.head.appendChild(style);
 
-        // 선택된 카드와 같은 월의 바닥 카드 하이라이트
-        const highlightSameMonthCards = (targetCard = null) => {
-            // 모든 same-month 클래스 제거
-            document.querySelectorAll('.card.same-month').forEach(card => {
-                card.classList.remove('same-month');
+        // 호버 시 같은 월 카드 하이라이트
+        const highlightSameMonthCardsHover = (targetCard) => {
+            // 모든 hover 클래스 제거
+            document.querySelectorAll('.card.same-month-hover').forEach(card => {
+                card.classList.remove('same-month-hover');
             });
 
-            // 대상 카드 결정 (호버된 카드 또는 선택된 카드)
-            const cardToCheck = targetCard || document.querySelector('#hand-area .card.selected');
-            if (!cardToCheck || !cardToCheck.cardData) return;
+            if (!targetCard || !targetCard.cardData) return;
 
-            const targetMonth = cardToCheck.cardData.month;
+            const targetMonth = targetCard.cardData.month;
 
-            // 바닥의 같은 월 카드에 하이라이트 적용
+            // 바닥의 같은 월 카드에 호버 하이라이트 적용
             document.querySelectorAll('#floor-area .card').forEach(card => {
                 if (card.cardData && card.cardData.month === targetMonth) {
-                    card.classList.add('same-month');
+                    card.classList.add('same-month-hover');
+                }
+            });
+        };
+
+        // 클릭 시 같은 월 카드에 별 표시
+        const highlightSameMonthCardsSelected = () => {
+            // 모든 selected 클래스 제거
+            document.querySelectorAll('.card.same-month-selected').forEach(card => {
+                card.classList.remove('same-month-selected');
+            });
+
+            const selectedCard = document.querySelector('#hand-area .card.selected');
+            if (!selectedCard || !selectedCard.cardData) return;
+
+            const targetMonth = selectedCard.cardData.month;
+
+            // 바닥의 같은 월 카드에 별 표시
+            document.querySelectorAll('#floor-area .card').forEach(card => {
+                if (card.cardData && card.cardData.month === targetMonth) {
+                    card.classList.add('same-month-selected');
                 }
             });
         };
@@ -123,19 +143,21 @@ document.addEventListener('DOMContentLoaded', () => {
             if (e.target && e.target.nodeType === 1) {
                 const handCard = e.target.closest ? e.target.closest('#hand-area .card') : null;
                 if (handCard) {
-                    highlightSameMonthCards(handCard);
+                    highlightSameMonthCardsHover(handCard);
                 }
             }
         }, true);
 
-        // 손패 영역 벗어날 때 선택된 카드로 복원
+        // 손패 영역 벗어날 때 호버 효과 제거
         document.addEventListener('mouseleave', (e) => {
             // e.target이 Element인지 확인
             if (e.target && e.target.nodeType === 1) {
                 const handCard = e.target.closest ? e.target.closest('#hand-area .card') : null;
                 if (handCard) {
-                    // 선택된 카드가 있으면 그걸로 복원, 없으면 하이라이트 제거
-                    highlightSameMonthCards();
+                    // 호버 효과만 제거 (선택 효과는 유지)
+                    document.querySelectorAll('.card.same-month-hover').forEach(card => {
+                        card.classList.remove('same-month-hover');
+                    });
                 }
             }
         }, true);
@@ -155,8 +177,8 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.createParticles(x, y, '#FFFFFF');
                     }
 
-                    // 잠시 후 하이라이트 업데이트 (선택 상태가 변경된 후)
-                    setTimeout(() => highlightSameMonthCards(), 50);
+                    // 잠시 후 별 표시 업데이트 (선택 상태가 변경된 후)
+                    setTimeout(() => highlightSameMonthCardsSelected(), 50);
                 }
 
                 // 바닥 카드 클릭
@@ -174,8 +196,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
 
-        // 주기적으로 체크 (게임 상태 변경 대응)
-        setInterval(() => highlightSameMonthCards(), 500);
+        // 주기적으로 선택 상태만 체크 (게임 상태 변경 대응)
+        setInterval(() => highlightSameMonthCardsSelected(), 500);
     };
 
     // === 2. 점수 애니메이션 ===
