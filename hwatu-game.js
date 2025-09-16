@@ -5552,7 +5552,10 @@ function proceedToNextStage() {
 function showTitleScreen() {
     // 게임 시작 플래그 리셋
     isGameStarting = false;
-    
+
+    // body에 title-visible 클래스 추가
+    document.body.classList.add('title-visible');
+
     // 게임 컨테이너 표시
     const gameContainer = document.getElementById('game-container');
     if (gameContainer) {
@@ -5723,6 +5726,9 @@ function startGame() {
         playButton.style.cursor = 'not-allowed';
     }
     
+    // body에서 title-visible 클래스 제거
+    document.body.classList.remove('title-visible');
+
     // 타이틀 화면 페이드아웃
     const titleScreen = document.getElementById('title-screen');
     if (titleScreen) {
