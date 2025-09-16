@@ -389,16 +389,19 @@ document.addEventListener('DOMContentLoaded', () => {
         // 플레이 버튼 클릭시 파티클 효과를 위한 이벤트 리스너
         const playBtn = document.getElementById('play-btn');
         if (playBtn) {
-            const originalOnclick = playBtn.onclick;
-            playBtn.onclick = function(e) {
+            playBtn.addEventListener('click', function(e) {
+                console.log('Play button clicked - particle effect triggered');
+
                 // 선택된 카드 정보 가져오기
                 const selectedCard = document.querySelector('#hand-area .card.selected');
                 if (selectedCard && selectedCard.cardData) {
                     const selectedMonth = selectedCard.cardData.month;
+                    console.log('Selected card month:', selectedMonth);
 
                     // 바닥에 같은 월 카드가 있는지 확인
                     const hasSameMonth = Array.from(document.querySelectorAll('#floor-area .card'))
                         .some(card => card.cardData && card.cardData.month === selectedMonth);
+                    console.log('Has same month card on floor:', hasSameMonth);
 
                     // 0.5초 후 파티클 효과 (카드가 바닥에 도착할 때)
                     setTimeout(() => {
@@ -433,7 +436,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         // 같은 월 카드가 있으면 황금색, 없으면 파란색
                         const particleColor = hasSameMonth ? '#FFD700' : '#4169E1';
-                        if (targetX && targetY) {
+                        console.log('Creating particles at:', targetX, targetY, 'Color:', particleColor);
+
+                        if (targetX && targetY && window.createParticles) {
                             window.createParticles(targetX, targetY, particleColor);
 
                             // 사운드 효과도 추가
@@ -444,13 +449,14 @@ document.addEventListener('DOMContentLoaded', () => {
                                     window.soundManager.playCardPlay(); // 일반 사운드
                                 }
                             }
+                        } else {
+                            console.warn('Cannot create particles - missing position or function');
                         }
                     }, 500);
                 }
-
-                // 원래 동작 실행
-                if (originalOnclick) originalOnclick.call(this, e);
-            };
+            });
+        } else {
+            console.warn('Play button not found')
         }
     };
 
@@ -463,4 +469,20 @@ document.addEventListener('DOMContentLoaded', () => {
 
 
     console.log('✨ 게임 개선 기능 초기화 완료!');
+
+    // 파티클 테스트용 (개발자 콘솔에서 testParticles() 실행)
+    window.testParticles = () => {
+        const x = window.innerWidth / 2;
+        const y = window.innerHeight / 2;
+        console.log('Testing particles at center:', x, y);
+        if (window.createParticles) {
+            window.createParticles(x, y, '#FFD700');
+            setTimeout(() => {
+                window.createParticles(x + 100, y, '#4169E1');
+            }, 500);
+            console.log('Particles created successfully');
+        } else {
+            console.error('createParticles function not found!');
+        }
+    };
 });
