@@ -517,7 +517,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 }
                             }
                         }
-                    }, 800); // 카드 이동 애니메이션 완료 대기
+                    }, 300); // 카드 이동 애니메이션 완료 대기
 
                     return result;
                 };
