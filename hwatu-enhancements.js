@@ -1,0 +1,365 @@
+// 경량화된 게임 개선 기능
+
+document.addEventListener('DOMContentLoaded', () => {
+    console.log('게임 개선 기능 초기화...');
+
+    // === 1. 카드 애니메이션 개선 ===
+    const improveCardAnimations = () => {
+        // 카드 호버 효과 강화
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes cardPulse {
+                0%, 100% { transform: scale(1); }
+                50% { transform: scale(1.05); }
+            }
+
+            @keyframes cardShine {
+                0% { background-position: -200% center; }
+                100% { background-position: 200% center; }
+            }
+
+            .card {
+                transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+                position: relative;
+                overflow: hidden;
+            }
+
+            .card::before {
+                content: '';
+                position: absolute;
+                top: 0;
+                left: -100%;
+                width: 100%;
+                height: 100%;
+                background: linear-gradient(
+                    90deg,
+                    transparent,
+                    rgba(255, 255, 255, 0.2),
+                    transparent
+                );
+                transition: left 0.5s;
+                pointer-events: none;
+            }
+
+            .card:hover::before {
+                left: 100%;
+            }
+
+            .card:hover {
+                transform: translateY(-10px) scale(1.08) !important;
+                box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4) !important;
+                z-index: 100 !important;
+            }
+
+            .card.selected {
+                animation: cardPulse 2s ease-in-out infinite;
+                border: 3px solid #4CAF50 !important;
+                box-shadow: 0 0 30px rgba(76, 175, 80, 0.6) !important;
+            }
+
+            /* 희귀 카드 효과 */
+            .card.rare {
+                background: linear-gradient(135deg,
+                    rgba(255, 215, 0, 0.1),
+                    rgba(255, 255, 255, 0.1),
+                    rgba(255, 215, 0, 0.1)
+                );
+            }
+
+            .card.rare::after {
+                content: '✨';
+                position: absolute;
+                top: 5px;
+                right: 5px;
+                font-size: 20px;
+                animation: cardPulse 2s ease-in-out infinite;
+            }
+        `;
+        document.head.appendChild(style);
+
+        // 카드에 희귀도 표시
+        const markRareCards = () => {
+            document.querySelectorAll('.card').forEach(card => {
+                if (card.cardData?.type === '광') {
+                    card.classList.add('rare');
+                }
+            });
+        };
+
+        // 주기적으로 카드 확인 (동적 생성 대응)
+        setInterval(markRareCards, 1000);
+    };
+
+    // === 2. 점수 애니메이션 ===
+    const addScoreAnimations = () => {
+        let lastScore = 0;
+        let lastMultiplier = 1;
+
+        const animateValue = (element, start, end, duration) => {
+            const startTime = performance.now();
+            const update = (currentTime) => {
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                const value = Math.floor(start + (end - start) * progress);
+                element.textContent = value;
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    element.textContent = end;
+                }
+            };
+            requestAnimationFrame(update);
+        };
+
+        setInterval(() => {
+            const scoreEl = document.getElementById('score');
+            const multiplierEl = document.getElementById('multiplier');
+
+            if (scoreEl && multiplierEl) {
+                const currentScore = parseInt(scoreEl.textContent) || 0;
+                const currentMultiplier = parseInt(multiplierEl.textContent.replace('x', '')) || 1;
+
+                if (currentScore !== lastScore) {
+                    animateValue(scoreEl, lastScore, currentScore, 500);
+
+                    // 점수 증가 효과
+                    scoreEl.style.transform = 'scale(1.2)';
+                    scoreEl.style.color = '#4CAF50';
+                    setTimeout(() => {
+                        scoreEl.style.transform = 'scale(1)';
+                        scoreEl.style.color = '';
+                    }, 300);
+
+                    lastScore = currentScore;
+                }
+
+                if (currentMultiplier !== lastMultiplier) {
+                    multiplierEl.style.transform = 'scale(1.3)';
+                    multiplierEl.style.color = '#FFD700';
+                    setTimeout(() => {
+                        multiplierEl.style.transform = 'scale(1)';
+                        multiplierEl.style.color = '';
+                    }, 300);
+
+                    lastMultiplier = currentMultiplier;
+                }
+            }
+        }, 100);
+    };
+
+    // === 3. 버튼 개선 ===
+    const improveButtons = () => {
+        const buttons = document.querySelectorAll('button');
+
+        buttons.forEach(button => {
+            // 리플 효과 추가
+            button.style.position = 'relative';
+            button.style.overflow = 'hidden';
+
+            button.addEventListener('click', function(e) {
+                const ripple = document.createElement('span');
+                ripple.style.cssText = `
+                    position: absolute;
+                    background: rgba(255, 255, 255, 0.5);
+                    border-radius: 50%;
+                    transform: scale(0);
+                    animation: rippleEffect 0.6s ease-out;
+                    pointer-events: none;
+                `;
+
+                const rect = this.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                ripple.style.width = ripple.style.height = size + 'px';
+                ripple.style.left = (e.clientX - rect.left - size / 2) + 'px';
+                ripple.style.top = (e.clientY - rect.top - size / 2) + 'px';
+
+                this.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 600);
+            });
+
+            // 호버 효과
+            button.addEventListener('mouseenter', () => {
+                button.style.transform = 'translateY(-2px)';
+                button.style.boxShadow = '0 5px 15px rgba(0,0,0,0.3)';
+            });
+
+            button.addEventListener('mouseleave', () => {
+                button.style.transform = '';
+                button.style.boxShadow = '';
+            });
+        });
+
+        // 리플 애니메이션 스타일
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes rippleEffect {
+                to {
+                    transform: scale(4);
+                    opacity: 0;
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    };
+
+    // === 4. 게임 이벤트 피드백 ===
+    const addGameFeedback = () => {
+        // 플레이 버튼 클릭시
+        const playBtn = document.getElementById('play-btn');
+        if (playBtn) {
+            const originalClick = playBtn.onclick;
+            playBtn.onclick = function(e) {
+                // 시각 피드백
+                const flash = document.createElement('div');
+                flash.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: radial-gradient(circle, rgba(76,175,80,0.3), transparent);
+                    pointer-events: none;
+                    z-index: 9998;
+                    animation: flashFade 0.5s ease-out;
+                `;
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 500);
+
+                // 토스트 메시지
+                if (window.uiManager) {
+                    window.showToast('카드를 플레이했습니다!', 'success', 2000);
+                }
+
+                // 원래 동작 실행
+                if (originalClick) originalClick.call(this, e);
+            };
+        }
+
+        // 버리기 버튼 클릭시
+        const discardBtn = document.getElementById('discard-btn');
+        if (discardBtn) {
+            const originalClick = discardBtn.onclick;
+            discardBtn.onclick = function(e) {
+                // 시각 피드백
+                const flash = document.createElement('div');
+                flash.style.cssText = `
+                    position: fixed;
+                    top: 0;
+                    left: 0;
+                    right: 0;
+                    bottom: 0;
+                    background: radial-gradient(circle, rgba(255,152,0,0.2), transparent);
+                    pointer-events: none;
+                    z-index: 9998;
+                    animation: flashFade 0.5s ease-out;
+                `;
+                document.body.appendChild(flash);
+                setTimeout(() => flash.remove(), 500);
+
+                // 토스트 메시지
+                if (window.uiManager) {
+                    window.showToast('카드를 버렸습니다', 'warning', 2000);
+                }
+
+                // 원래 동작 실행
+                if (originalClick) originalClick.call(this, e);
+            };
+        }
+
+        // 플래시 애니메이션
+        const style = document.createElement('style');
+        style.innerHTML = `
+            @keyframes flashFade {
+                from { opacity: 1; }
+                to { opacity: 0; }
+            }
+        `;
+        document.head.appendChild(style);
+    };
+
+    // === 5. 파티클 효과 (간단한 버전) ===
+    const addParticleEffects = () => {
+        window.createParticles = (x, y, color = '#FFD700') => {
+            for (let i = 0; i < 10; i++) {
+                const particle = document.createElement('div');
+                particle.style.cssText = `
+                    position: fixed;
+                    width: 6px;
+                    height: 6px;
+                    background: ${color};
+                    border-radius: 50%;
+                    pointer-events: none;
+                    z-index: 9999;
+                    left: ${x}px;
+                    top: ${y}px;
+                `;
+
+                document.body.appendChild(particle);
+
+                const angle = (Math.PI * 2 * i) / 10;
+                const velocity = 3 + Math.random() * 2;
+                const lifetime = 1000 + Math.random() * 500;
+
+                let opacity = 1;
+                let currentX = x;
+                let currentY = y;
+                const startTime = performance.now();
+
+                const animate = (currentTime) => {
+                    const elapsed = currentTime - startTime;
+                    const progress = elapsed / lifetime;
+
+                    if (progress < 1) {
+                        currentX += Math.cos(angle) * velocity;
+                        currentY += Math.sin(angle) * velocity + progress * 2;
+                        opacity = 1 - progress;
+
+                        particle.style.left = currentX + 'px';
+                        particle.style.top = currentY + 'px';
+                        particle.style.opacity = opacity;
+
+                        requestAnimationFrame(animate);
+                    } else {
+                        particle.remove();
+                    }
+                };
+
+                requestAnimationFrame(animate);
+            }
+        };
+
+        // 카드 클릭시 파티클
+        document.addEventListener('click', (e) => {
+            const card = e.target.closest('.card');
+            if (card) {
+                const rect = card.getBoundingClientRect();
+                const x = rect.left + rect.width / 2;
+                const y = rect.top + rect.height / 2;
+
+                if (card.classList.contains('rare')) {
+                    window.createParticles(x, y, '#FFD700');
+                } else {
+                    window.createParticles(x, y, '#4CAF50');
+                }
+            }
+        });
+    };
+
+    // === 모든 개선 기능 실행 ===
+    improveCardAnimations();
+    addScoreAnimations();
+    improveButtons();
+    addGameFeedback();
+    addParticleEffects();
+
+    // 초기화 완료 메시지
+    setTimeout(() => {
+        if (window.uiManager) {
+            window.showToast('🎮 게임 개선 기능이 활성화되었습니다!', 'success', 3000);
+            window.showToast('💫 카드 호버, 점수 애니메이션, 파티클 효과 추가', 'info', 4000);
+        }
+    }, 1000);
+
+    console.log('✨ 게임 개선 기능 초기화 완료!');
+});
