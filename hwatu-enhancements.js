@@ -423,32 +423,128 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        // 바닥에 카드가 추가될 때 파티클 효과
-        let lastFloorCardCount = 0;
-        let lastPlayedCard = null;
+        // playCard 함수 래핑을 위한 함수
+        function wrapPlayCardFunction() {
+            if (typeof window.playCard === 'function' && !window.playCard._particleWrapped) {
+                console.log('Wrapping playCard function for particles');
+                const originalPlayCard = window.playCard;
 
-        // 플레이 버튼 클릭 시 선택된 카드 정보 저장
-        const playBtn = document.getElementById('play-btn');
-        if (playBtn) {
-            // onclick 이벤트가 이미 있으므로 감싸기
-            const originalOnclick = playBtn.onclick;
-            playBtn.onclick = function(e) {
-                // 선택된 카드 정보 저장
-                const selectedCard = document.querySelector('#hand-area .card.selected');
-                if (selectedCard && selectedCard.cardData) {
-                    lastPlayedCard = {
-                        month: selectedCard.cardData.month,
-                        type: selectedCard.cardData.type,
-                        name: selectedCard.cardData.name
-                    };
-                    console.log('Card will be played:', lastPlayedCard);
-                }
+                window.playCard = function() {
+                    console.log('playCard called - preparing particles');
 
-                // 원래 함수 실행
-                if (originalOnclick) {
-                    return originalOnclick.call(this, e);
+                    // 현재 선택된 카드 정보 저장
+                    const selectedCard = document.querySelector('#hand-area .card.selected');
+                    let selectedMonth = null;
+
+                    if (selectedCard) {
+                        // cardData가 있으면 사용, 없으면 이미지 경로에서 추출
+                        if (selectedCard.cardData) {
+                            selectedMonth = selectedCard.cardData.month;
+                        } else {
+                            // 이미지 경로에서 월 정보 추출 (예: "1-1.png"에서 1)
+                            const img = selectedCard.querySelector('img');
+                            if (img && img.src) {
+                                const match = img.src.match(/(\d+)-\d+\.png/);
+                                if (match) {
+                                    selectedMonth = parseInt(match[1]);
+                                }
+                            }
+                        }
+                        console.log('Selected card month:', selectedMonth);
+                    }
+
+                    // 바닥 카드 수 기록
+                    const beforeFloorCount = document.querySelectorAll('#floor-area .card').length;
+
+                    // 원래 함수 실행
+                    const result = originalPlayCard.apply(this, arguments);
+
+                    // 카드가 바닥에 추가된 후 파티클 효과
+                    setTimeout(() => {
+                        const afterFloorCards = document.querySelectorAll('#floor-area .card');
+                        const afterFloorCount = afterFloorCards.length;
+
+                        console.log(`Floor cards: before=${beforeFloorCount}, after=${afterFloorCount}`);
+
+                        // 카드가 추가되었을 때만
+                        if (afterFloorCount > beforeFloorCount && selectedMonth !== null) {
+                            // 같은 월 카드가 있는지 확인 (새로 추가된 카드 제외)
+                            let hasSameMonth = false;
+                            let matchingCard = null;
+
+                            for (let i = 0; i < afterFloorCards.length - 1; i++) {
+                                const card = afterFloorCards[i];
+                                let cardMonth = null;
+
+                                if (card.cardData) {
+                                    cardMonth = card.cardData.month;
+                                } else {
+                                    const img = card.querySelector('img');
+                                    if (img && img.src) {
+                                        const match = img.src.match(/(\d+)-\d+\.png/);
+                                        if (match) {
+                                            cardMonth = parseInt(match[1]);
+                                        }
+                                    }
+                                }
+
+                                if (cardMonth === selectedMonth) {
+                                    hasSameMonth = true;
+                                    matchingCard = card;
+                                    break;
+                                }
+                            }
+
+                            // 파티클 생성 위치 결정
+                            const targetCard = hasSameMonth ? matchingCard : afterFloorCards[afterFloorCards.length - 1];
+
+                            if (targetCard) {
+                                const rect = targetCard.getBoundingClientRect();
+                                const x = rect.left + rect.width / 2;
+                                const y = rect.top + rect.height / 2;
+                                const color = hasSameMonth ? '#FFD700' : '#4169E1';
+
+                                console.log(`Creating particles at: ${x}, ${y}, Color: ${color}, Same month: ${hasSameMonth}`);
+                                window.createParticles(x, y, color);
+
+                                // 사운드 효과
+                                if (window.soundManager) {
+                                    if (hasSameMonth) {
+                                        window.soundManager.playRareCard();
+                                    } else {
+                                        window.soundManager.playCardPlay();
+                                    }
+                                }
+                            }
+                        }
+                    }, 800); // 카드 이동 애니메이션 완료 대기
+
+                    return result;
+                };
+
+                window.playCard._particleWrapped = true;
+                console.log('playCard function wrapped successfully');
+                return true;
+            }
+            return false;
+        }
+
+        // 초기 시도
+        if (!wrapPlayCardFunction()) {
+            console.log('playCard not found, setting up retry...');
+
+            // 여러 번 재시도
+            let retryCount = 0;
+            const retryInterval = setInterval(() => {
+                retryCount++;
+                if (wrapPlayCardFunction()) {
+                    clearInterval(retryInterval);
+                    console.log(`playCard wrapped after ${retryCount} retries`);
+                } else if (retryCount > 20) {
+                    clearInterval(retryInterval);
+                    console.warn('Failed to wrap playCard after 20 retries');
                 }
-            };
+            }, 500); // 0.5초마다 재시도
         }
 
         // MutationObserver로 바닥 영역 감시
