@@ -5,8 +5,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // === 1. 카드 애니메이션 개선 ===
     const improveCardAnimations = () => {
-        // 애니메이션 시작 시간 추적
-        const animationStartTimes = new Map();
+        // 카드별 애니메이션 상태 추적
+        const cardAnimationStates = new Map();
 
         // 카드 호버 효과 강화
         const style = document.createElement('style');
@@ -406,9 +406,9 @@ document.addEventListener('DOMContentLoaded', () => {
             return color;
         };
 
-        // 애니메이션 상태 유지 함수
-        const maintainAnimationState = () => {
-            const currentTime = Date.now();
+        // 고급 부유 애니메이션 함수
+        const advancedFloatAnimation = () => {
+            const currentTime = performance.now() / 1000; // 초 단위로 변환
 
             // 손패 카드
             document.querySelectorAll('#hand-area .card').forEach((card, index) => {
@@ -423,23 +423,47 @@ document.addEventListener('DOMContentLoaded', () => {
                     applyColorClass(card);
                 }
 
-                if (!animationStartTimes.has(cardId)) {
-                    // 새 카드면 현재 시간 저장
-                    animationStartTimes.set(cardId, currentTime);
+                // 카드별 고유 상태 초기화
+                if (!cardAnimationStates.has(cardId)) {
+                    cardAnimationStates.set(cardId, {
+                        phaseX: Math.random() * Math.PI * 2,
+                        phaseY: Math.random() * Math.PI * 2,
+                        phaseZ: Math.random() * Math.PI * 2,
+                        phaseFloat: Math.random() * Math.PI * 2,
+                        speedX: 0.5 + Math.random() * 0.5,
+                        speedY: 0.3 + Math.random() * 0.4,
+                        speedZ: 0.4 + Math.random() * 0.3,
+                        speedFloat: 0.8 + Math.random() * 0.4,
+                        ampX: 1.5 + Math.random() * 1,
+                        ampY: 1 + Math.random() * 0.5,
+                        ampZ: 0.5 + Math.random() * 0.5,
+                        ampFloat: 6 + Math.random() * 3
+                    });
                 }
 
-                // 애니메이션 진행 시간 계산
-                const elapsed = currentTime - animationStartTimes.get(cardId);
-                const animationDelay = index * 500; // 기존 딜레이
-                const animationDuration = 4000; // 4초
+                const state = cardAnimationStates.get(cardId);
 
-                // 애니메이션 진행률 계산
-                const progress = ((elapsed + animationDelay) % animationDuration) / animationDuration;
+                // 여러 사인파 합성
+                const rotateX =
+                    Math.sin(currentTime * state.speedX + state.phaseX) * state.ampX +
+                    Math.sin(currentTime * state.speedX * 2.3 + state.phaseX) * state.ampX * 0.3;
 
-                // CSS 애니메이션 대신 직접 transform 적용
-                const floatY = Math.sin(progress * Math.PI * 2) * 8;
-                const rotateX = Math.sin(progress * Math.PI * 2) * 2;
-                const rotateY = Math.cos(progress * Math.PI * 2) * 1;
+                const rotateY =
+                    Math.cos(currentTime * state.speedY + state.phaseY) * state.ampY +
+                    Math.sin(currentTime * state.speedY * 1.7 + state.phaseY) * state.ampY * 0.5;
+
+                const rotateZ =
+                    Math.sin(currentTime * state.speedZ + state.phaseZ) * state.ampZ;
+
+                const floatY =
+                    Math.sin(currentTime * state.speedFloat + state.phaseFloat) * state.ampFloat +
+                    Math.cos(currentTime * state.speedFloat * 1.3 + state.phaseFloat) * state.ampFloat * 0.4 +
+                    Math.sin(currentTime * state.speedFloat * 2.1 + state.phaseFloat) * state.ampFloat * 0.2;
+
+                // 그림자 동적 계산
+                const shadowY = 20 + floatY * 1.5;
+                const shadowBlur = 25 + Math.abs(floatY);
+                const shadowOpacity = 0.25 + Math.abs(floatY) / 40;
 
                 // 강화된 카드인지 확인
                 const isEnhanced = card.classList.contains('card-blue') ||
@@ -449,19 +473,31 @@ document.addEventListener('DOMContentLoaded', () => {
                                   card.classList.contains('card-white');
 
                 if (card.classList.contains('selected')) {
-                    // 선택된 카드는 항상 float + 추가 상승 + 10% 확대
-                    const selectedTransform = `translateY(${floatY - 10}px) scale(1.1) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
+                    // 선택된 카드는 더 활발한 움직임
+                    const selectedTransform = `
+                        translateY(${floatY - 15}px)
+                        translateZ(30px)
+                        rotateX(${rotateX * 1.5}deg)
+                        rotateY(${rotateY * 1.5}deg)
+                        rotateZ(${rotateZ * 2}deg)
+                        scale(1.1)
+                    `;
                     card.style.transform = selectedTransform;
-                    card.style.zIndex = '200'; // 선택된 카드를 위로
-                    // filter는 CSS에서 이미 적용됨
+                    card.style.boxShadow = `0 ${shadowY + 10}px ${shadowBlur + 10}px rgba(76, 175, 80, ${shadowOpacity + 0.2})`;
+                    card.style.zIndex = '200';
                 } else if (!card.matches(':hover')) {
-                    if (isEnhanced) {
-                        // 강화된 카드는 transform만 적용 (filter는 CSS에서 관리)
-                        card.style.transform = `translateY(${floatY}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-                    } else {
-                        // 일반 카드
-                        card.style.transform = `translateY(${floatY}px) rotateX(${rotateX}deg) rotateY(${rotateY}deg)`;
-                        card.style.filter = `drop-shadow(0 ${15 + floatY/2}px ${20 + floatY/3}px rgba(0, 0, 0, ${0.3 - floatY/80}))`;
+                    const transform = `
+                        translateY(${floatY}px)
+                        translateZ(10px)
+                        rotateX(${rotateX}deg)
+                        rotateY(${rotateY}deg)
+                        rotateZ(${rotateZ}deg)
+                    `;
+                    card.style.transform = transform;
+
+                    if (!isEnhanced) {
+                        // 일반 카드는 그림자 효과
+                        card.style.boxShadow = `0 ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, ${shadowOpacity})`;
                     }
                 }
             });
@@ -481,19 +517,47 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                if (!animationStartTimes.has(cardId)) {
-                    animationStartTimes.set(cardId, currentTime);
+                // 카드별 고유 상태 초기화 (바닥 카드는 더 미묘한 움직임)
+                if (!cardAnimationStates.has(cardId)) {
+                    cardAnimationStates.set(cardId, {
+                        phaseX: Math.random() * Math.PI * 2,
+                        phaseY: Math.random() * Math.PI * 2,
+                        phaseZ: Math.random() * Math.PI * 2,
+                        phaseFloat: Math.random() * Math.PI * 2,
+                        speedX: 0.3 + Math.random() * 0.3,
+                        speedY: 0.2 + Math.random() * 0.3,
+                        speedZ: 0.25 + Math.random() * 0.2,
+                        speedFloat: 0.5 + Math.random() * 0.3,
+                        ampX: 0.8 + Math.random() * 0.5,
+                        ampY: 0.6 + Math.random() * 0.3,
+                        ampZ: 0.3 + Math.random() * 0.2,
+                        ampFloat: 3 + Math.random() * 2
+                    });
                 }
 
-                const elapsed = currentTime - animationStartTimes.get(cardId);
-                const animationDelay = (index % 3) * 400;
-                const animationDuration = 5000 + (index % 3) * 500;
+                const state = cardAnimationStates.get(cardId);
 
-                const progress = ((elapsed + animationDelay) % animationDuration) / animationDuration;
+                // 여러 사인파 합성 (바닥 카드는 더 작은 움직임)
+                const rotateX =
+                    Math.sin(currentTime * state.speedX + state.phaseX) * state.ampX +
+                    Math.sin(currentTime * state.speedX * 2.3 + state.phaseX) * state.ampX * 0.2;
 
-                const floatY = Math.sin(progress * Math.PI * 2) * 5;
-                const shadowOffset = 10 + floatY/2;
-                const shadowBlur = 15 + floatY/3;
+                const rotateY =
+                    Math.cos(currentTime * state.speedY + state.phaseY) * state.ampY +
+                    Math.sin(currentTime * state.speedY * 1.7 + state.phaseY) * state.ampY * 0.3;
+
+                const rotateZ =
+                    Math.sin(currentTime * state.speedZ + state.phaseZ) * state.ampZ;
+
+                const floatY =
+                    Math.sin(currentTime * state.speedFloat + state.phaseFloat) * state.ampFloat +
+                    Math.cos(currentTime * state.speedFloat * 1.3 + state.phaseFloat) * state.ampFloat * 0.3 +
+                    Math.sin(currentTime * state.speedFloat * 2.1 + state.phaseFloat) * state.ampFloat * 0.15;
+
+                // 그림자 동적 계산
+                const shadowY = 15 + floatY * 1.2;
+                const shadowBlur = 20 + Math.abs(floatY) * 0.8;
+                const shadowOpacity = 0.3 + Math.abs(floatY) / 30;
 
                 // 호버나 특수 효과가 있는 경우 처리
                 if (!card.matches(':hover') && !card.classList.contains('same-month-hover')) {
@@ -505,40 +569,55 @@ document.addEventListener('DOMContentLoaded', () => {
                                       card.classList.contains('card-white');
 
                     if (card.classList.contains('same-month-selected')) {
-                        // 선택된 같은 월 카드는 float + 추가 상승 + 10% 확대
-                        card.style.transform = `translateY(${floatY - 10}px) scale(1.1) translateZ(20px)`;
-                        // filter는 CSS에서 이미 적용됨
-                    } else if (isEnhanced) {
-                        // 강화된 카드는 transform만 적용
-                        card.style.transform = `translateY(${floatY}px) translateZ(20px)`;
+                        // 선택된 같은 월 카드는 더 활발한 움직임
+                        const selectedTransform = `
+                            translateY(${floatY - 10}px)
+                            translateZ(25px)
+                            rotateX(${rotateX * 1.3}deg)
+                            rotateY(${rotateY * 1.3}deg)
+                            rotateZ(${rotateZ * 1.5}deg)
+                            scale(1.1)
+                        `;
+                        card.style.transform = selectedTransform;
+                        card.style.boxShadow = `0 ${shadowY + 5}px ${shadowBlur + 5}px rgba(76, 175, 80, ${shadowOpacity + 0.1})`;
                     } else {
-                        // 일반 카드
-                        card.style.transform = `translateY(${floatY}px) translateZ(20px)`;
-                        card.style.filter = `drop-shadow(0 ${shadowOffset}px ${shadowBlur}px rgba(0, 0, 0, 0.4))`;
+                        const transform = `
+                            translateY(${floatY}px)
+                            translateZ(15px)
+                            rotateX(${rotateX}deg)
+                            rotateY(${rotateY}deg)
+                            rotateZ(${rotateZ}deg)
+                        `;
+                        card.style.transform = transform;
+
+                        if (!isEnhanced) {
+                            // 일반 카드는 그림자 효과
+                            card.style.boxShadow = `0 ${shadowY}px ${shadowBlur}px rgba(0, 0, 0, ${shadowOpacity})`;
+                        }
                     }
                 }
             });
 
             // 사용하지 않는 ID 정리
-            if (animationStartTimes.size > 50) {
+            if (cardAnimationStates.size > 50) {
                 const activeIds = new Set();
                 document.querySelectorAll('#hand-area .card').forEach((_, i) => activeIds.add(`hand-${i}`));
                 document.querySelectorAll('#floor-area .card, #floor-area > div[style*="position: relative"]').forEach((_, i) => activeIds.add(`floor-${i}`));
 
-                for (const [id] of animationStartTimes) {
+                for (const [id] of cardAnimationStates) {
                     if (!activeIds.has(id)) {
-                        animationStartTimes.delete(id);
+                        cardAnimationStates.delete(id);
                     }
                 }
             }
         };
 
         // 애니메이션 루프 시작
-        const animationFrame = () => {
-            maintainAnimationState();
-            requestAnimationFrame(animationFrame);
+        const animationLoop = () => {
+            advancedFloatAnimation();
+            requestAnimationFrame(animationLoop);
         };
-        requestAnimationFrame(animationFrame);
+        requestAnimationFrame(animationLoop);
 
         // 주기적으로 선택 상태만 체크 (게임 상태 변경 대응)
         setInterval(() => highlightSameMonthCardsSelected(), 500);
