@@ -328,29 +328,36 @@ document.addEventListener('DOMContentLoaded', () => {
     // === 5. 파티클 효과 (간단한 버전) ===
     const addParticleEffects = () => {
         window.createParticles = (x, y, color = '#FFD700') => {
-            for (let i = 0; i < 10; i++) {
+            const isGold = color === '#FFD700';
+            const particleCount = isGold ? 20 : 12; // 황금색은 더 많은 파티클
+
+            for (let i = 0; i < particleCount; i++) {
                 const particle = document.createElement('div');
+                const size = isGold ? (8 + Math.random() * 4) : (4 + Math.random() * 3);
+
                 particle.style.cssText = `
                     position: fixed;
-                    width: 6px;
-                    height: 6px;
-                    background: ${color};
+                    width: ${size}px;
+                    height: ${size}px;
+                    background: radial-gradient(circle, ${color}, transparent);
                     border-radius: 50%;
                     pointer-events: none;
                     z-index: 9999;
                     left: ${x}px;
                     top: ${y}px;
+                    box-shadow: 0 0 ${size}px ${color};
                 `;
 
                 document.body.appendChild(particle);
 
-                const angle = (Math.PI * 2 * i) / 10;
-                const velocity = 3 + Math.random() * 2;
-                const lifetime = 1000 + Math.random() * 500;
+                const angle = (Math.PI * 2 * i) / particleCount;
+                const velocity = isGold ? (4 + Math.random() * 3) : (2 + Math.random() * 2);
+                const lifetime = isGold ? (1500 + Math.random() * 500) : (1000 + Math.random() * 500);
 
                 let opacity = 1;
                 let currentX = x;
                 let currentY = y;
+                let scale = 1;
                 const startTime = performance.now();
 
                 const animate = (currentTime) => {
@@ -358,13 +365,16 @@ document.addEventListener('DOMContentLoaded', () => {
                     const progress = elapsed / lifetime;
 
                     if (progress < 1) {
-                        currentX += Math.cos(angle) * velocity;
-                        currentY += Math.sin(angle) * velocity + progress * 2;
-                        opacity = 1 - progress;
+                        // 파티클이 위로 올라가면서 퍼짐
+                        currentX += Math.cos(angle) * velocity * (1 - progress * 0.5);
+                        currentY += Math.sin(angle) * velocity - progress * 3; // 위로 올라가는 효과
+                        opacity = 1 - progress * 0.8;
+                        scale = 1 + progress * 0.5; // 점점 커짐
 
                         particle.style.left = currentX + 'px';
                         particle.style.top = currentY + 'px';
                         particle.style.opacity = opacity;
+                        particle.style.transform = `scale(${scale})`;
 
                         requestAnimationFrame(animate);
                     } else {
@@ -376,28 +386,72 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         };
 
-        // 카드 클릭시 파티클
-        document.addEventListener('click', (e) => {
-            const card = e.target.closest('.card');
-            if (card) {
-                const rect = card.getBoundingClientRect();
-                const x = rect.left + rect.width / 2;
-                const y = rect.top + rect.height / 2;
+        // 플레이 버튼 클릭시 파티클 효과를 위한 이벤트 리스너
+        const playBtn = document.getElementById('play-btn');
+        if (playBtn) {
+            const originalOnclick = playBtn.onclick;
+            playBtn.onclick = function(e) {
+                // 선택된 카드 정보 가져오기
+                const selectedCard = document.querySelector('#hand-area .card.selected');
+                if (selectedCard && selectedCard.cardData) {
+                    const selectedMonth = selectedCard.cardData.month;
 
-                // 같은 월 카드는 특별한 색상
-                if (card.classList.contains('same-month')) {
-                    window.createParticles(x, y, '#FFD700');
+                    // 바닥에 같은 월 카드가 있는지 확인
+                    const hasSameMonth = Array.from(document.querySelectorAll('#floor-area .card'))
+                        .some(card => card.cardData && card.cardData.month === selectedMonth);
+
+                    // 0.5초 후 파티클 효과 (카드가 바닥에 도착할 때)
+                    setTimeout(() => {
+                        // 바닥에 있는 같은 월 카드 찾기
+                        let targetX, targetY;
+
+                        if (hasSameMonth) {
+                            // 같은 월 카드 위치 찾기
+                            const sameMonthCard = Array.from(document.querySelectorAll('#floor-area .card'))
+                                .find(card => card.cardData && card.cardData.month === selectedMonth);
+                            if (sameMonthCard) {
+                                const rect = sameMonthCard.getBoundingClientRect();
+                                targetX = rect.left + rect.width / 2;
+                                targetY = rect.top + rect.height / 2;
+                            }
+                        } else {
+                            // 마지막 바닥 카드 위치 (새로 놓인 카드)
+                            const floorCards = document.querySelectorAll('#floor-area .card');
+                            if (floorCards.length > 0) {
+                                const lastCard = floorCards[floorCards.length - 1];
+                                const rect = lastCard.getBoundingClientRect();
+                                targetX = rect.left + rect.width / 2;
+                                targetY = rect.top + rect.height / 2;
+                            } else {
+                                // 바닥 중앙
+                                const floorArea = document.getElementById('floor-area');
+                                const rect = floorArea.getBoundingClientRect();
+                                targetX = rect.left + rect.width / 2;
+                                targetY = rect.top + rect.height / 2;
+                            }
+                        }
+
+                        // 같은 월 카드가 있으면 황금색, 없으면 파란색
+                        const particleColor = hasSameMonth ? '#FFD700' : '#4169E1';
+                        if (targetX && targetY) {
+                            window.createParticles(targetX, targetY, particleColor);
+
+                            // 사운드 효과도 추가
+                            if (window.soundManager) {
+                                if (hasSameMonth) {
+                                    window.soundManager.playRareCard(); // 황금색일 때는 특별한 사운드
+                                } else {
+                                    window.soundManager.playCardPlay(); // 일반 사운드
+                                }
+                            }
+                        }
+                    }, 500);
                 }
-                // 선택된 카드는 녹색
-                else if (card.classList.contains('selected')) {
-                    window.createParticles(x, y, '#4CAF50');
-                }
-                // 일반 카드는 흰색
-                else {
-                    window.createParticles(x, y, '#87CEEB');
-                }
-            }
-        });
+
+                // 원래 동작 실행
+                if (originalOnclick) originalOnclick.call(this, e);
+            };
+        }
     };
 
     // === 모든 개선 기능 실행 ===
