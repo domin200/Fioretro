@@ -517,47 +517,47 @@ document.addEventListener('DOMContentLoaded', () => {
                     }
                 }
 
-                // 카드별 고유 상태 초기화 (바닥 카드는 더 미묘한 움직임)
+                // 카드별 고유 상태 초기화 (손패와 동일한 움직임)
                 if (!cardAnimationStates.has(cardId)) {
                     cardAnimationStates.set(cardId, {
                         phaseX: Math.random() * Math.PI * 2,
                         phaseY: Math.random() * Math.PI * 2,
                         phaseZ: Math.random() * Math.PI * 2,
                         phaseFloat: Math.random() * Math.PI * 2,
-                        speedX: 0.3 + Math.random() * 0.3,
-                        speedY: 0.2 + Math.random() * 0.3,
-                        speedZ: 0.25 + Math.random() * 0.2,
-                        speedFloat: 0.5 + Math.random() * 0.3,
-                        ampX: 0.8 + Math.random() * 0.5,
-                        ampY: 0.6 + Math.random() * 0.3,
-                        ampZ: 0.3 + Math.random() * 0.2,
-                        ampFloat: 3 + Math.random() * 2
+                        speedX: 0.5 + Math.random() * 0.5,
+                        speedY: 0.3 + Math.random() * 0.4,
+                        speedZ: 0.4 + Math.random() * 0.3,
+                        speedFloat: 0.8 + Math.random() * 0.4,
+                        ampX: 1.5 + Math.random() * 1,
+                        ampY: 1 + Math.random() * 0.5,
+                        ampZ: 0.5 + Math.random() * 0.5,
+                        ampFloat: 6 + Math.random() * 3
                     });
                 }
 
                 const state = cardAnimationStates.get(cardId);
 
-                // 여러 사인파 합성 (바닥 카드는 더 작은 움직임)
+                // 여러 사인파 합성 (손패와 동일한 움직임)
                 const rotateX =
                     Math.sin(currentTime * state.speedX + state.phaseX) * state.ampX +
-                    Math.sin(currentTime * state.speedX * 2.3 + state.phaseX) * state.ampX * 0.2;
+                    Math.sin(currentTime * state.speedX * 2.3 + state.phaseX) * state.ampX * 0.3;
 
                 const rotateY =
                     Math.cos(currentTime * state.speedY + state.phaseY) * state.ampY +
-                    Math.sin(currentTime * state.speedY * 1.7 + state.phaseY) * state.ampY * 0.3;
+                    Math.sin(currentTime * state.speedY * 1.7 + state.phaseY) * state.ampY * 0.5;
 
                 const rotateZ =
                     Math.sin(currentTime * state.speedZ + state.phaseZ) * state.ampZ;
 
                 const floatY =
                     Math.sin(currentTime * state.speedFloat + state.phaseFloat) * state.ampFloat +
-                    Math.cos(currentTime * state.speedFloat * 1.3 + state.phaseFloat) * state.ampFloat * 0.3 +
-                    Math.sin(currentTime * state.speedFloat * 2.1 + state.phaseFloat) * state.ampFloat * 0.15;
+                    Math.cos(currentTime * state.speedFloat * 1.3 + state.phaseFloat) * state.ampFloat * 0.4 +
+                    Math.sin(currentTime * state.speedFloat * 2.1 + state.phaseFloat) * state.ampFloat * 0.2;
 
                 // 그림자 동적 계산
-                const shadowY = 15 + floatY * 1.2;
-                const shadowBlur = 20 + Math.abs(floatY) * 0.8;
-                const shadowOpacity = 0.3 + Math.abs(floatY) / 30;
+                const shadowY = 20 + floatY * 1.5;
+                const shadowBlur = 25 + Math.abs(floatY);
+                const shadowOpacity = 0.25 + Math.abs(floatY) / 40;
 
                 // 호버나 특수 효과가 있는 경우 처리
                 if (!card.matches(':hover') && !card.classList.contains('same-month-hover')) {
@@ -571,19 +571,19 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (card.classList.contains('same-month-selected')) {
                         // 선택된 같은 월 카드는 더 활발한 움직임
                         const selectedTransform = `
-                            translateY(${floatY - 10}px)
-                            translateZ(25px)
-                            rotateX(${rotateX * 1.3}deg)
-                            rotateY(${rotateY * 1.3}deg)
-                            rotateZ(${rotateZ * 1.5}deg)
+                            translateY(${floatY - 15}px)
+                            translateZ(30px)
+                            rotateX(${rotateX * 1.5}deg)
+                            rotateY(${rotateY * 1.5}deg)
+                            rotateZ(${rotateZ * 2}deg)
                             scale(1.1)
                         `;
                         card.style.transform = selectedTransform;
-                        card.style.boxShadow = `0 ${shadowY + 5}px ${shadowBlur + 5}px rgba(76, 175, 80, ${shadowOpacity + 0.1})`;
+                        card.style.boxShadow = `0 ${shadowY + 10}px ${shadowBlur + 10}px rgba(76, 175, 80, ${shadowOpacity + 0.2})`;
                     } else {
                         const transform = `
                             translateY(${floatY}px)
-                            translateZ(15px)
+                            translateZ(10px)
                             rotateX(${rotateX}deg)
                             rotateY(${rotateY}deg)
                             rotateZ(${rotateZ}deg)
