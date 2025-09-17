@@ -651,6 +651,132 @@
             gap: 15px;
         }
         
+        /* 스테이지 정보 영역 스타일 */
+        .stage-info-area {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(20, 20, 20, 0.6) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            min-width: 120px;
+        }
+
+        .stage-info-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .stage-label {
+            font-size: 12px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .stage-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+        }
+
+        /* 태블릿 및 모바일에서 스테이지 정보 조정 */
+        @media (max-width: 768px) {
+            .stage-info-area {
+                top: 10px;
+                right: 10px;
+                padding: 8px 15px;
+                min-width: 90px;
+            }
+
+            .stage-label {
+                font-size: 10px;
+            }
+
+            .stage-value {
+                font-size: 20px;
+            }
+        }
+
+        /* 작은 모바일에서 스테이지 정보 */
+        @media (max-width: 480px) {
+            .stage-info-area {
+                top: 5px;
+                right: 5px;
+                padding: 6px 12px;
+                min-width: 70px;
+                transform: scale(0.9);
+                transform-origin: top right;
+            }
+
+            .stage-label {
+                font-size: 9px;
+            }
+
+            .stage-value {
+                font-size: 16px;
+            }
+        }
+
+        /* 소모품 카드 영역 스타일 */
+        .consumable-area {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            z-index: 100;
+        }
+
+        .consumable-slot {
+            width: 80px;
+            height: 110px;
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .consumable-slot:hover {
+            border-color: rgba(255, 215, 0, 0.6);
+            background: rgba(255, 215, 0, 0.05);
+        }
+
+        /* 태블릿 및 모바일에서 소모품 영역 조정 */
+        @media (max-width: 768px) {
+            .consumable-area {
+                position: fixed;
+                bottom: 10px;
+                right: 10px;
+                padding: 10px;
+                gap: 8px;
+                transform: scale(0.85);
+                transform-origin: bottom right;
+            }
+
+            .consumable-slot {
+                width: 60px;
+                height: 85px;
+            }
+        }
+
         /* 작은 모바일 화면 */
         @media (max-width: 480px) {
             body {
@@ -776,6 +902,24 @@
             
             .card-name {
                 font-size: 8px !important;
+            }
+
+            /* 소모품 영역 모바일 최적화 */
+            .consumable-area {
+                position: fixed;
+                bottom: 80px;  /* 컨트롤 버튼 위로 */
+                right: 5px;
+                padding: 8px;
+                gap: 5px;
+                transform: scale(0.7);
+                transform-origin: bottom right;
+                background: rgba(0, 0, 0, 0.7);
+            }
+
+            .consumable-slot {
+                width: 50px;
+                height: 70px;
+                border-width: 1px;
             }
         }
         
@@ -1788,42 +1932,18 @@
                     </div>
                 </div>
                 
+                <!-- 스테이지 정보 영역 (우측 상단) -->
+                <div id="stage-info-area" class="stage-info-area">
+                    <div class="stage-info-content">
+                        <div class="stage-label">스테이지</div>
+                        <div class="stage-value"><span id="stage-display">1</span></div>
+                    </div>
+                </div>
+
                 <!-- 소모품 카드 영역 -->
-                <div id="consumable-area" style="
-                    position: absolute;
-                    bottom: 20px;
-                    right: 20px;
-                    display: flex;
-                    gap: 10px;
-                    padding: 15px;
-                    background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
-                    border: 2px solid rgba(255, 215, 0, 0.3);
-                    border-radius: 12px;
-                    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
-                    backdrop-filter: blur(5px);
-                ">
-                    <div id="consumable-slot-1" class="consumable-slot" style="
-                        width: 80px;
-                        height: 110px;
-                        border: 2px dashed rgba(255, 215, 0, 0.3);
-                        border-radius: 8px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                    "></div>
-                    <div id="consumable-slot-2" class="consumable-slot" style="
-                        width: 80px;
-                        height: 110px;
-                        border: 2px dashed rgba(255, 215, 0, 0.3);
-                        border-radius: 8px;
-                        display: flex;
-                        align-items: center;
-                        justify-content: center;
-                        cursor: pointer;
-                        transition: all 0.3s ease;
-                    "></div>
+                <div id="consumable-area" class="consumable-area">
+                    <div id="consumable-slot-1" class="consumable-slot"></div>
+                    <div id="consumable-slot-2" class="consumable-slot"></div>
                 </div>
                 
                 <div id="deck-info">

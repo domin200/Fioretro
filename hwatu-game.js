@@ -204,7 +204,7 @@ window.HWATU_CARDS = [
     { month: 8, type: '피', name: '피', points: 0, id: 32 },
     
     // 9월 - 국화
-    { month: 9, type: '열끗', name: '국화술잔(열끗/쌍피)', points: 10, id: 33, special: true },
+    { month: 9, type: '열끗', name: '9월 국화술잔', points: 10, id: 33, special: true },
     { month: 9, type: '청단', name: '청단', points: 10, id: 34 },
     { month: 9, type: '피', name: '피', points: 0, id: 35 },
     { month: 9, type: '피', name: '피', points: 0, id: 36 },
