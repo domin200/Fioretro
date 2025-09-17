@@ -1017,10 +1017,10 @@ function showDeckCardAnimation(card) {
         cardContainer.style.transform = 'rotateY(180deg) scale(1)';
     }, 650);
 
-    // 도착 사운드 재생 (0.1초 일찍)
-    setTimeout(() => {
-        playSound('SE/allow2.ogg');
-    }, 750);
+    // allow2 음소거 상태이므로 주석 처리
+    // setTimeout(() => {
+    //     playSound('SE/allow2.ogg');
+    // }, 750);
 
     // 애니메이션 후 제거
     setTimeout(() => {
@@ -1343,10 +1343,10 @@ function showHandToFloorAnimation(cardElement, card) {
         tempCard.style.transform = 'rotate(360deg) scale(1)';
     }, 400);
 
-    // 도착 사운드 재생 (0.1초 일찍)
-    setTimeout(() => {
-        playSound('SE/allow2.ogg');
-    }, 450);
+    // allow2 음소거 상태이므로 주석 처리
+    // setTimeout(() => {
+    //     playSound('SE/allow2.ogg');
+    // }, 450);
 
     // 애니메이션 후 제거
     setTimeout(() => {
@@ -1557,12 +1557,12 @@ function showInitialDealAnimation(card, destination, onComplete, cardIndex = 0, 
         cardContainer.style.transform = 'rotateY(180deg) scale(1)';
     }, 50);
     
-    // 도착 사운드 (바닥패로 갈 때만 allow2)
-    if (destination === 'floor') {
-        setTimeout(() => {
-            playSound('SE/allow2.ogg');
-        }, 550);
-    }
+    // allow2 음소거 상태이므로 주석 처리
+    // if (destination === 'floor') {
+    //     setTimeout(() => {
+    //         playSound('SE/allow2.ogg');
+    //     }, 550);
+    // }
     
     // 애니메이션 완료 후 정리
     setTimeout(() => {
@@ -2634,6 +2634,12 @@ function showMissionResult(success, score, isPerfectClear = false, earnedGold = 
 
     // 확인 버튼 클릭 핸들러
     const handleConfirm = () => {
+        // 스테이지 클리어 시 골드 효과음 재생
+        if (success) {
+            const goldSound = new Audio('se/gold_small.mp3');
+            goldSound.play().catch(e => console.log('골드 효과음 재생 실패:', e));
+        }
+
         message.remove();
         if (document.getElementById('mission-result-style')) {
             document.getElementById('mission-result-style').remove();
