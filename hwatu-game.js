@@ -2339,8 +2339,26 @@ function showGoStopPopup() {
                     cursor: pointer;
                     font-weight: bold;
                     transition: all 0.3s;
+                    position: relative;
                 " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
                     고
+                    <div style="
+                        position: absolute;
+                        top: -25px;
+                        left: 50%;
+                        transform: translateX(-50%);
+                        font-size: 12px;
+                        color: #ffd700;
+                        white-space: nowrap;
+                        background: rgba(0, 0, 0, 0.7);
+                        padding: 3px 8px;
+                        border-radius: 5px;
+                    ">
+                        ${gameState.goCount === 0 ? '1고: 보상+1' :
+                          gameState.goCount === 1 ? '2고: 보상+2' :
+                          gameState.goCount === 2 ? '3고: 보상×2' :
+                          gameState.goCount === 3 ? '4고: 보상×4' : ''}
+                    </div>
                 </button>
                 <button onclick="handleStop()" style="
                     padding: 15px 30px;
