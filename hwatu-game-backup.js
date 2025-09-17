@@ -2540,7 +2540,6 @@ function endRound() {
 }
 
 // 미션 결과 표시
-// 미션 결과 표시
 function showMissionResult(success, score, isPerfectClear = false, earnedGold = 0, interestGold = 0, clearGold = 0, goldEnhancementBonus = 0, usingTwoHearts = false, goReward = 0, goCount = 0, tripleGoBonus = 0) {
     // 승리/패배 효과음 재생
     const soundEffect = new Audio(success ? 'SE/397_win.mp3' : 'SE/405_lose.mp3');
@@ -2581,7 +2580,6 @@ function showMissionResult(success, score, isPerfectClear = false, earnedGold = 
         animation: missionPopupIn 0.5s ease;
     `;
 
-    // 기본 컨텐츠 생성
     message.innerHTML = `
         <div style="font-size: 36px; margin-bottom: 15px;">
             ${success ? '🎉 미션 성공!' : (usingTwoHearts ? '💕 두개의 심장!' : '💔 미션 실패!')}
@@ -2592,13 +2590,46 @@ function showMissionResult(success, score, isPerfectClear = false, earnedGold = 
         <div style="font-size: 28px; color: #ffd700; margin-bottom: 5px;">
             최종 점수: ${score}
         </div>
-        <div id="reward-container" style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.3); min-height: 20px;">
-        </div>
+        ${success && earnedGold > 0 ?
+            `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.3);">
+                ${clearGold > 0 ? `<div style="font-size: 18px; color: #ffd700; margin-bottom: 3px;">
+                    클리어 보상: +${clearGold}
+                </div>` : ''}
+                ${goReward > 0 ? `<div style="font-size: 18px; color: #ff6b6b; margin-bottom: 3px;">
+                    ${goCount}고 보상: +${goReward}
+                </div>` : ''}
+                ${tripleGoBonus > 0 ? `<div style="font-size: 16px; color: #ff9900; margin-bottom: 3px;">
+                    쓰리고 효과: +${tripleGoBonus}
+                </div>` : ''}
+                ${interestGold > 0 ? `<div style="font-size: 16px; color: #ffd700; margin-bottom: 3px; opacity: 0.9;">
+                    이자: +${interestGold}
+                </div>` : ''}
+                ${goldEnhancementBonus > 0 ? `<div style="font-size: 16px; color: #ffd700; margin-bottom: 3px; opacity: 0.9;">
+                    황 강화: +${goldEnhancementBonus}
+                </div>` : ''}
+                <div style="font-size: 20px; color: #ffd700; margin-top: 8px; font-weight: bold;">
+                    총 획득: +${earnedGold}
+                </div>
+            </div>` : ''}
+        <button id="mission-result-confirm" style="
+            margin-top: 15px;
+            padding: 10px 25px;
+            font-size: 18px;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.2);
+            color: white;
+            border: 2px solid white;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
+           onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
+            확인
+        </button>
     `;
-
+    
     // 애니메이션 CSS 추가
     const style = document.createElement('style');
-    style.id = 'mission-result-style';
     style.textContent = `
         @keyframes missionPopupIn {
             0% {
@@ -2618,134 +2649,53 @@ function showMissionResult(success, score, isPerfectClear = false, earnedGold = 
                 background: rgba(0, 0, 0, 0.5);
             }
         }
-        @keyframes fadeInReward {
-            0% {
-                opacity: 0;
-                transform: translateY(-10px);
-            }
-            100% {
-                opacity: 1;
-                transform: translateY(0);
-            }
-        }
     `;
     document.head.appendChild(style);
+
     document.body.appendChild(message);
 
-    // 확인 버튼 클릭 핸들러
-    const handleConfirm = () => {
+    // 확인 버튼 클릭 이벤트 처리
+    const confirmButton = document.getElementById('mission-result-confirm');
+    confirmButton.onclick = () => {
         message.remove();
-        if (document.getElementById('mission-result-style')) {
-            document.getElementById('mission-result-style').remove();
-        }
+        style.remove();
         if (overlay) {
             overlay.remove();
         }
 
         // 성공/실패에 따른 처리
         if (success) {
+            // 성공: 상점 표시
             showUpgradeSelection();
         } else if (usingTwoHearts) {
+            // 두개의 심장 사용: 다음 스테이지로 진행
             showUpgradeSelection();
         } else {
+            // 실패: 게임 초기화
+            // 스테이지 1로 돌아올 때 기본 색상으로 복원
             if (typeof updateBackgroundColors === 'function') {
                 updateBackgroundColors(1);
             }
+
+            // 스테이지와 기본값 먼저 초기화
             gameState.stage = 1;
-            gameState.targetScore = 25;
-            gameState.discardsLeft = 4;
-            gameState.gold = 0;
+            gameState.targetScore = 25;  // 초기값 25
+            gameState.discardsLeft = 4;  // 버리기 횟수 초기화
+            gameState.gold = 0;  // 소지금 초기화
+
+            // 업그레이드 초기화
             gameState.upgrades = [];
+
+            // 보스 정보 초기화
             gameState.currentBoss = null;
+
+            // 그 다음 게임 초기화
             initFullGame();
             updateDisplay();
         }
     };
-
-    // 보상 순차 표시 함수
-    if (success && earnedGold > 0) {
-        const rewardContainer = document.getElementById('reward-container');
-        const rewards = [];
-
-        // 보상 목록 준비
-        if (clearGold > 0) rewards.push({ text: `클리어 보상: +${clearGold}`, color: '#ffd700', size: '18px' });
-        if (goReward > 0) rewards.push({ text: `${goCount}고 보상: +${goReward}`, color: '#ff6b6b', size: '18px' });
-        if (tripleGoBonus > 0) rewards.push({ text: `쓰리고 효과: +${tripleGoBonus}`, color: '#ff9900', size: '16px' });
-        if (interestGold > 0) rewards.push({ text: `이자: +${interestGold}`, color: '#ffd700', size: '16px' });
-        if (goldEnhancementBonus > 0) rewards.push({ text: `황 강화: +${goldEnhancementBonus}`, color: '#ffd700', size: '16px' });
-
-        // 보상을 하나씩 표시
-        let currentIndex = 0;
-        const showNextReward = () => {
-            if (currentIndex < rewards.length) {
-                const reward = rewards[currentIndex];
-                const rewardDiv = document.createElement('div');
-                rewardDiv.style.cssText = `
-                    font-size: ${reward.size};
-                    color: ${reward.color};
-                    margin-bottom: 3px;
-                    opacity: 0;
-                    animation: fadeInReward 0.5s ease forwards;
-                `;
-                rewardDiv.textContent = reward.text;
-                rewardContainer.appendChild(rewardDiv);
-                currentIndex++;
-                setTimeout(showNextReward, 400); // 400ms 간격으로 표시
-            } else {
-                // 모든 보상 표시 후 버튼 추가
-                setTimeout(() => {
-                    const buttonContainer = document.createElement('div');
-                    buttonContainer.innerHTML = `
-                        <button id="mission-result-confirm" style="
-                            margin-top: 15px;
-                            padding: 10px 25px;
-                            font-size: 18px;
-                            font-weight: bold;
-                            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
-                            color: #333;
-                            border: 2px solid #ffd700;
-                            border-radius: 10px;
-                            cursor: pointer;
-                            transition: all 0.3s ease;
-                            opacity: 0;
-                            animation: fadeInReward 0.5s ease forwards;
-                        " onmouseover="this.style.transform='scale(1.05)'"
-                           onmouseout="this.style.transform='scale(1)'"">
-                            총 획득: +${earnedGold}
-                        </button>
-                    `;
-                    message.appendChild(buttonContainer);
-
-                    // 버튼 클릭 이벤트 처리
-                    document.getElementById('mission-result-confirm').onclick = handleConfirm;
-                }, 300);
-            }
-        };
-        showNextReward();
-    } else {
-        // 실패 시 바로 버튼 표시
-        const buttonContainer = document.createElement('div');
-        buttonContainer.innerHTML = `
-            <button id="mission-result-confirm" style="
-                margin-top: 15px;
-                padding: 10px 25px;
-                font-size: 18px;
-                font-weight: bold;
-                background: rgba(255, 255, 255, 0.2);
-                color: white;
-                border: 2px solid white;
-                border-radius: 10px;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            " onmouseover="this.style.background='rgba(255, 255, 255, 0.3)'"
-               onmouseout="this.style.background='rgba(255, 255, 255, 0.2)'">
-                확인
-            </button>
-        `;
-        message.appendChild(buttonContainer);
-        document.getElementById('mission-result-confirm').onclick = handleConfirm;
-    }
 }
+
 // 화면 업데이트
 function updateDisplay() {
     // 점수 계산 (새 시스템)
