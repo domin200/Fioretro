@@ -1063,7 +1063,6 @@ class ShopManager {
                 const deckElement = document.getElementById('deck-info');
                 if (deckElement && deckElement.offsetParent !== null) {
                     const deckRect = deckElement.getBoundingClientRect();
-                    const containerRect = container.getBoundingClientRect();
 
                     // 현재 중앙 위치에서 덱 위치까지의 거리 계산
                     const currentX = window.innerWidth / 2;
@@ -1074,14 +1073,21 @@ class ShopManager {
                     const deltaX = targetX - currentX;
                     const deltaY = targetY - currentY;
 
-                    // 카드를 직접 이동 (현재 scale(1)에서 시작)
-                    cardElement.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
-                    cardElement.style.transform = `scale(0.1) translate(${deltaX * 10}px, ${deltaY * 10}px) rotate(360deg)`;
-                    cardElement.style.opacity = '0';
+                    // 2단계 애니메이션으로 분리
+                    // 1단계: 살짝 뜨면서 회전 시작
+                    cardElement.style.transition = 'transform 0.3s ease-out';
+                    cardElement.style.transform = 'scale(1.1) translateY(-20px) rotate(10deg)';
+
+                    // 2단계: 덱으로 이동하면서 크기 줄이기
+                    setTimeout(() => {
+                        cardElement.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease 0.4s';
+                        cardElement.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.15) rotate(360deg)`;
+                        cardElement.style.opacity = '0';
+                    }, 300);
                 } else {
                     // 덱 요소를 찾을 수 없으면 오른쪽 하단으로
-                    cardElement.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
-                    cardElement.style.transform = 'scale(0) translate(400px, 400px) rotate(360deg)';
+                    cardElement.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
+                    cardElement.style.transform = 'translate(400px, 400px) scale(0) rotate(360deg)';
                     cardElement.style.opacity = '0';
                 }
             }
@@ -1089,7 +1095,7 @@ class ShopManager {
             setTimeout(() => {
                 container.remove();
                 if (callback) callback();
-            }, 900);
+            }, 1400);
         }, 2200);
     }
     
