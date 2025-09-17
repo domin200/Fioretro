@@ -172,6 +172,10 @@
             background: rgba(255, 255, 255, 0.05);
             border-radius: 6px;
             border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
         
         .score-label {
@@ -1843,7 +1847,7 @@
                     </div>
                     <!-- 모바일: 목표점수, 내점수, 배수 한 줄 -->
                     <div class="score-row mobile-row-1">
-                        <div class="score-item-half mobile-target" style="display: none;">
+                        <div class="score-item-half mobile-target" style="display: none; text-align: center;">
                             <div class="score-label">목표</div>
                             <div class="score-value"><span id="target-mobile">50</span></div>
                         </div>
