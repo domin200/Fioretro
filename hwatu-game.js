@@ -5106,6 +5106,8 @@ function updateConsumableCards() {
                 <div class="consumable-card-inner" style="
                     width: 100%;
                     height: 100%;
+                    background: rgba(255, 255, 255, 0.75);
+                    border-radius: 6px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -5113,7 +5115,7 @@ function updateConsumableCards() {
                     position: relative;
                 ">
                     <div style="font-size: 30px; margin-bottom: 5px;">${card.icon}</div>
-                    <div style="font-size: 10px; color: #ffd700; text-align: center;">${card.name}</div>
+                    <div style="font-size: 10px; color: #333; text-align: center; font-weight: 600;">${card.name}</div>
                 </div>
             `;
             slot1.onclick = () => selectConsumableCard(0);
@@ -5137,6 +5139,8 @@ function updateConsumableCards() {
                 <div class="consumable-card-inner" style="
                     width: 100%;
                     height: 100%;
+                    background: rgba(255, 255, 255, 0.75);
+                    border-radius: 6px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -5144,7 +5148,7 @@ function updateConsumableCards() {
                     position: relative;
                 ">
                     <div style="font-size: 30px; margin-bottom: 5px;">${card.icon}</div>
-                    <div style="font-size: 10px; color: #ffd700; text-align: center;">${card.name}</div>
+                    <div style="font-size: 10px; color: #333; text-align: center; font-weight: 600;">${card.name}</div>
                 </div>
             `;
             slot2.onclick = () => selectConsumableCard(1);
