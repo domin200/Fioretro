@@ -2731,14 +2731,14 @@ function updateDisplay() {
 
         // 10배 달성 여부 체크
         const is10x = totalScore >= targetScore * 10;
-        const is8x = totalScore >= targetScore * 8;  // 80% 이상일 때 표시
+        const is5x = totalScore >= targetScore * 5;  // 50% 이상일 때 표시
 
         let displayText = totalScore.toString();
         let color = '#64ff64';  // 기본 녹색
         if (is10x) {
             displayText += ' ⭐';  // 10배 달성
             color = '#ffd700';  // 금색
-        } else if (is8x) {
+        } else if (is5x) {
             displayText += ' ✨';  // 10배에 가까움
             color = '#90ee90';  // 연두색
         }
