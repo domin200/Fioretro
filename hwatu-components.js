@@ -1021,3 +1021,11 @@ class TooltipComponent {
         };
     }
 }
+
+// 전역 객체로 내보내기
+window.PopupComponent = PopupComponent;
+window.CardSelectionComponent = CardSelectionComponent;
+window.OrbCardSelectionComponent = OrbCardSelectionComponent;
+window.DOMUtils = DOMUtils;
+window.AnimationUtils = AnimationUtils;
+window.TooltipUtils = TooltipUtils;
