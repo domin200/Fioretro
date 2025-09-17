@@ -55,7 +55,8 @@
             padding: 60px 10px;
             color: white;
             position: relative;
-            overflow: hidden;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         /* CRT 효과 1: 곡면 착시 (화면 가장자리 어둡게) */
@@ -201,10 +202,18 @@
         
         /* 태블릿 및 모바일 기본 */
         @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+            }
+
             #game-container {
                 display: flex;
                 flex-direction: column;
-                height: 100vh;
+                height: auto;
+                min-height: calc(100vh - 20px);
                 padding: 10px;
             }
             
@@ -622,12 +631,16 @@
         /* 작은 모바일 화면 */
         @media (max-width: 480px) {
             body {
-                padding: 0;
+                padding: 5px;
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
             }
-            
+
             #game-container {
                 width: 100%;
-                height: 100vh;
+                height: auto;
+                min-height: calc(100vh - 10px);
                 border-radius: 0;
                 padding: 10px;
             }
