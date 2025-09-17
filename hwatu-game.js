@@ -2525,6 +2525,7 @@ function updateDisplay() {
     // 점수 정보 (숫자 변경 시 애니메이션 효과) - 배수 적용 전 점수 표시
     const scoreElement = document.getElementById('score');
     const targetElement = document.getElementById('target');
+    const targetMobileElement = document.getElementById('target-mobile');
     const stageElement = document.getElementById('stage-num');
     
     if (scoreElement.textContent !== gameState.score.toString()) {
@@ -2534,6 +2535,9 @@ function updateDisplay() {
     }
     
     targetElement.textContent = gameState.targetScore;
+    if (targetMobileElement) {
+        targetMobileElement.textContent = gameState.targetScore;
+    }
     stageElement.textContent = gameState.stage;
     
     // 배수 표시
@@ -2552,39 +2556,61 @@ function updateDisplay() {
     
     // 최종 점수 업데이트 (점수 × 배수)
     const totalScoreElement = document.getElementById('total-score');
-    if (totalScoreElement) {
+    const totalScoreMobileElement = document.getElementById('total-score-mobile');
+    if (totalScoreElement || totalScoreMobileElement) {
         const totalScore = gameState.totalScore;
         const targetScore = gameState.targetScore;
-        
+
         // 10배 달성 여부 체크
         const is10x = totalScore >= targetScore * 10;
         const is8x = totalScore >= targetScore * 8;  // 80% 이상일 때 표시
-        
+
         let displayText = totalScore.toString();
+        let color = '#64ff64';  // 기본 녹색
         if (is10x) {
             displayText += ' ⭐';  // 10배 달성
-            totalScoreElement.style.color = '#ffd700';  // 금색
+            color = '#ffd700';  // 금색
         } else if (is8x) {
             displayText += ' ✨';  // 10배에 가까움
-            totalScoreElement.style.color = '#90ee90';  // 연두색
-        } else {
-            totalScoreElement.style.color = '#64ff64';  // 기본 녹색
+            color = '#90ee90';  // 연두색
         }
-        
-        if (totalScoreElement.textContent !== displayText) {
-            totalScoreElement.style.animation = 'pulse 0.5s ease';
-            totalScoreElement.textContent = displayText;
-            setTimeout(() => totalScoreElement.style.animation = '', 500);
+
+        // 데스크탑 요소 업데이트
+        if (totalScoreElement) {
+            totalScoreElement.style.color = color;
+            if (totalScoreElement.textContent !== displayText) {
+                totalScoreElement.style.animation = 'pulse 0.5s ease';
+                totalScoreElement.textContent = displayText;
+                setTimeout(() => totalScoreElement.style.animation = '', 500);
+            }
+        }
+
+        // 모바일 요소 업데이트
+        if (totalScoreMobileElement) {
+            totalScoreMobileElement.style.color = color;
+            if (totalScoreMobileElement.textContent !== displayText) {
+                totalScoreMobileElement.style.animation = 'pulse 0.5s ease';
+                totalScoreMobileElement.textContent = displayText;
+                setTimeout(() => totalScoreMobileElement.style.animation = '', 500);
+            }
         }
     }
     
     // 소지금 업데이트
     const goldElement = document.getElementById('gold-amount');
+    const goldMobileElement = document.getElementById('gold-amount-mobile');
     if (goldElement) {
         if (goldElement.textContent !== gameState.gold.toString()) {
             goldElement.style.animation = 'pulse 0.5s ease';
             goldElement.textContent = gameState.gold;
             setTimeout(() => goldElement.style.animation = '', 500);
+        }
+    }
+    if (goldMobileElement) {
+        if (goldMobileElement.textContent !== gameState.gold.toString()) {
+            goldMobileElement.style.animation = 'pulse 0.5s ease';
+            goldMobileElement.textContent = gameState.gold;
+            setTimeout(() => goldMobileElement.style.animation = '', 500);
         }
     }
     

@@ -157,6 +157,14 @@
             gap: 10px;
         }
         
+        /* 데스크탑 전용 표시 */
+        @media (min-width: 769px) {
+            .mobile-row-1 .mobile-target,
+            .mobile-row-2 {
+                display: none !important;
+            }
+        }
+
         .score-item-half {
             flex: 1;
             text-align: center;
@@ -235,6 +243,16 @@
             #score-board {
                 order: -1;
                 margin-bottom: 10px;
+            }
+
+            /* 모바일에서 점수 레이아웃 재구성 */
+            #score-board .mobile-row-1 .mobile-target,
+            #score-board .mobile-row-2 {
+                display: flex !important;
+            }
+
+            #score-board .desktop-only {
+                display: none !important;
             }
             
             /* 플레이 컨테이너 */
@@ -1815,7 +1833,7 @@
             </div>
             
             <div id="score-board">
-                    <div class="score-item">
+                    <div class="score-item desktop-only">
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
                             <div class="score-label" style="flex: 1;">스테이지 <span id="stage-num">1</span></div>
                             <div class="score-label" style="flex: 2; text-align: center;">목표점수</div>
@@ -1823,7 +1841,12 @@
                         </div>
                         <div class="score-value" id="target">50</div>
                     </div>
-                    <div class="score-row">
+                    <!-- 모바일: 목표점수, 내점수, 배수 한 줄 -->
+                    <div class="score-row mobile-row-1">
+                        <div class="score-item-half mobile-target" style="display: none;">
+                            <div class="score-label">목표</div>
+                            <div class="score-value"><span id="target-mobile">50</span></div>
+                        </div>
                         <div class="score-item-half">
                             <div class="score-label">내점수</div>
                             <div class="score-value" id="score">0</div>
@@ -1833,13 +1856,29 @@
                             <div class="score-value" id="multiplier">x1</div>
                         </div>
                     </div>
-                    <div class="score-item" style="background: linear-gradient(135deg, rgba(100, 255, 100, 0.1) 0%, rgba(100, 255, 100, 0.05) 100%); border: 1px solid rgba(100, 255, 100, 0.3);">
+                    <!-- 모바일: 최종점수, 소지금 한 줄 -->
+                    <div class="score-row mobile-row-2" style="display: none;">
+                        <div class="score-item-half" style="background: linear-gradient(135deg, rgba(100, 255, 100, 0.1) 0%, rgba(100, 255, 100, 0.05) 100%); border: 1px solid rgba(100, 255, 100, 0.3);">
+                            <div class="score-label" style="color: #64ff64;">최종 점수</div>
+                            <div class="score-value" style="color: #64ff64; font-size: 18px; font-weight: bold;">
+                                <span id="total-score-mobile">0</span>
+                            </div>
+                        </div>
+                        <div class="score-item-half" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 255, 0, 0.05) 100%); border: 1px solid rgba(255, 215, 0, 0.3);">
+                            <div class="score-label" style="color: #ffd700;">소지금</div>
+                            <div class="score-value" style="color: #ffd700; font-size: 16px;">
+                                <span id="gold-amount-mobile">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 데스크탑용 -->
+                    <div class="score-item desktop-only" style="background: linear-gradient(135deg, rgba(100, 255, 100, 0.1) 0%, rgba(100, 255, 100, 0.05) 100%); border: 1px solid rgba(100, 255, 100, 0.3);">
                         <div class="score-label" style="color: #64ff64;">최종 점수</div>
                         <div class="score-value" style="color: #64ff64; font-size: 24px; font-weight: bold;">
                             <span id="total-score">0</span>
                         </div>
                     </div>
-                    <div class="score-item" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 255, 0, 0.05) 100%); border: 1px solid rgba(255, 215, 0, 0.3);">
+                    <div class="score-item desktop-only" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 255, 0, 0.05) 100%); border: 1px solid rgba(255, 215, 0, 0.3);">
                         <div class="score-label" style="color: #ffd700;">소지금</div>
                         <div class="score-value" style="color: #ffd700; font-size: 20px;">
                             <span id="gold-amount">0</span>
