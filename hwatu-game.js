@@ -2327,8 +2327,7 @@ function showGoStopPopup() {
             box-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
             min-width: 300px;
         ">
-            ${gameState.goCount > 0 ? `<div style="color: #ffd700; font-size: 24px; margin-bottom: 25px;">${gameState.goCount}고</div>` : ''}
-            <div style="display: flex; gap: 20px; justify-content: center;">
+            <div style="display: flex; gap: 20px; justify-content: center; margin-top: 10px;">
                 <button onclick="handleGo()" style="
                     padding: 15px 30px;
                     font-size: 18px;
