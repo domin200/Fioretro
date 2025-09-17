@@ -949,7 +949,7 @@ class ShopManager {
             transform: scale(0);
             animation: enhanceCardAppear 0.5s ease forwards;
             border-radius: 12px;
-            overflow: visible;
+            overflow: hidden;
         `;
         
         // 강화 효과 적용 (0.5초 후)
@@ -1026,13 +1026,39 @@ class ShopManager {
             playSound('SE/powerup.mp3');
         }
         
-        // 애니메이션 완료 후 처리
+        // 애니메이션 완료 후 처리 - 덱으로 이동
         setTimeout(() => {
-            container.style.animation = 'fadeOut 0.3s ease forwards';
+            // 무극의 보주 (카드 제거)인 경우
+            if (item.id === 'void_orb' || item.requiresDeckCard) {
+                // 위로 날아가며 사라지는 애니메이션
+                cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                cardElement.style.transform = 'translateY(-500px) scale(0.1) rotate(720deg)';
+                cardElement.style.opacity = '0';
+            } else {
+                // 강화 보주들 - 덱으로 이동 애니메이션
+                const deckElement = document.getElementById('deck-info');
+                if (deckElement && deckElement.offsetParent !== null) {
+                    const deckRect = deckElement.getBoundingClientRect();
+                    const containerRect = container.getBoundingClientRect();
+
+                    const deltaX = deckRect.left + deckRect.width/2 - containerRect.left - 100; // 카드 중심 보정
+                    const deltaY = deckRect.top + deckRect.height/2 - containerRect.top - 160; // 카드 중심 보정
+
+                    cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                    cardElement.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.1) rotate(360deg)`;
+                    cardElement.style.opacity = '0';
+                } else {
+                    // 덱 요소를 찾을 수 없으면 오른쪽 하단으로
+                    cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                    cardElement.style.transform = 'translate(300px, 300px) scale(0) rotate(360deg)';
+                    cardElement.style.opacity = '0';
+                }
+            }
+
             setTimeout(() => {
                 container.remove();
                 if (callback) callback();
-            }, 300);
+            }, 800);
         }, 2200);
     }
     
