@@ -3761,41 +3761,9 @@ function showUpgradeSelection() {
         </div>
         
         <!-- 소모품 카드 영역 (우측 하단) -->
-        <div id="consumable-area" style="
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            padding: 15px;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
-            border: 2px solid rgba(255, 215, 0, 0.3);
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-        ">
-            <div id="consumable-slot-1" class="consumable-slot" style="
-                width: 80px;
-                height: 110px;
-                border: 2px dashed rgba(255, 215, 0, 0.3);
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            "></div>
-            <div id="consumable-slot-2" class="consumable-slot" style="
-                width: 80px;
-                height: 110px;
-                border: 2px dashed rgba(255, 215, 0, 0.3);
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            "></div>
+        <div id="consumable-area" class="consumable-area">
+            <div id="consumable-slot-1" class="consumable-slot"></div>
+            <div id="consumable-slot-2" class="consumable-slot"></div>
         </div>
         
         <!-- 덱 정보 -->
@@ -5510,41 +5478,9 @@ function proceedToNextStage() {
         </div>
         
         <!-- 소모품 카드 영역 -->
-        <div id="consumable-area" style="
-            position: absolute;
-            bottom: 20px;
-            right: 20px;
-            display: flex;
-            gap: 10px;
-            padding: 15px;
-            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
-            border: 2px solid rgba(255, 215, 0, 0.3);
-            border-radius: 12px;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
-            backdrop-filter: blur(5px);
-        ">
-            <div id="consumable-slot-1" class="consumable-slot" style="
-                width: 80px;
-                height: 110px;
-                border: 2px dashed rgba(255, 215, 0, 0.3);
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            "></div>
-            <div id="consumable-slot-2" class="consumable-slot" style="
-                width: 80px;
-                height: 110px;
-                border: 2px dashed rgba(255, 215, 0, 0.3);
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                cursor: pointer;
-                transition: all 0.3s ease;
-            "></div>
+        <div id="consumable-area" class="consumable-area">
+            <div id="consumable-slot-1" class="consumable-slot"></div>
+            <div id="consumable-slot-2" class="consumable-slot"></div>
         </div>
         
         <div id="deck-info">
