@@ -2315,9 +2315,9 @@ function showGoStopPopup() {
     const popupHTML = `
         <div id="goStopPopup" style="
             position: fixed;
-            top: 50%;
+            bottom: 180px;
             left: 50%;
-            transform: translate(-50%, -50%);
+            transform: translateX(-50%);
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             border: 3px solid #ffd700;
             border-radius: 20px;
@@ -2326,6 +2326,7 @@ function showGoStopPopup() {
             text-align: center;
             box-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
             min-width: 300px;
+            max-width: 90%;
         ">
             <h2 style="color: #ffd700; margin-bottom: 20px; font-size: 24px;">목표 달성!</h2>
             <div style="color: white; margin-bottom: 25px;">
@@ -2371,7 +2372,7 @@ function showGoStopPopup() {
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0, 0, 0, 0.7);
+            background: rgba(0, 0, 0, 0.3);
             z-index: 10000;
         "></div>
     `;
@@ -2452,11 +2453,12 @@ function endRound() {
         
         // 3. 스테이지 클리어 보상 지급 (3, 4, 5 반복)
         const goldPattern = [3, 4, 5];
-        let clearGold = goldPattern[(gameState.stage - 1) % 3];
+        let baseClearGold = goldPattern[(gameState.stage - 1) % 3];
 
         // '고' 횟수에 따른 보상 계산
         let goBonus = 0;
         let goMultiplier = 1;
+        let goTotalReward = 0;
 
         if (gameState.goCount >= 1) {
             goBonus += 1;  // 1고: +1 골드
@@ -2473,8 +2475,12 @@ function endRound() {
             showEnhancementEffect(`4고 대박! 보상 4배!`, '#ffd700');
         }
 
-        // 고 보너스 적용
-        clearGold = (clearGold + goBonus) * goMultiplier;
+        // 고 보상 계산 (기본 클리어 보상과 별도)
+        if (gameState.goCount > 0) {
+            goTotalReward = (baseClearGold + goBonus) * goMultiplier - baseClearGold;
+        }
+
+        let clearGold = baseClearGold + goTotalReward;
 
         const isPerfectClear = false;  // 10배 보상 시스템 제거
         
@@ -2496,11 +2502,11 @@ function endRound() {
         }
 
         gameState.gold += clearGold + tripleGoBonus;
-        
+
         // 총 획득 소지금 (이자 + 황 강화 보너스 + 클리어 보상 + 쓰리고 보너스)
         const totalEarnedGold = interestGold + goldEnhancementBonus + clearGold + tripleGoBonus;
-        
-        showMissionResult(true, gameState.totalScore, isPerfectClear, totalEarnedGold, interestGold, clearGold, goldEnhancementBonus);
+
+        showMissionResult(true, gameState.totalScore, isPerfectClear, totalEarnedGold, interestGold, baseClearGold, goldEnhancementBonus, false, goTotalReward, gameState.goCount, tripleGoBonus);
 
         // 소지금 UI 업데이트를 먼저 완료
         updateDisplay();
@@ -2526,7 +2532,7 @@ function endRound() {
 }
 
 // 미션 결과 표시
-function showMissionResult(success, score, isPerfectClear = false, earnedGold = 0, interestGold = 0, clearGold = 0, goldEnhancementBonus = 0, usingTwoHearts = false) {
+function showMissionResult(success, score, isPerfectClear = false, earnedGold = 0, interestGold = 0, clearGold = 0, goldEnhancementBonus = 0, usingTwoHearts = false, goReward = 0, goCount = 0, tripleGoBonus = 0) {
     // 승리/패배 효과음 재생
     const soundEffect = new Audio(success ? 'SE/397_win.mp3' : 'SE/405_lose.mp3');
     soundEffect.play().catch(e => console.log('효과음 재생 실패:', e));
@@ -2579,7 +2585,13 @@ function showMissionResult(success, score, isPerfectClear = false, earnedGold = 
         ${success && earnedGold > 0 ?
             `<div style="margin-top: 10px; padding-top: 10px; border-top: 1px solid rgba(255, 255, 255, 0.3);">
                 ${clearGold > 0 ? `<div style="font-size: 18px; color: #ffd700; margin-bottom: 3px;">
-                    클리어 보상: +${clearGold}${isPerfectClear ? ' ⭐' : ''}
+                    클리어 보상: +${clearGold}
+                </div>` : ''}
+                ${goReward > 0 ? `<div style="font-size: 18px; color: #ff6b6b; margin-bottom: 3px;">
+                    ${goCount}고 보상: +${goReward}
+                </div>` : ''}
+                ${tripleGoBonus > 0 ? `<div style="font-size: 16px; color: #ff9900; margin-bottom: 3px;">
+                    쓰리고 효과: +${tripleGoBonus}
                 </div>` : ''}
                 ${interestGold > 0 ? `<div style="font-size: 16px; color: #ffd700; margin-bottom: 3px; opacity: 0.9;">
                     이자: +${interestGold}
@@ -6255,19 +6267,19 @@ window.onload = () => {
     
     // 테스트용 강화 제거됨
     
-    // 테스트용 키보드 이벤트 (q 키로 소지금 +1)
+    // 테스트용 키보드 이벤트 (q 키로 소지금 +1, w 키로 고/스톱 팝업)
     document.addEventListener('keydown', (e) => {
         if (e.key === 'q' || e.key === 'Q') {
             gameState.gold++;
-            
+
             // gameStateManager와 동기화
             if (typeof gameStateManager !== 'undefined') {
                 gameStateManager.state.gold = gameState.gold;
             }
-            
+
             // 화면 업데이트
             updateDisplay();
-            
+
             // 시각적 피드백
             const goldElement = document.getElementById('gold-amount');
             if (goldElement) {
@@ -6276,8 +6288,14 @@ window.onload = () => {
                     goldElement.style.color = '#ffd700';
                 }, 300);
             }
-            
+
             console.log('테스트: 소지금 +1 (현재:', gameState.gold + ')');
+        } else if (e.key === 'w' || e.key === 'W') {
+            // 고/스톱 팝업 테스트
+            if (!gameState.goStopPopupShown) {
+                showGoStopPopup();
+                console.log('테스트: 고/스톱 팝업 표시');
+            }
         }
     });
     
