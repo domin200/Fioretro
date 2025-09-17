@@ -1028,12 +1028,34 @@ class ShopManager {
         
         // 애니메이션 완료 후 처리 - 덱으로 이동
         setTimeout(() => {
+            // 애니메이션 초기화 (기존 animation 제거)
+            cardElement.style.animation = 'none';
+
             // 무극의 보주 (카드 제거)인 경우
-            if (item.id === 'void_orb' || item.requiresDeckCard) {
-                // 위로 날아가며 사라지는 애니메이션
-                cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-                cardElement.style.transform = 'translateY(-500px) scale(0.1) rotate(720deg)';
-                cardElement.style.opacity = '0';
+            if (item.id === 'void_orb') {
+                // 빨간 X 표시 추가
+                const removeEffect = DOMUtils.createElement('div', {
+                    style: {
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        fontSize: '120px',
+                        color: '#ff0000',
+                        fontWeight: 'bold',
+                        textShadow: '0 0 20px rgba(255, 0, 0, 0.8)',
+                        zIndex: 10
+                    },
+                    textContent: '✖'
+                });
+                cardElement.appendChild(removeEffect);
+
+                // 0.3초 후 위로 날아가며 사라지는 애니메이션
+                setTimeout(() => {
+                    container.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                    container.style.transform = 'translate(-50%, -50%) translateY(-800px) scale(0.1) rotate(720deg)';
+                    container.style.opacity = '0';
+                }, 300);
             } else {
                 // 강화 보주들 - 덱으로 이동 애니메이션
                 const deckElement = document.getElementById('deck-info');
@@ -1041,24 +1063,24 @@ class ShopManager {
                     const deckRect = deckElement.getBoundingClientRect();
                     const containerRect = container.getBoundingClientRect();
 
-                    const deltaX = deckRect.left + deckRect.width/2 - containerRect.left - 100; // 카드 중심 보정
-                    const deltaY = deckRect.top + deckRect.height/2 - containerRect.top - 160; // 카드 중심 보정
+                    const deltaX = deckRect.left + deckRect.width/2 - containerRect.left;
+                    const deltaY = deckRect.top + deckRect.height/2 - containerRect.top;
 
-                    cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-                    cardElement.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.1) rotate(360deg)`;
-                    cardElement.style.opacity = '0';
+                    container.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                    container.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(0.1) rotate(360deg)`;
+                    container.style.opacity = '0';
                 } else {
                     // 덱 요소를 찾을 수 없으면 오른쪽 하단으로
-                    cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-                    cardElement.style.transform = 'translate(300px, 300px) scale(0) rotate(360deg)';
-                    cardElement.style.opacity = '0';
+                    container.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                    container.style.transform = 'translate(calc(-50% + 400px), calc(-50% + 400px)) scale(0) rotate(360deg)';
+                    container.style.opacity = '0';
                 }
             }
 
             setTimeout(() => {
                 container.remove();
                 if (callback) callback();
-            }, 800);
+            }, 900);
         }, 2200);
     }
     
