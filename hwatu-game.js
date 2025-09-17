@@ -1,3 +1,32 @@
+// 게임 상수 정의
+const GAME_CONSTANTS = {
+    // 점수 관련
+    CHODAN_BLESSING_POINTS: 5,
+    GWANGBAK_CHARM_MULTIPLIER: 2,
+    GWANG_38_BONUS: 10,
+    BASE_MULTIPLIER_HIGH: 20,
+
+    // 애니메이션 관련
+    ANIMATION_DELAY: 500,
+    CARD_FLIP_DURATION: 600,
+    POPUP_DURATION: 2500,
+    FADE_DURATION: 300,
+
+    // 오디오 관련
+    AUDIO_VOLUME_ALLOW1: 1.0,
+    AUDIO_VOLUME_ALLOW2: 0.5,
+
+    // 게임 설정
+    INITIAL_DECK_SIZE: 48,
+    INITIAL_HAND_SIZE: 10,
+    INITIAL_FLOOR_SIZE: 8,
+    DISCARD_LIMIT: 4,
+
+    // UI 관련
+    BOSS_INTRO_DURATION: 3000,
+    MESSAGE_DISPLAY_TIME: 2000
+};
+
 // 사운드 프리로드 및 재생 시스템
 let allow1Audio = null;
 let allow2Audio = null;
