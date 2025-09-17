@@ -2315,9 +2315,9 @@ function showGoStopPopup() {
     const popupHTML = `
         <div id="goStopPopup" style="
             position: fixed;
-            bottom: 180px;
+            top: 50%;
             left: 50%;
-            transform: translateX(-50%);
+            transform: translate(-50%, -50%);
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
             border: 3px solid #ffd700;
             border-radius: 20px;
@@ -2326,16 +2326,11 @@ function showGoStopPopup() {
             text-align: center;
             box-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
             min-width: 300px;
-            max-width: 90%;
         ">
             <h2 style="color: #ffd700; margin-bottom: 20px; font-size: 24px;">목표 달성!</h2>
             <div style="color: white; margin-bottom: 25px;">
                 <div style="font-size: 20px; margin-bottom: 10px;">현재 점수: ${gameState.totalScore}</div>
                 ${gameState.goCount > 0 ? `<div style="color: #ffd700; font-size: 18px; margin-bottom: 10px;">${gameState.goCount}고 진행중</div>` : ''}
-                <div style="font-size: 14px; color: #aaa; margin-top: 15px;">
-                    고: 계속 진행 (보상 증가)<br>
-                    스톱: 현재 보상으로 종료
-                </div>
             </div>
             <div style="display: flex; gap: 20px; justify-content: center;">
                 <button onclick="handleGo()" style="
