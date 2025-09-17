@@ -59,7 +59,7 @@
             overflow-y: auto;
         }
 
-        /* CRT 효과 1: 곡면 착시 (화면 가장자리 어둡게) */
+        /* CRT 효과 1: 곡면 착시 (화면 가장자리 어둡게) - 30% 약하게 */
         body::before {
             content: "";
             position: fixed;
@@ -72,10 +72,10 @@
             background: radial-gradient(ellipse at center,
                 transparent 0%,
                 transparent 40%,
-                rgba(0,0,0,0.4) 100%);
+                rgba(0,0,0,0.28) 100%);
         }
 
-        /* CRT 효과 2: 스캔라인 */
+        /* CRT 효과 2: 스캔라인 - 30% 약하게 */
         body::after {
             content: "";
             position: fixed;
@@ -88,15 +88,15 @@
             background-image:
                 repeating-linear-gradient(
                     0deg,
-                    rgba(0, 0, 0, 0.25) 0px,
-                    rgba(0, 0, 0, 0.25) 1px,
+                    rgba(0, 0, 0, 0.175) 0px,
+                    rgba(0, 0, 0, 0.175) 1px,
                     transparent 1px,
                     transparent 2px
                 );
-            opacity: 1;
+            opacity: 0.7;
         }
 
-        /* CRT 효과 3: RGB 서브픽셀 (별도 요소) */
+        /* CRT 효과 3: RGB 서브픽셀 (별도 요소) - 30% 약하게 */
         #crt-rgb {
             content: "";
             position: fixed;
@@ -108,12 +108,13 @@
             z-index: 10002;
             background-image: repeating-linear-gradient(
                 90deg,
-                rgba(255, 0, 0, 0.03) 0px,
-                rgba(0, 255, 0, 0.03) 1px,
-                rgba(0, 0, 255, 0.03) 2px,
+                rgba(255, 0, 0, 0.021) 0px,
+                rgba(0, 255, 0, 0.021) 1px,
+                rgba(0, 0, 255, 0.021) 2px,
                 transparent 3px
             );
             mix-blend-mode: screen;
+            opacity: 0.7;
         }
         
         #game-container {
@@ -1708,11 +1709,12 @@
         z-index: 10003;
         background-image: repeating-linear-gradient(
             0deg,
-            rgba(0, 0, 0, 0.15) 0px,
-            rgba(0, 0, 0, 0.15) 1px,
+            rgba(0, 0, 0, 0.105) 0px,
+            rgba(0, 0, 0, 0.105) 1px,
             transparent 1px,
             transparent 3px
         );
+        opacity: 0.7;
     "></div>
 
     <div id="game-container">
