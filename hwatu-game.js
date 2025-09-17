@@ -5106,9 +5106,6 @@ function updateConsumableCards() {
                 <div class="consumable-card-inner" style="
                     width: 100%;
                     height: 100%;
-                    background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
-                    border: 2px solid #ffd700;
-                    border-radius: 8px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
@@ -5140,9 +5137,6 @@ function updateConsumableCards() {
                 <div class="consumable-card-inner" style="
                     width: 100%;
                     height: 100%;
-                    background: linear-gradient(135deg, #2a2a3e 0%, #1a1a2e 100%);
-                    border: 2px solid #ffd700;
-                    border-radius: 8px;
                     display: flex;
                     flex-direction: column;
                     align-items: center;
