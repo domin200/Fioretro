@@ -2327,11 +2327,7 @@ function showGoStopPopup() {
             box-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
             min-width: 300px;
         ">
-            <h2 style="color: #ffd700; margin-bottom: 20px; font-size: 24px;">목표 달성!</h2>
-            <div style="color: white; margin-bottom: 25px;">
-                <div style="font-size: 20px; margin-bottom: 10px;">현재 점수: ${gameState.totalScore}</div>
-                ${gameState.goCount > 0 ? `<div style="color: #ffd700; font-size: 18px; margin-bottom: 10px;">${gameState.goCount}고 진행중</div>` : ''}
-            </div>
+            ${gameState.goCount > 0 ? `<div style="color: #ffd700; font-size: 24px; margin-bottom: 25px;">${gameState.goCount}고</div>` : ''}
             <div style="display: flex; gap: 20px; justify-content: center;">
                 <button onclick="handleGo()" style="
                     padding: 15px 30px;
