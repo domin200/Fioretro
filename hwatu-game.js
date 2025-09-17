@@ -42,8 +42,8 @@ function initAudio() {
         allow1Audio = new Audio('SE/allow1.mp3');
         allow2Audio = new Audio('SE/allow2.mp3');
         
-        allow1Audio.volume = 1.0;
-        allow2Audio.volume = 0.5;
+        allow1Audio.volume = 0;  // 카드 효과음 음소거
+        allow2Audio.volume = 0;  // 카드 효과음 음소거
         allow1Audio.preload = 'auto';
         allow2Audio.preload = 'auto';
         
@@ -52,7 +52,7 @@ function initAudio() {
             console.error('Error loading allow1.mp3, trying OGG...', e);
             // MP3 실패시 OGG 시도
             allow1Audio = new Audio('SE/allow1.ogg');
-            allow1Audio.volume = 1.0;
+            allow1Audio.volume = 0;  // 카드 효과음 음소거
             allow1Audio.preload = 'auto';
         });
         
@@ -60,7 +60,7 @@ function initAudio() {
             console.error('Error loading allow2.mp3, trying OGG...', e);
             // MP3 실패시 OGG 시도
             allow2Audio = new Audio('SE/allow2.ogg');
-            allow2Audio.volume = 0.5;
+            allow2Audio.volume = 0;  // 카드 효과음 음소거
             allow2Audio.preload = 'auto';
         });
         
@@ -89,7 +89,7 @@ function enableAudioOnInteraction() {
         allow1Audio.play().then(() => {
             allow1Audio.pause();
             allow1Audio.currentTime = 0;
-            allow1Audio.volume = 1.0;
+            allow1Audio.volume = 0;  // 카드 효과음 음소거
             console.log('Audio context activated for allow1');
         }).catch((e) => {
             console.error('Failed to activate allow1:', e);
@@ -100,7 +100,7 @@ function enableAudioOnInteraction() {
         allow2Audio.play().then(() => {
             allow2Audio.pause();
             allow2Audio.currentTime = 0;
-            allow2Audio.volume = 0.5;
+            allow2Audio.volume = 0;  // 카드 효과음 음소거
             console.log('Audio context activated for allow2');
         }).catch((e) => {
             console.error('Failed to activate allow2:', e);
