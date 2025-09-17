@@ -293,7 +293,10 @@ const gameState = {
     gold: 0,  // 소지금
     redEnhancementBonus: 0,  // 적 강화로 인한 추가 배수 (스테이지당 누적)
     currentBoss: null,  // 현재 보스 정보
-    tripleGoWins: 0  // 쓰리고를 위한 승리 카운터
+    tripleGoWins: 0,  // 쓰리고를 위한 승리 카운터
+    goCount: 0,  // 현재 스테이지의 '고' 횟수
+    lastGoScore: 0,  // 마지막 '고' 선택 시점의 점수
+    goStopPopupShown: false  // 고스톱 팝업 표시 여부
 };
 
 
@@ -505,6 +508,9 @@ function initGame() {
     gameState.shownCombinations = new Set();  // 족보 표시 초기화
     gameState.reincarnatedCards = 0;  // 윤회 카운터 초기화
     gameState.stageEnded = false;  // 스테이지 종료 플래그 초기화
+    gameState.goCount = 0;  // 고 횟수 초기화
+    gameState.lastGoScore = 0;  // 마지막 고 점수 초기화
+    gameState.goStopPopupShown = false;  // 고스톱 팝업 표시 여부 초기화
     
     // 보스 스테이지인지 확인 (3의 배수)
     const isBossStage = gameState.stage % 3 === 0;
@@ -2289,14 +2295,130 @@ function checkRoundEnd() {
         // 스테이지 종료 설정
         gameState.stageEnded = true;
         endRound();
+    } else if (gameState.totalScore >= gameState.targetScore && !gameState.goStopPopupShown) {
+        // 목표 점수 달성 시 고/스톱 팝업 표시
+        if (gameState.goCount === 0) {
+            // 첫 달성
+            showGoStopPopup();
+        } else if (gameState.totalScore > gameState.lastGoScore) {
+            // '고' 이후 점수가 증가했을 때만 팝업 표시
+            showGoStopPopup();
+        }
     }
+}
+
+// '고/스톱' 팝업 표시
+function showGoStopPopup() {
+    gameState.goStopPopupShown = true;
+
+    // 팝업 HTML 생성
+    const popupHTML = `
+        <div id="goStopPopup" style="
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
+            border: 3px solid #ffd700;
+            border-radius: 20px;
+            padding: 30px;
+            z-index: 10001;
+            text-align: center;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 0.5);
+            min-width: 300px;
+        ">
+            <h2 style="color: #ffd700; margin-bottom: 20px; font-size: 24px;">목표 달성!</h2>
+            <div style="color: white; margin-bottom: 25px;">
+                <div style="font-size: 20px; margin-bottom: 10px;">현재 점수: ${gameState.totalScore}</div>
+                ${gameState.goCount > 0 ? `<div style="color: #ffd700; font-size: 18px; margin-bottom: 10px;">${gameState.goCount}고 진행중</div>` : ''}
+                <div style="font-size: 14px; color: #aaa; margin-top: 15px;">
+                    고: 계속 진행 (보상 증가)<br>
+                    스톱: 현재 보상으로 종료
+                </div>
+            </div>
+            <div style="display: flex; gap: 20px; justify-content: center;">
+                <button onclick="handleGo()" style="
+                    padding: 15px 30px;
+                    font-size: 18px;
+                    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+                    color: white;
+                    border: 2px solid #c0392b;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    transition: all 0.3s;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    고
+                </button>
+                <button onclick="handleStop()" style="
+                    padding: 15px 30px;
+                    font-size: 18px;
+                    background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
+                    color: white;
+                    border: 2px solid #2980b9;
+                    border-radius: 10px;
+                    cursor: pointer;
+                    font-weight: bold;
+                    transition: all 0.3s;
+                " onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='scale(1)'">
+                    스톱
+                </button>
+            </div>
+        </div>
+        <div id="goStopOverlay" style="
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 10000;
+        "></div>
+    `;
+
+    // 팝업 추가
+    const container = document.createElement('div');
+    container.innerHTML = popupHTML;
+    document.body.appendChild(container);
+}
+
+// '고' 선택 처리
+function handleGo() {
+    gameState.goCount++;
+    gameState.lastGoScore = gameState.totalScore;
+    gameState.goStopPopupShown = false;
+
+    // 팝업 제거
+    const popup = document.getElementById('goStopPopup');
+    const overlay = document.getElementById('goStopOverlay');
+    if (popup && popup.parentElement) popup.parentElement.remove();
+    if (overlay) overlay.remove();
+
+    // 고 횟수 표시
+    showEnhancementEffect(`${gameState.goCount}고!`, '#ff4444');
+
+    // 게임 계속 진행
+    gameState.stageEnded = false;
+}
+
+// '스톱' 선택 처리
+function handleStop() {
+    // 팝업 제거
+    const popup = document.getElementById('goStopPopup');
+    const overlay = document.getElementById('goStopOverlay');
+    if (popup && popup.parentElement) popup.parentElement.remove();
+    if (overlay) overlay.remove();
+
+    // 라운드 종료
+    gameState.stageEnded = true;
+    endRound();
 }
 
 // 라운드 종료
 function endRound() {
     // 스테이지 종료 설정
     gameState.stageEnded = true;
-    
+
     if (gameState.totalScore >= gameState.targetScore) {
         // 미션 성공
         // 1. 먼저 보유 소지금에 대한 이자 계산 (5당 1 지급)
@@ -2331,13 +2453,30 @@ function endRound() {
         // 3. 스테이지 클리어 보상 지급 (3, 4, 5 반복)
         const goldPattern = [3, 4, 5];
         let clearGold = goldPattern[(gameState.stage - 1) % 3];
-        
-        // 목표 점수의 10배 이상 달성시 보상 2배
-        const isPerfectClear = gameState.totalScore >= gameState.targetScore * 10;
-        if (isPerfectClear) {
-            clearGold *= 2;
-            showEnhancementEffect(`완벽한 클리어! 보상 2배!`, '#ffd700');
+
+        // '고' 횟수에 따른 보상 계산
+        let goBonus = 0;
+        let goMultiplier = 1;
+
+        if (gameState.goCount >= 1) {
+            goBonus += 1;  // 1고: +1 골드
         }
+        if (gameState.goCount >= 2) {
+            goBonus += 2;  // 2고: 추가 +2 골드 (누적 3)
+        }
+        if (gameState.goCount >= 3) {
+            goMultiplier = 2;  // 3고: 전체 2배
+            showEnhancementEffect(`3고 달성! 보상 2배!`, '#ffd700');
+        }
+        if (gameState.goCount >= 4) {
+            goMultiplier = 4;  // 4고: 전체 4배
+            showEnhancementEffect(`4고 대박! 보상 4배!`, '#ffd700');
+        }
+
+        // 고 보너스 적용
+        clearGold = (clearGold + goBonus) * goMultiplier;
+
+        const isPerfectClear = false;  // 10배 보상 시스템 제거
         
         // 쓰리고 효과 확인 (3번 승리마다 5골드 추가)
         let tripleGoBonus = 0;
