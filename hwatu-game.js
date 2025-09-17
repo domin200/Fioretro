@@ -3390,16 +3390,7 @@ function showEnhancementEffect(text, color) {
         text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     `;
     
-    effect.innerHTML = `
-        <span style="
-            background: linear-gradient(to right, #ffffff, ${color}, #ffffff);
-            background-size: 300% 100%;
-            -webkit-background-clip: text;
-            background-clip: text;
-            -webkit-text-fill-color: transparent;
-            animation: gradient 2s linear infinite;
-        ">${text}</span>
-    `;
+    effect.textContent = text;
     
     // 애니메이션 CSS 추가
     if (!document.getElementById('enhancement-effect-style')) {
@@ -4569,14 +4560,19 @@ function showCardEnhancementSelection(upgrade, shopCardElement) {
     const shuffled = availableCards.sort(() => Math.random() - 0.5);
     const cardsToShow = shuffled.slice(0, Math.min(5, availableCards.length));
     
-    // CardSelectionComponent 사용
+    // CardSelectionComponent 사용 - OrbCardSelectionComponent 사용하도록 설정
     CardSelectionComponent.create(cardsToShow, {
         title: '강화할 카드 선택',
         description: `${upgrade.name} - ${upgrade.enhanceType === 'random' ? '무작위' : upgrade.enhanceType} 강화`,
         showEnhancement: true,
+        isOrbItem: true,  // 보주 아이템으로 표시하여 큰 카드 UI 사용
         onSelect: (selectedCard) => {
-            applyEnhancementToCard(selectedCard.id, upgrade, shopCardElement, null);
-            updateDeckCount();
+            // 선택 화면 먼저 닫기
+            const overlay = document.querySelector('div[style*="z-index: 10000"]');
+            if (overlay) overlay.remove();
+
+            // 카드를 화면 중앙에 표시하고 강화 효과 적용
+            showEnhancementAnimation(selectedCard, upgrade, shopCardElement);
         },
         onCancel: () => {
             // 취소 기능 제거 - 환불 없음
@@ -5130,6 +5126,150 @@ function duplicateCard(cardId, upgrade, shopCardElement, selectionOverlay) {
     updateShopAffordability();
 }
 
+// 강화 애니메이션 표시 (중앙에 카드 표시 후 덱으로 이동)
+function showEnhancementAnimation(selectedCard, upgrade, shopCardElement) {
+    // 무작위 강화인 경우
+    let enhanceType = upgrade.enhanceType;
+    if (enhanceType === 'random') {
+        const enhanceTypes = ['청', '적', '백', '흑', '황'];
+        enhanceType = enhanceTypes[Math.floor(Math.random() * enhanceTypes.length)];
+    }
+
+    // 오버레이 생성
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+
+    // 카드 컨테이너 생성
+    const cardContainer = document.createElement('div');
+    cardContainer.style.cssText = `
+        position: relative;
+        width: 160px;
+        height: 250px;
+        transform: scale(0) rotate(180deg);
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    `;
+
+    // 카드 생성
+    const cardDiv = createCardElement(selectedCard);
+    cardDiv.style.width = '100%';
+    cardDiv.style.height = '100%';
+    cardDiv.style.position = 'relative';
+
+    cardContainer.appendChild(cardDiv);
+    overlay.appendChild(cardContainer);
+    document.body.appendChild(overlay);
+
+    // 1단계: 카드 등장 애니메이션
+    setTimeout(() => {
+        cardContainer.style.transform = 'scale(1.5) rotate(0deg)';
+    }, 50);
+
+    // 2단계: 강화 효과 적용 및 이펙트
+    setTimeout(() => {
+        // 강화 적용
+        gameState.cardEnhancements[selectedCard.id] = enhanceType;
+
+        // 카드에 강화 클래스 적용
+        cardDiv.classList.add(`enhanced-${enhanceType}`);
+
+        // 강화 이펙트
+        const effectColor = enhanceType === '흑' ? '#8b00ff' :
+            ENHANCEMENT_TYPES[Object.keys(ENHANCEMENT_TYPES).find(key =>
+                ENHANCEMENT_TYPES[key].name === enhanceType)].color;
+
+        // 빛나는 효과
+        const glowEffect = document.createElement('div');
+        glowEffect.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 200%;
+            height: 200%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(circle, ${effectColor}88 0%, transparent 70%);
+            animation: enhancePulse 1s ease;
+            pointer-events: none;
+        `;
+        cardContainer.appendChild(glowEffect);
+
+        // 메시지 표시
+        const message = `${selectedCard.month}월 ${selectedCard.name}에 ${enhanceType} 강화 적용!`;
+        showEnhancementEffect(message, effectColor);
+    }, 800);
+
+    // 3단계: 덱으로 이동 애니메이션
+    setTimeout(() => {
+        // 덱 위치 찾기
+        const deckElement = document.getElementById('deck-info');
+        if (deckElement) {
+            const deckRect = deckElement.getBoundingClientRect();
+            const cardRect = cardContainer.getBoundingClientRect();
+
+            const deltaX = deckRect.left + deckRect.width/2 - (cardRect.left + cardRect.width/2);
+            const deltaY = deckRect.top + deckRect.height/2 - (cardRect.top + cardRect.height/2);
+
+            cardContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            cardContainer.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.1) rotate(360deg)`;
+            cardContainer.style.opacity = '0';
+        } else {
+            // 덱 요소를 찾을 수 없으면 축소만
+            cardContainer.style.transform = 'scale(0) rotate(360deg)';
+            cardContainer.style.opacity = '0';
+        }
+    }, 2000);
+
+    // 4단계: 정리 및 UI 업데이트
+    setTimeout(() => {
+        overlay.remove();
+
+        // 상점 카드 UI 업데이트
+        shopCardElement.classList.add('purchased');
+        shopCardElement.onclick = null;
+        const priceElement = shopCardElement.querySelector('.upgrade-price');
+        if (priceElement) {
+            priceElement.textContent = '구매완료';
+        }
+
+        // 다른 카드들의 구매 가능 여부 재확인
+        updateShopAffordability();
+        updateDeckCount();
+    }, 2800);
+
+    // 애니메이션 CSS 추가
+    if (!document.getElementById('enhance-animation-style')) {
+        const style = document.createElement('style');
+        style.id = 'enhance-animation-style';
+        style.textContent = `
+            @keyframes enhancePulse {
+                0% {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.5);
+                }
+                50% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1.5);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(2);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+}
+
 // 카드에 강화 적용
 function applyEnhancementToCard(cardId, upgrade, shopCardElement, selectionOverlay) {
     // 무작위 강화인 경우
@@ -5152,9 +5292,14 @@ function applyEnhancementToCard(cardId, upgrade, shopCardElement, selectionOverl
         if (previousEnhancement && previousEnhancement !== enhanceType) {
             message = `${card.month}월 ${card.name}의 ${previousEnhancement} 강화를 ${enhanceType} 강화로 교체!`;
         }
-        showEnhancementEffect(message, 
-            ENHANCEMENT_TYPES[Object.keys(ENHANCEMENT_TYPES).find(key => 
-                ENHANCEMENT_TYPES[key].name === enhanceType)].color);
+
+        // 흑 강화일 경우 더 강한 색상 사용
+        const effectColor = enhanceType === '흑'
+            ? '#8b00ff'
+            : ENHANCEMENT_TYPES[Object.keys(ENHANCEMENT_TYPES).find(key =>
+                ENHANCEMENT_TYPES[key].name === enhanceType)].color;
+
+        showEnhancementEffect(message, effectColor);
     }
     
     // 상점 카드 UI 업데이트
