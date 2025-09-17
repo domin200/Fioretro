@@ -42,8 +42,8 @@ function initAudio() {
         allow1Audio = new Audio('SE/allow1.mp3');
         allow2Audio = new Audio('SE/allow2.mp3');
         
-        allow1Audio.volume = 0;  // 카드 효과음 음소거
-        allow2Audio.volume = 0;  // 카드 효과음 음소거
+        allow1Audio.volume = 1.0;
+        allow2Audio.volume = 0;  // allow2만 음소거
         allow1Audio.preload = 'auto';
         allow2Audio.preload = 'auto';
         
@@ -52,7 +52,7 @@ function initAudio() {
             console.error('Error loading allow1.mp3, trying OGG...', e);
             // MP3 실패시 OGG 시도
             allow1Audio = new Audio('SE/allow1.ogg');
-            allow1Audio.volume = 0;  // 카드 효과음 음소거
+            allow1Audio.volume = 1.0;
             allow1Audio.preload = 'auto';
         });
         
@@ -89,7 +89,7 @@ function enableAudioOnInteraction() {
         allow1Audio.play().then(() => {
             allow1Audio.pause();
             allow1Audio.currentTime = 0;
-            allow1Audio.volume = 0;  // 카드 효과음 음소거
+            allow1Audio.volume = 1.0;
             console.log('Audio context activated for allow1');
         }).catch((e) => {
             console.error('Failed to activate allow1:', e);
@@ -4100,7 +4100,7 @@ function showUpgradeSelection() {
         display: flex;
         gap: 20px;
         justify-content: center;
-        margin-bottom: 20px;
+        margin-bottom: 10px;
         width: 100%;
     `;
     
