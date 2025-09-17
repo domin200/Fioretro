@@ -59,7 +59,7 @@
             overflow-y: auto;
         }
 
-        /* CRT 효과 1: 곡면 착시 (화면 가장자리 어둡게) - 30% 약하게 */
+        /* CRT 효과 1: 곡면 착시 (화면 가장자리 어둡게) */
         body::before {
             content: "";
             position: fixed;
@@ -72,7 +72,7 @@
             background: radial-gradient(ellipse at center,
                 transparent 0%,
                 transparent 40%,
-                rgba(0,0,0,0.28) 100%);
+                rgba(0,0,0,0.4) 100%);
         }
 
         /* CRT 효과 2: 스캔라인 - 30% 약하게 */
