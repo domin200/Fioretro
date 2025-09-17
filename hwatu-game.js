@@ -3371,16 +3371,17 @@ function showEnhancementEffect(text, color) {
         left: 50%;
         top: 30%;
         transform: translateX(-50%);
-        background: linear-gradient(135deg, ${color}88 0%, ${color}cc 100%);
+        background: linear-gradient(135deg, ${color}dd 0%, ${color}ff 100%);
         color: white;
-        padding: 20px 40px;
-        border-radius: 15px;
-        font-size: 24px;
+        padding: 30px 50px;
+        border-radius: 20px;
+        font-size: 32px;
         font-weight: bold;
-        z-index: 2500;
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-        animation: enhancementPop 1.5s ease;
-        border: 2px solid ${color};
+        z-index: 10500;
+        box-shadow: 0 0 50px ${color}, 0 0 100px ${color}88, 0 20px 60px rgba(0, 0, 0, 0.6);
+        animation: enhancementPop 2s ease;
+        border: 4px solid white;
+        text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
     `;
     
     effect.innerHTML = `
@@ -3400,17 +3401,20 @@ function showEnhancementEffect(text, color) {
         style.id = 'enhancement-effect-style';
         style.textContent = `
             @keyframes enhancementPop {
-                0% { 
-                    opacity: 0; 
-                    transform: translateX(-50%) translateY(20px) scale(0.8);
+                0% {
+                    opacity: 0;
+                    transform: translateX(-50%) translateY(50px) scale(0.3) rotate(-10deg);
                 }
-                50% { 
-                    opacity: 1; 
-                    transform: translateX(-50%) translateY(0) scale(1.05);
+                30% {
+                    opacity: 1;
+                    transform: translateX(-50%) translateY(-10px) scale(1.2) rotate(5deg);
                 }
-                100% { 
-                    opacity: 0; 
-                    transform: translateX(-50%) translateY(-20px) scale(0.95);
+                50% {
+                    transform: translateX(-50%) translateY(0) scale(1.0) rotate(0deg);
+                }
+                100% {
+                    opacity: 0;
+                    transform: translateX(-50%) translateY(-30px) scale(0.9) rotate(0deg);
                 }
             }
         `;
@@ -3420,7 +3424,7 @@ function showEnhancementEffect(text, color) {
     document.body.appendChild(effect);
     
     // 1.5초 후 제거
-    setTimeout(() => effect.remove(), 1500);
+    setTimeout(() => effect.remove(), 2000);
 }
 
 
