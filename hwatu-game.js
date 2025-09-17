@@ -5142,6 +5142,8 @@ function showRemovalAnimation(selectedCard, upgrade, shopCardElement) {
         height: 250px;
         transform: scale(0) rotate(180deg);
         transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        border-radius: 8px;
     `;
 
     // 카드 생성
@@ -5149,6 +5151,7 @@ function showRemovalAnimation(selectedCard, upgrade, shopCardElement) {
     cardDiv.style.width = '100%';
     cardDiv.style.height = '100%';
     cardDiv.style.position = 'relative';
+    cardDiv.style.overflow = 'hidden';
 
     cardContainer.appendChild(cardDiv);
     overlay.appendChild(cardContainer);
@@ -5272,6 +5275,8 @@ function showEnhancementAnimation(selectedCard, upgrade, shopCardElement) {
         height: 250px;
         transform: scale(0) rotate(180deg);
         transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        overflow: hidden;
+        border-radius: 8px;
     `;
 
     // 카드 생성
@@ -5279,6 +5284,7 @@ function showEnhancementAnimation(selectedCard, upgrade, shopCardElement) {
     cardDiv.style.width = '100%';
     cardDiv.style.height = '100%';
     cardDiv.style.position = 'relative';
+    cardDiv.style.overflow = 'hidden';
 
     cardContainer.appendChild(cardDiv);
     overlay.appendChild(cardContainer);
@@ -5302,20 +5308,19 @@ function showEnhancementAnimation(selectedCard, upgrade, shopCardElement) {
             ENHANCEMENT_TYPES[Object.keys(ENHANCEMENT_TYPES).find(key =>
                 ENHANCEMENT_TYPES[key].name === enhanceType)].color;
 
-        // 빛나는 효과
+        // 빛나는 효과 (카드 내부에만 표시)
         const glowEffect = document.createElement('div');
         glowEffect.style.cssText = `
             position: absolute;
-            top: 50%;
-            left: 50%;
-            width: 200%;
-            height: 200%;
-            transform: translate(-50%, -50%);
-            background: radial-gradient(circle, ${effectColor}88 0%, transparent 70%);
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: radial-gradient(circle at center, ${effectColor}cc 0%, ${effectColor}66 30%, transparent 60%);
             animation: enhancePulse 1s ease;
             pointer-events: none;
         `;
-        cardContainer.appendChild(glowEffect);
+        cardDiv.appendChild(glowEffect);  // cardContainer가 아닌 cardDiv에 추가
 
         // 메시지 표시
         const message = `${selectedCard.month}월 ${selectedCard.name}에 ${enhanceType} 강화 적용!`;
@@ -5326,19 +5331,24 @@ function showEnhancementAnimation(selectedCard, upgrade, shopCardElement) {
     setTimeout(() => {
         // 덱 위치 찾기
         const deckElement = document.getElementById('deck-info');
-        if (deckElement) {
+        if (deckElement && deckElement.offsetParent !== null) {
             const deckRect = deckElement.getBoundingClientRect();
-            const cardRect = cardContainer.getBoundingClientRect();
+            const overlayRect = overlay.getBoundingClientRect();
 
-            const deltaX = deckRect.left + deckRect.width/2 - (cardRect.left + cardRect.width/2);
-            const deltaY = deckRect.top + deckRect.height/2 - (cardRect.top + cardRect.height/2);
+            // 덱 아이콘 위치로 이동 (절대 좌표 계산)
+            const targetX = deckRect.left + deckRect.width/2 - overlayRect.width/2;
+            const targetY = deckRect.top + deckRect.height/2 - overlayRect.height/2;
 
+            cardContainer.style.position = 'fixed';
+            cardContainer.style.left = '50%';
+            cardContainer.style.top = '50%';
             cardContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-            cardContainer.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.1) rotate(360deg)`;
+            cardContainer.style.transform = `translate(calc(-50% + ${targetX}px), calc(-50% + ${targetY}px)) scale(0.1) rotate(360deg)`;
             cardContainer.style.opacity = '0';
         } else {
-            // 덱 요소를 찾을 수 없으면 축소만
-            cardContainer.style.transform = 'scale(0) rotate(360deg)';
+            // 덱 요소를 찾을 수 없으면 오른쪽 하단으로
+            cardContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+            cardContainer.style.transform = 'translate(200px, 200px) scale(0) rotate(360deg)';
             cardContainer.style.opacity = '0';
         }
     }, 2000);
@@ -5368,15 +5378,15 @@ function showEnhancementAnimation(selectedCard, upgrade, shopCardElement) {
             @keyframes enhancePulse {
                 0% {
                     opacity: 0;
-                    transform: translate(-50%, -50%) scale(0.5);
+                    transform: scale(0.8);
                 }
                 50% {
                     opacity: 1;
-                    transform: translate(-50%, -50%) scale(1.5);
+                    transform: scale(1);
                 }
                 100% {
                     opacity: 0;
-                    transform: translate(-50%, -50%) scale(2);
+                    transform: scale(1.1);
                 }
             }
         `;
