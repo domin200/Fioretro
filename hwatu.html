@@ -36,21 +36,15 @@
         html {
             font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
         }
-        
+
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
             font-family: inherit;
         }
-        
-        /* 폼 요소에도 폰트 적용 */
-        input, button, textarea, select {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
-        }
-        
+
         body {
-            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
             height: 100vh;
             padding: 60px 10px;
             color: white;
@@ -975,11 +969,6 @@
             text-transform: uppercase;
         }
         /* 애니메이션 추가 */
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
         @keyframes pulse {
             0%, 100% { transform: scale(1); }
             50% { transform: scale(1.05); }
@@ -1233,10 +1222,6 @@
             cursor: not-allowed;
         }
         
-        @keyframes fadeIn {
-            from { opacity: 0; }
-            to { opacity: 1; }
-        }
         
         @keyframes slideDown {
             from { 
@@ -1852,19 +1837,10 @@
             }
         }
 
-        /* GSAP Flip 애니메이션용 클래스 */
-        .flip-animation {
-            transition: none !important;
-        }
     </style>
 
     <!-- External Libraries -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <!-- 아직 비활성화 상태
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/gsap.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.2/Flip.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/pixi.js/7.3.2/pixi.min.js"></script>
-    -->
 </head>
 <body>
     <!-- CRT 효과들 -->
@@ -2016,10 +1992,6 @@
         </div>
     </div>
     
-    <!-- 업그레이드 상점 팝업 (더 이상 사용하지 않음) -->
-    <div id="upgrade-popup" style="display: none;">
-        <!-- play 컨테이너를 상점으로 사용 -->
-    </div>
     
     <!-- 배경음악 -->
     <audio id="bgm" loop autoplay>
@@ -2027,7 +1999,6 @@
         Your browser does not support the audio element.
     </audio>
     
-    <!-- 두 번째 BGM 엘리먼트 제거 (성능 최적화) -->
     
     <!-- Enhanced Game Scripts -->
     <script src="balatro-bg.js"></script>
