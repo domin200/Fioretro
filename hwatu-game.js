@@ -4768,7 +4768,7 @@ function showCardRemovalSelection(upgrade, shopCardElement) {
         // 이미 제거된 카드는 제외
         return !gameState.removedCards || !gameState.removedCards.includes(card.id);
     });
-    
+
     if (availableCards.length === 0) {
         alert('제거할 카드가 없습니다!');
         // 소지금 환불
@@ -4776,40 +4776,31 @@ function showCardRemovalSelection(upgrade, shopCardElement) {
         updateShopAffordability();
         return;
     }
-    
-    // 최대 5장 선택
-    const cardsToShow = [];
-    const numCards = Math.min(5, availableCards.length);
-    const selectedIndices = new Set();
-    
-    while (cardsToShow.length < numCards) {
-        const index = Math.floor(Math.random() * availableCards.length);
-        if (!selectedIndices.has(index)) {
-            selectedIndices.add(index);
-            cardsToShow.push(availableCards[index]);
+
+    // 무작위 5장 선택
+    const shuffled = availableCards.sort(() => Math.random() - 0.5);
+    const cardsToShow = shuffled.slice(0, Math.min(5, availableCards.length));
+
+    // CardSelectionComponent 사용 - OrbCardSelectionComponent 사용하도록 설정
+    CardSelectionComponent.create(cardsToShow, {
+        title: '제거할 카드 선택',
+        description: `${upgrade.name} - 선택한 카드를 덱에서 완전히 제거`,
+        showEnhancement: true,
+        isOrbItem: true,  // 보주 아이템으로 표시하여 큰 카드 UI 사용
+        onSelect: (selectedCard) => {
+            // 선택 화면 먼저 닫기
+            const overlay = document.querySelector('div[style*="z-index: 10000"]');
+            if (overlay) overlay.remove();
+
+            // 카드를 화면 중앙에 표시하고 제거 애니메이션 실행
+            showRemovalAnimation(selectedCard, upgrade, shopCardElement);
+        },
+        onCancel: () => {
+            // 취소 기능 제거 - 환불 없음
         }
-    }
-    
-    // 선택된 카드 추적
-    let selectedCardId = null;
-    
-    // 선택 화면 생성
-    const selectionOverlay = document.createElement('div');
-    selectionOverlay.id = 'enhancement-selection-overlay';
-    selectionOverlay.style.cssText = `
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 10000;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-        animation: fadeIn 0.3s ease;
-    `;
+    });
+
+    return;
     
     selectionOverlay.innerHTML = `
         <div style="background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%); 
@@ -5124,6 +5115,129 @@ function duplicateCard(cardId, upgrade, shopCardElement, selectionOverlay) {
     
     // 다른 카드들의 구매 가능 여부 재확인
     updateShopAffordability();
+}
+
+// 카드 제거 애니메이션 표시 (중앙에 카드 표시 후 사라짐)
+function showRemovalAnimation(selectedCard, upgrade, shopCardElement) {
+    // 오버레이 생성
+    const overlay = document.createElement('div');
+    overlay.style.cssText = `
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.7);
+        z-index: 10000;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    `;
+
+    // 카드 컨테이너 생성
+    const cardContainer = document.createElement('div');
+    cardContainer.style.cssText = `
+        position: relative;
+        width: 160px;
+        height: 250px;
+        transform: scale(0) rotate(180deg);
+        transition: transform 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+    `;
+
+    // 카드 생성
+    const cardDiv = createCardElement(selectedCard);
+    cardDiv.style.width = '100%';
+    cardDiv.style.height = '100%';
+    cardDiv.style.position = 'relative';
+
+    cardContainer.appendChild(cardDiv);
+    overlay.appendChild(cardContainer);
+    document.body.appendChild(overlay);
+
+    // 1단계: 카드 등장 애니메이션
+    setTimeout(() => {
+        cardContainer.style.transform = 'scale(1.5) rotate(0deg)';
+    }, 50);
+
+    // 2단계: 제거 이펙트
+    setTimeout(() => {
+        // 빨간색 X 표시 추가
+        const removeEffect = document.createElement('div');
+        removeEffect.style.cssText = `
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 120px;
+            color: #ff0000;
+            font-weight: bold;
+            text-shadow: 0 0 20px rgba(255, 0, 0, 0.8);
+            animation: removePulse 0.5s ease;
+            z-index: 10;
+        `;
+        removeEffect.textContent = '✖';
+        cardContainer.appendChild(removeEffect);
+
+        // 제거 사운드
+        playSound('SE/allow1.ogg');
+
+        // 메시지 표시
+        const message = `${selectedCard.month}월 ${selectedCard.name}을(를) 제거했습니다!`;
+        showEnhancementEffect(message, '#ff0000');
+    }, 800);
+
+    // 3단계: 카드 버리기 애니메이션 (위로 날아가며 사라짐)
+    setTimeout(() => {
+        cardContainer.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+        cardContainer.style.transform = 'translateY(-500px) scale(0.1) rotate(720deg)';
+        cardContainer.style.opacity = '0';
+    }, 1500);
+
+    // 4단계: 정리 및 UI 업데이트
+    setTimeout(() => {
+        overlay.remove();
+
+        // 카드 제거 처리
+        if (!gameState.removedCards) {
+            gameState.removedCards = [];
+        }
+        gameState.removedCards.push(selectedCard.id);
+
+        // 상점 카드 UI 업데이트
+        shopCardElement.classList.add('purchased');
+        shopCardElement.onclick = null;
+        const priceElement = shopCardElement.querySelector('.upgrade-price');
+        if (priceElement) {
+            priceElement.textContent = '구매완료';
+        }
+
+        // 다른 카드들의 구매 가능 여부 재확인
+        updateShopAffordability();
+        updateDeckCount();
+    }, 2300);
+
+    // 애니메이션 CSS 추가
+    if (!document.getElementById('remove-animation-style')) {
+        const style = document.createElement('style');
+        style.id = 'remove-animation-style';
+        style.textContent = `
+            @keyframes removePulse {
+                0% {
+                    opacity: 0;
+                    transform: translate(-50%, -50%) scale(0.5);
+                }
+                50% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1.2);
+                }
+                100% {
+                    opacity: 1;
+                    transform: translate(-50%, -50%) scale(1);
+                }
+            }
+        `;
+        document.head.appendChild(style);
+    }
 }
 
 // 강화 애니메이션 표시 (중앙에 카드 표시 후 덱으로 이동)
