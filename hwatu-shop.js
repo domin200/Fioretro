@@ -1052,9 +1052,11 @@ class ShopManager {
 
                 // 0.3초 후 위로 날아가며 사라지는 애니메이션
                 setTimeout(() => {
-                    container.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-                    container.style.transform = 'translate(-50%, -50%) translateY(-800px) scale(0.1) rotate(720deg)';
-                    container.style.opacity = '0';
+                    // 카드를 직접 이동 (현재 scale(1)에서 시작)
+                    cardElement.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
+                    cardElement.style.transform = 'scale(1) translateY(-800px) scale(0.1) rotate(720deg)';
+                    cardElement.style.transform = 'scale(0.1) translateY(-800px) rotate(720deg)';
+                    cardElement.style.opacity = '0';
                 }, 300);
             } else {
                 // 강화 보주들 - 덱으로 이동 애니메이션
@@ -1063,17 +1065,24 @@ class ShopManager {
                     const deckRect = deckElement.getBoundingClientRect();
                     const containerRect = container.getBoundingClientRect();
 
-                    const deltaX = deckRect.left + deckRect.width/2 - containerRect.left;
-                    const deltaY = deckRect.top + deckRect.height/2 - containerRect.top;
+                    // 현재 중앙 위치에서 덱 위치까지의 거리 계산
+                    const currentX = window.innerWidth / 2;
+                    const currentY = window.innerHeight / 2;
+                    const targetX = deckRect.left + deckRect.width / 2;
+                    const targetY = deckRect.top + deckRect.height / 2;
 
-                    container.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-                    container.style.transform = `translate(calc(-50% + ${deltaX}px), calc(-50% + ${deltaY}px)) scale(0.1) rotate(360deg)`;
-                    container.style.opacity = '0';
+                    const deltaX = targetX - currentX;
+                    const deltaY = targetY - currentY;
+
+                    // 카드를 직접 이동 (현재 scale(1)에서 시작)
+                    cardElement.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
+                    cardElement.style.transform = `scale(0.1) translate(${deltaX * 10}px, ${deltaY * 10}px) rotate(360deg)`;
+                    cardElement.style.opacity = '0';
                 } else {
                     // 덱 요소를 찾을 수 없으면 오른쪽 하단으로
-                    container.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
-                    container.style.transform = 'translate(calc(-50% + 400px), calc(-50% + 400px)) scale(0) rotate(360deg)';
-                    container.style.opacity = '0';
+                    cardElement.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
+                    cardElement.style.transform = 'scale(0) translate(400px, 400px) rotate(360deg)';
+                    cardElement.style.opacity = '0';
                 }
             }
 
