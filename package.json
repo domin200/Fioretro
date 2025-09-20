@@ -1,0 +1,24 @@
+{
+  "name": "korean-poker-master",
+  "version": "1.0.0",
+  "description": "> 한국 전통 화투를 현대적으로 재해석한 로그라이크 카드 게임",
+  "main": "main.js",
+  "scripts": {
+    "start": "electron .",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/domin200/Fioretro.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/domin200/Fioretro/issues"
+  },
+  "homepage": "https://github.com/domin200/Fioretro#readme",
+  "devDependencies": {
+    "electron": "^38.1.2"
+  }
+}

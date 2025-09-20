@@ -1,1 +1,1 @@
-🔧 Git 계정 변경: domin200 (somakotic@gmail.com)
+🎮 Electron 래핑 초기 설정: main.js 생성 및 npm 스크립트 구성
