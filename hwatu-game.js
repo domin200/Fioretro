@@ -553,9 +553,8 @@ function initGame() {
     // 카드 분배 함수
     const dealCards = () => {
         // 초기 카드 분배 (애니메이션)
-        const hasMapleHand = gameState.upgrades && gameState.upgrades.some(u => u.id === 'maple_hand');
-        let handSize = hasMapleHand ? 4 : 5;
-        
+        let handSize = getMaxHandSize();
+
         // 쥐 보스 효과: 핸드 -1장
         if (gameState.currentBoss && gameState.currentBoss.id === 'rat') {
             handSize = Math.max(1, handSize - 1); // 최소 1장은 보장
@@ -879,7 +878,7 @@ function playCard() {
             if (hasNolbuTreasure && gameState.turn > 0) {
                 // 추가 드로우 차단
                 console.log('놀부심보 효과: 추가 드로우 차단');
-            } else if (gameState.deck.length > 0 && gameState.hand.length < 5) {
+            } else if (gameState.deck.length > 0 && gameState.hand.length < getMaxHandSize()) {
                 let newCard = gameState.deck.pop();
                 if (newCard) {  // 카드가 존재하는지 확인
                     // 뱀 보스 효과: 25% 확률로 뒷면 카드로 드로우
@@ -2193,6 +2192,24 @@ function calculateMultiplier(floorCards) {
     return multiplier;
 }
 
+// 최대 손패 수 계산 (업그레이드 반영)
+function getMaxHandSize() {
+    let maxSize = 5;  // 기본 5장
+
+    // 단풍손 업그레이드가 있으면 -1
+    const hasMapleHand = gameState.upgrades.some(u => u.id === 'maple_hand');
+    if (hasMapleHand) {
+        maxSize = 4;
+    }
+
+    return maxSize;
+}
+
+// 최대 바닥 슬롯 수
+function getMaxFloorSlots() {
+    return 5;  // 기본 5슬롯 (같은 월은 1슬롯으로 계산)
+}
+
 // 바닥 슬롯 개수 계산 (같은 월은 1개로 계산)
 function getFloorSlotCount() {
     const uniqueMonths = new Set();
@@ -2796,6 +2813,26 @@ function updateDisplay() {
     const discardBtn = document.getElementById('discard-btn');
     if (discardBtn) {
         discardBtn.textContent = `버리기(${gameState.discardsLeft})`;
+    }
+
+    // 손패 카운트 업데이트
+    const handCountElement = document.getElementById('hand-count');
+    const handMaxElement = document.getElementById('hand-max');
+    if (handCountElement) {
+        handCountElement.textContent = gameState.hand.length;
+    }
+    if (handMaxElement) {
+        handMaxElement.textContent = getMaxHandSize();
+    }
+
+    // 바닥 패 카운트 업데이트 (같은 월은 1슬롯으로 계산)
+    const floorCountElement = document.getElementById('floor-count');
+    const floorMaxElement = document.getElementById('floor-max');
+    if (floorCountElement) {
+        floorCountElement.textContent = getFloorSlotCount();
+    }
+    if (floorMaxElement) {
+        floorMaxElement.textContent = getMaxFloorSlots();
     }
     
     // 최종 점수 업데이트 (점수 × 배수)
@@ -5975,14 +6012,14 @@ function proceedToNextStage() {
         
         <div style="flex: 1; display: flex; flex-direction: column;">
             <div style="flex: 0.45; display: flex; flex-direction: column;">
-                <div class="section-title">바닥 패</div>
+                <div class="section-title">바닥 패 (<span id="floor-count">0</span>/<span id="floor-max">5</span>)</div>
                 <div id="floor-area" style="flex: 1;"></div>
             </div>
             
             <div class="divider"></div>
             
             <div style="flex: 0.55; display: flex; flex-direction: column;">
-                <div class="section-title" style="margin-top: 15px;">내 손패</div>
+                <div class="section-title" style="margin-top: 15px;">내 손패 (<span id="hand-count">0</span>/<span id="hand-max">5</span>)</div>
                 <div id="hand-area" style="flex: 1; display: flex; align-items: center;"></div>
                 
                 <div id="control-area" style="margin-top: 15px;">
