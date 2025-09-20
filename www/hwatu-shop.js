@@ -1,0 +1,1240 @@
+// ============================================
+// 주막 상점 관리 모듈
+// ============================================
+
+class ShopManager {
+    constructor() {
+        this.items = this.initializeItems();
+    }
+
+    initializeItems() {
+        return [
+            // 계절 패 (Seasonal Cards - Consumables)
+            {
+                id: 'spring_pack',
+                name: '봄의 패',
+                category: 'consumable',
+                description: '1~3월 패 중 무작위 한 장을 덱에 추가',
+                price: 3,
+                rarity: 'rare',
+                icon: '🌸',
+                effect: function() {
+                    this.addSeasonalCard([1, 2, 3], '봄');
+                }
+            },
+            {
+                id: 'summer_pack',
+                name: '여름의 패',
+                category: 'consumable',
+                description: '4~6월 패 중 무작위 한 장을 덱에 추가',
+                price: 3,
+                rarity: 'rare',
+                icon: '☀️',
+                effect: function() {
+                    this.addSeasonalCard([4, 5, 6], '여름');
+                }
+            },
+            {
+                id: 'autumn_pack',
+                name: '가을의 패',
+                category: 'consumable',
+                description: '7~9월 패 중 무작위 한 장을 덱에 추가',
+                price: 3,
+                rarity: 'rare',
+                icon: '🍁',
+                effect: function() {
+                    this.addSeasonalCard([7, 8, 9], '가을');
+                }
+            },
+            {
+                id: 'winter_pack',
+                name: '겨울의 패',
+                category: 'consumable',
+                description: '10~12월 패 중 무작위 한 장을 덱에 추가',
+                price: 3,
+                rarity: 'rare',
+                icon: '❄️',
+                effect: function() {
+                    this.addSeasonalCard([10, 11, 12], '겨울');
+                }
+            },
+            // 소모품 카드 (Consumable Cards)
+            {
+                id: 'bonus_pi_card',
+                name: '보너스피 카드',
+                category: 'consumable_card',
+                description: '소모품 카드 - 사용 시 현재 점수 +3',
+                price: 4,
+                rarity: 'common',
+                icon: '🎯',
+                effect: function() {
+                    // 소모품 카드 슬롯 확인
+                    if (gameStateManager.state.consumableCards.length >= 2) {
+                        PopupComponent.showMessage('소모품 카드는 최대 2장까지만 보유할 수 있습니다!', 'error');
+                        // 환불
+                        gameStateManager.updateGold(this.price);
+                        return false;
+                    }
+                    
+                    // 소모품 카드 추가
+                    const bonusCard = {
+                        id: 'bonus_pi',
+                        name: '보너스피',
+                        type: 'consumable',
+                        icon: '🎯',
+                        effect: '사용 시 점수 +3',
+                        action: function() {
+                            // bonusPoints에 추가
+                            if (typeof gameState !== 'undefined') {
+                                if (!gameState.bonusPoints) gameState.bonusPoints = 0;
+                                gameState.bonusPoints += 3;
+                                // 점수 계산 및 화면 업데이트
+                                calculateScore();
+                                updateDisplay();
+                            }
+                            PopupComponent.showMessage('보너스피 효과 발동! 점수 +3', 'success');
+                        }
+                    };
+                    gameStateManager.state.consumableCards.push(bonusCard);
+                    
+                    PopupComponent.showMessage('보너스피 카드를 획득했습니다!', 'success');
+                    return true;
+                }
+            },
+            {
+                id: 'trash_can_card',
+                name: '쓰레기통 카드',
+                category: 'consumable_card',
+                description: '소모품 카드 - 사용 시 버리기 횟수 +1',
+                price: 3,
+                rarity: 'common',
+                icon: '🗑️',
+                effect: function() {
+                    // 소모품 카드 슬롯 확인
+                    if (gameStateManager.state.consumableCards.length >= 2) {
+                        PopupComponent.showMessage('소모품 카드는 최대 2장까지만 보유할 수 있습니다!', 'error');
+                        // 환불
+                        gameStateManager.updateGold(this.price);
+                        return false;
+                    }
+                    
+                    // 소모품 카드 추가
+                    const trashCard = {
+                        id: 'trash_can',
+                        name: '쓰레기통',
+                        type: 'consumable',
+                        icon: '🗑️',
+                        effect: '사용 시 버리기 횟수 +1',
+                        action: function() {
+                            // gameState.discardsLeft 직접 업데이트
+                            if (typeof gameState !== 'undefined') {
+                                gameState.discardsLeft++;
+                                // 화면 업데이트
+                                updateDisplay();
+                                // 버튼 상태 업데이트
+                                updateButtonStates();
+                            }
+                            PopupComponent.showMessage('쓰레기통 효과 발동! 버리기 횟수 +1', 'success');
+                        }
+                    };
+                    gameStateManager.state.consumableCards.push(trashCard);
+                    
+                    PopupComponent.showMessage('쓰레기통 카드를 획득했습니다!', 'success');
+                    return true;
+                }
+            },
+            {
+                id: 'bomb_card',
+                name: '폭탄 카드',
+                category: 'consumable_card',
+                description: '소모품 카드 - 사용 시 바닥의 무작위 카드 1장 파괴',
+                price: 5,
+                rarity: 'rare',
+                icon: '💣',
+                effect: function() {
+                    // 소모품 카드 슬롯 확인
+                    if (gameStateManager.state.consumableCards.length >= 2) {
+                        PopupComponent.showMessage('소모품 카드는 최대 2장까지만 보유할 수 있습니다!', 'error');
+                        // 환불
+                        gameStateManager.updateGold(this.price);
+                        return false;
+                    }
+                    
+                    // 소모품 카드 추가
+                    const bombCard = {
+                        id: 'bomb',
+                        name: '폭탄',
+                        type: 'consumable',
+                        icon: '💣',
+                        effect: '사용 시 바닥 카드 1장 파괴',
+                        action: function() {
+                            // 바닥에 카드가 있는지 확인
+                            if (typeof gameState !== 'undefined' && gameState.floor.length > 0) {
+                                // 무작위 카드 선택
+                                const randomIndex = Math.floor(Math.random() * gameState.floor.length);
+                                const destroyedCard = gameState.floor[randomIndex];
+                                
+                                // 카드 제거
+                                gameState.floor.splice(randomIndex, 1);
+                                
+                                // 화면 업데이트
+                                updateDisplay();
+                                
+                                PopupComponent.showMessage(`폭탄 효과 발동! ${destroyedCard.month}월 ${destroyedCard.type} 카드 파괴!`, 'success');
+                            } else {
+                                PopupComponent.showMessage('바닥에 카드가 없습니다!', 'warning');
+                            }
+                        }
+                    };
+                    gameStateManager.state.consumableCards.push(bombCard);
+                    
+                    PopupComponent.showMessage('폭탄 카드를 획득했습니다!', 'success');
+                    return true;
+                }
+            },
+            {
+                id: 'flip_table_card',
+                name: '판엎기 카드',
+                category: 'consumable_card',
+                description: '소모품 카드 - 손패 전부 버리고 새로 드로우',
+                price: 6,
+                rarity: 'rare',
+                icon: '🔄',
+                effect: function() {
+                    // 소모품 카드 슬롯 확인
+                    if (gameStateManager.state.consumableCards.length >= 2) {
+                        PopupComponent.showMessage('소모품 카드는 최대 2장까지만 보유할 수 있습니다!', 'error');
+                        // 환불
+                        gameStateManager.updateGold(this.price);
+                        return false;
+                    }
+                    
+                    // 소모품 카드 추가
+                    const flipCard = {
+                        id: 'flip_table',
+                        name: '판엎기',
+                        type: 'consumable',
+                        icon: '🔄',
+                        effect: '손패 전부 교체',
+                        action: function() {
+                            if (typeof gameState !== 'undefined') {
+                                const handCount = gameState.hand.length;
+                                
+                                // 덱에 충분한 카드가 있는지 확인
+                                if (gameState.deck.length < handCount) {
+                                    PopupComponent.showMessage('덱에 카드가 부족합니다!', 'warning');
+                                    return;
+                                }
+                                
+                                // 현재 손패를 덱에 다시 넣기
+                                gameState.deck.push(...gameState.hand);
+                                gameState.hand = [];
+                                
+                                // 덱 섞기
+                                shuffleDeck(gameState.deck);
+                                
+                                // 화면 초기화
+                                updateDisplay();
+                                
+                                // 새로운 카드를 애니메이션으로 드로우
+                                const dealDelay = 200; // 카드 간 딜레이
+                                for (let i = 0; i < handCount; i++) {
+                                    const card = gameState.deck.pop();
+                                    setTimeout(() => {
+                                        showInitialDealAnimation(card, 'hand', () => {
+                                            gameState.hand.push(card);
+                                            updateDisplay();
+                                        });
+                                    }, dealDelay * i);
+                                }
+                                
+                                PopupComponent.showMessage(`판엎기 효과 발동! ${handCount}장의 카드를 교체했습니다!`, 'success');
+                            }
+                        }
+                    };
+                    gameStateManager.state.consumableCards.push(flipCard);
+                    
+                    PopupComponent.showMessage('판엎기 카드를 획득했습니다!', 'success');
+                    return true;
+                }
+            },
+            {
+                id: 'sunrise_card',
+                name: '해돋이 카드',
+                category: 'consumable_card',
+                description: '소모품 카드 - 손패의 무작위 카드 1장을 광 카드로 변환',
+                price: 8,
+                rarity: 'epic',
+                icon: '🌅',
+                effect: function() {
+                    // 소모품 카드 슬롯 확인
+                    if (gameStateManager.state.consumableCards.length >= 2) {
+                        PopupComponent.showMessage('소모품 카드는 최대 2장까지만 보유할 수 있습니다!', 'error');
+                        // 환불
+                        gameStateManager.updateGold(this.price);
+                        return false;
+                    }
+                    
+                    // 소모품 카드 추가
+                    const sunriseCard = {
+                        id: 'sunrise',
+                        name: '해돋이',
+                        type: 'consumable',
+                        icon: '🌅',
+                        effect: '손패 1장을 광으로 변환',
+                        action: function() {
+                            if (typeof gameState !== 'undefined' && gameState.hand.length > 0) {
+                                // 무작위 손패 선택
+                                const randomHandIndex = Math.floor(Math.random() * gameState.hand.length);
+                                const oldCard = gameState.hand[randomHandIndex];
+                                
+                                // 사용 가능한 광 카드 목록 (1, 3, 8, 11, 12월)
+                                const gwangCards = [
+                                    { month: 1, type: '광', name: '송학', points: 20 },
+                                    { month: 3, type: '광', name: '벚꽃', points: 20 },
+                                    { month: 8, type: '광', name: '공산명월', points: 20 },
+                                    { month: 11, type: '광', name: '오동', points: 20 },
+                                    { month: 12, type: '광', name: '비', points: 10 }
+                                ];
+                                
+                                // 현재 손패와 바닥에 있는 광 카드 확인
+                                const existingGwang = [...gameState.hand, ...gameState.floor]
+                                    .filter(c => c.type === '광')
+                                    .map(c => c.month);
+                                
+                                // 아직 없는 광 카드만 선택 가능
+                                const availableGwang = gwangCards.filter(g => !existingGwang.includes(g.month));
+                                
+                                if (availableGwang.length === 0) {
+                                    // 모든 광 카드가 이미 있으면 중복 허용
+                                    availableGwang.push(...gwangCards);
+                                }
+                                
+                                // 무작위 광 카드 선택
+                                const newGwang = availableGwang[Math.floor(Math.random() * availableGwang.length)];
+                                
+                                // 카드 교체
+                                gameState.hand[randomHandIndex] = {
+                                    id: `${newGwang.month}-gwang`,
+                                    month: newGwang.month,
+                                    type: '광',
+                                    name: newGwang.name,
+                                    points: newGwang.points
+                                };
+                                
+                                // 화면 업데이트
+                                updateDisplay();
+                                
+                                PopupComponent.showMessage(`해돋이 효과 발동! ${oldCard.month}월 ${oldCard.type}이(가) ${newGwang.month}월 광(${newGwang.name})으로 변환!`, 'success');
+                            } else {
+                                PopupComponent.showMessage('손패에 카드가 없습니다!', 'warning');
+                            }
+                        }
+                    };
+                    gameStateManager.state.consumableCards.push(sunriseCard);
+                    
+                    PopupComponent.showMessage('해돋이 카드를 획득했습니다!', 'success');
+                    return true;
+                }
+            },
+            // 보주 (Orbs)
+            {
+                id: 'blue_orb',
+                name: '청룡의 보주',
+                category: 'orb',
+                description: '선택한 카드에 청 강화 부여 (점수 +1)',
+                price: 4,
+                rarity: 'rare',
+                icon: '🔵',
+                enhancementType: ENHANCEMENT_TYPES.BLUE.name,
+                requiresCardSelection: true
+            },
+            {
+                id: 'red_orb',
+                name: '주작의 보주',
+                category: 'orb',
+                description: '선택한 카드에 적 강화 부여 (버려질 때 배수 +0.5)',
+                price: 5,
+                rarity: 'rare',
+                icon: '🔴',
+                enhancementType: ENHANCEMENT_TYPES.RED.name,
+                requiresCardSelection: true
+            },
+            {
+                id: 'white_orb',
+                name: '백호의 보주',
+                category: 'orb',
+                description: '선택한 카드에 백 강화 부여 (바닥에 있을 때 점수 +2)',
+                price: 4,
+                rarity: 'rare',
+                icon: '⚪',
+                enhancementType: ENHANCEMENT_TYPES.WHITE.name,
+                requiresCardSelection: true
+            },
+            {
+                id: 'black_orb',
+                name: '현무의 보주',
+                category: 'orb',
+                description: '선택한 카드에 흑 강화 부여 (핸드에 있을 때 점수 +2)',
+                price: 4,
+                rarity: 'epic',
+                icon: '⚫',
+                enhancementType: ENHANCEMENT_TYPES.BLACK.name,
+                requiresCardSelection: true
+            },
+            {
+                id: 'gold_orb',
+                name: '황룡의 보주',
+                category: 'orb',
+                description: '선택한 카드에 황 강화 부여 (스테이지 종료 시 소지금 +1)',
+                price: 3,
+                rarity: 'legendary',
+                icon: '🟡',
+                enhancementType: ENHANCEMENT_TYPES.GOLD.name,
+                requiresCardSelection: true
+            },
+            {
+                id: 'rainbow_orb',
+                name: '오색의 보주',
+                category: 'orb',
+                description: '선택한 카드에 무작위 강화 부여',
+                price: 3,
+                rarity: 'common',
+                icon: '🌈',
+                requiresCardSelection: true
+                // effect는 handleCardSelection에서 직접 처리
+            },
+            {
+                id: 'void_orb',
+                name: '무극의 보주',
+                category: 'orb',
+                description: '선택한 카드를 덱에서 제거',
+                price: 4,
+                rarity: 'common',
+                icon: '🕳️',
+                requiresCardSelection: true,
+                requiresDeckCard: true,
+                effect: (card) => {
+                    gameStateManager.removeCard(card.id);
+                    PopupComponent.showMessage(`${card.name}가 덱에서 제거되었습니다!`, 'success');
+                }
+            },
+            {
+                id: 'twin_orb',
+                name: '쌍생의 보주',
+                category: 'orb',
+                description: '무작위 패 5장 중 하나를 선택해서 복제',
+                price: 6,
+                rarity: 'epic',
+                icon: '🔁',
+                requiresRandomHandSelection: true,
+                effect: (card) => {
+                    gameStateManager.duplicateCard(card.id);
+                    
+                    // 원본 카드의 강화 효과도 복제
+                    const originalEnhancement = gameStateManager.state.cardEnhancements[card.id];
+                    if (originalEnhancement) {
+                        // 복제된 카드의 ID 생성 (원본과 동일한 ID를 사용)
+                        gameStateManager.state.cardEnhancements[card.id] = originalEnhancement;
+                        PopupComponent.showMessage(
+                            `${card.name}가 ${originalEnhancement} 강화 효과와 함께 복제되었습니다!`, 
+                            'success'
+                        );
+                    } else {
+                        PopupComponent.showMessage(`${card.name}가 복제되어 덱에 추가되었습니다!`, 'success');
+                    }
+                }
+            },
+            // 새로운 보물 아이템
+            {
+                id: 'no_discard',
+                name: '낙장불입',
+                category: 'treasure',
+                description: '카드 버리기 불가능, 기본 점수 +5',
+                price: 7,
+                rarity: 'rare',
+                icon: '🚫',
+                effect: function() {
+                    // 보물 효과는 gameStateManager에서 관리
+                    gameStateManager.state.treasures.push('no_discard');
+                    PopupComponent.showMessage('낙장불입 획득! 버리기 불가능, 기본 점수 +5', 'success');
+                    return true;
+                }
+            },
+            {
+                id: 'triple_go',
+                name: '쓰리고',
+                category: 'treasure',
+                description: '스테이지 3개 클리어마다 5골드 추가 획득',
+                price: 6,
+                rarity: 'rare',
+                icon: '3️⃣',
+                effect: function() {
+                    // 보물 효과는 gameStateManager에서 관리
+                    gameStateManager.state.treasures.push('triple_go');
+                    PopupComponent.showMessage('쓰리고 획득! 3스테이지마다 보너스 5골드', 'success');
+                    return true;
+                }
+            },
+            {
+                id: 'lantern',
+                name: '풍등',
+                category: 'treasure',
+                description: '모든 상점에서 보물이 1개 더 등장',
+                price: 8,
+                rarity: 'epic',
+                icon: '🏮',
+                effect: function() {
+                    // 보물 효과는 gameStateManager에서 관리
+                    gameStateManager.state.treasures.push('lantern');
+                    PopupComponent.showMessage('풍등 획득! 상점에 보물 1개 추가', 'success');
+                    return true;
+                }
+            }
+        ];
+    }
+
+    // 상점 아이템 배치 (2-3 레이아웃)
+    arrangeShopItems() {
+        const treasures = this.items.filter(item => item.category === 'treasure');
+        const orbs = this.items.filter(item => item.category === 'orb');
+        const consumables = this.items.filter(item => item.category === 'consumable');
+        
+        // 보주와 소모품을 합쳐서 섞기
+        const mixedItems = [...orbs, ...consumables];
+        const shuffledItems = ArrayUtils.shuffle(mixedItems);
+        
+        return {
+            topRow: treasures,  // 2개 보물
+            bottomRow: shuffledItems.slice(0, 3),  // 3개 (보주/소모품 랜덤)
+            additionalItems: shuffledItems.slice(3)  // 나머지
+        };
+    }
+
+    // 아이템 구매 가능 여부
+    canPurchase(itemId) {
+        const item = this.items.find(i => i.id === itemId);
+        if (!item) return false;
+        
+        // 소지금 체크
+        if (gameStateManager.state.gold < item.price) return false;
+        
+        // 보물(treasure)는 1회 구매 제한 및 최대 5개 제한
+        if (item.category === 'treasure') {
+            // 이미 구매한 보물인지 확인
+            if (gameStateManager.state.purchasedItems.has(itemId)) {
+                return false;
+            }
+            
+            // 현재 보유한 보물 개수 확인 (최대 5개)
+            const treasureCount = gameState.upgrades.filter(u => 
+                u.category === 'treasure' || 
+                (!u.category && u.type !== 'enhancement' && u.type !== 'remove' && u.type !== 'duplicate')
+            ).length;
+            
+            return treasureCount < 5;
+        }
+        
+        // 소모품은 슬롯 체크 (최대 2개) - 단, 계절 패는 즉시 사용되므로 제외
+        if (item.category === 'consumable') {
+            // 계절 패는 즉시 사용되므로 슬롯 체크 불필요
+            if (item.id.includes('_pack')) {
+                return true;
+            }
+            return gameStateManager.state.consumableCards.length < 2;
+        }
+        
+        // 보주는 제한 없음
+        return true;
+    }
+
+    // 아이템 구매 처리
+    purchaseItem(itemId) {
+        const item = this.items.find(i => i.id === itemId);
+        if (!item || !this.canPurchase(itemId)) return false;
+
+        gameStateManager.updateGold(-item.price);
+        
+        // 구매 효과음 재생 (가격에 따라 다른 효과음)
+        if (item.price >= 10) {
+            const audio = new Audio('SE/gold_big.mp3');
+            audio.volume = 0.9;
+            audio.play().catch(e => console.log('효과음 재생 실패:', e));
+        } else {
+            const audio = new Audio('SE/gold_small.mp3');
+            audio.volume = 0.9;
+            audio.play().catch(e => console.log('효과음 재생 실패:', e));
+        }
+        
+        // 보물만 구매 기록에 추가 (재구매 방지)
+        if (item.category === 'treasure') {
+            gameStateManager.purchaseItem(itemId);
+            // gameState.upgrades에도 추가하여 아이콘 표시
+            if (typeof gameState !== 'undefined') {
+                gameState.upgrades.push(item);
+            }
+        }
+
+        // 카드 선택이 필요한 경우
+        if (item.requiresCardSelection || item.requiresDeckCard || item.requiresRandomHandSelection) {
+            return this.handleCardSelection(item);
+        }
+
+        // 즉시 효과 적용
+        if (item.effect) {
+            item.effect.call(this);
+        }
+
+        return true;
+    }
+
+    // 카드 선택 처리
+    handleCardSelection(item) {
+        if (item.requiresRandomHandSelection) {
+            // 무작위 5장 선택 (쌍생의 보주)
+            const allCards = this.getAllDeckCards();
+            const randomCards = ArrayUtils.randomSelect(allCards, 5);
+            this.showCardSelectionPopup(randomCards, item);
+        } else if (item.requiresDeckCard) {
+            // 덱 카드에서 무작위 5장 선택 (무극의 보주)
+            const deckCards = this.getAllDeckCards();
+            const randomCards = ArrayUtils.randomSelect(deckCards, Math.min(5, deckCards.length));
+            this.showCardSelectionPopup(randomCards, item);
+        } else if (item.requiresCardSelection) {
+            // 일반 카드 선택 (강화 보주들)
+            const allCards = this.getAllDeckCards();
+            const randomCards = ArrayUtils.randomSelect(allCards, Math.min(5, allCards.length));
+            this.showCardSelectionPopup(randomCards, item);
+        } else {
+            // 현재 패 카드 선택
+            this.showCardSelectionPopup(gameStateManager.state.playerHand, item);
+        }
+        return true;
+    }
+
+    // 모든 덱 카드 가져오기
+    getAllDeckCards() {
+        let allCards = [];
+        
+        // window.HWATU_CARDS 확인 (hwatu-game.js에서 정의)
+        if (typeof window.HWATU_CARDS !== 'undefined') {
+            allCards = [...window.HWATU_CARDS];
+        } else if (typeof HWATU_CARDS !== 'undefined') {
+            allCards = [...HWATU_CARDS];
+        } else if (typeof gameState !== 'undefined' && gameState.deck) {
+            // gameState.deck와 hand, floor, captures에서 모든 카드 수집
+            allCards = [
+                ...gameState.deck,
+                ...gameState.hand,
+                ...gameState.floor,
+                ...gameState.captures,
+                ...gameState.opponentHand,
+                ...gameState.opponentCaptures
+            ];
+        }
+        
+        // 카드가 없으면 빈 배열 반환
+        if (allCards.length === 0) {
+            return [];
+        }
+        
+        // 제거된 카드 필터링
+        const filteredCards = allCards.filter(card => 
+            !gameStateManager.state.removedCards.has(card.id)
+        );
+        
+        // 복제된 카드 추가
+        gameStateManager.state.duplicatedCards.forEach(cardId => {
+            const duplicatedCard = allCards.find(c => c.id === parseInt(cardId));
+            if (duplicatedCard) {
+                filteredCards.push({...duplicatedCard});
+            }
+        });
+        
+        return filteredCards;
+    }
+
+    // 계절 카드 추가 메서드
+    addSeasonalCard(months, seasonName) {
+        // 모든 카드 가져오기
+        const allCards = this.getAllDeckCards();
+        
+        // 해당 월의 모든 카드 수집
+        const seasonalCards = allCards.filter(card => 
+            months.includes(card.month)
+        );
+        
+        if (seasonalCards.length === 0) {
+            console.error('No seasonal cards found for months:', months);
+            return;
+        }
+
+        // 무작위 카드 선택
+        const randomCard = seasonalCards[Math.floor(Math.random() * seasonalCards.length)];
+        
+        // 카드 획득 애니메이션 표시
+        this.showCardAcquisitionAnimation(randomCard, seasonName);
+        
+        // 덱에 카드 추가 (복제로 처리)
+        gameStateManager.duplicateCard(randomCard.id);
+    }
+
+    // 카드 획득 애니메이션
+    showCardAcquisitionAnimation(card, seasonName) {
+        // 덱 카드 요소 찾기 (🎴 이모지가 있는 요소)
+        const deckCard = document.querySelector('.deck-card');
+        const deckRect = deckCard ? deckCard.getBoundingClientRect() : null;
+        
+        // 화면 중앙 위치
+        const centerX = window.innerWidth / 2;
+        const centerY = window.innerHeight / 2;
+
+        // 계절 이름 표시 (화면 상단에 고정)
+        const seasonTitle = DOMUtils.createElement('h2', {
+            style: {
+                position: 'fixed',
+                top: '50px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                color: '#ffd700',
+                fontSize: '36px',
+                textShadow: '0 0 20px rgba(255, 215, 0, 0.5)',
+                zIndex: 10001,
+                animation: 'fadeIn 0.5s ease'
+            },
+            textContent: `${seasonName}의 패 획득!`
+        });
+        document.body.appendChild(seasonTitle);
+
+        // 카드 생성 - createCardElement 함수 사용
+        let cardElement;
+        if (typeof createCardElement === 'function') {
+            cardElement = createCardElement(card);
+        } else {
+            // createCardElement가 없으면 기본 카드 생성
+            cardElement = document.createElement('div');
+            cardElement.className = 'card';
+            
+            // 카드 이미지 직접 설정
+            let imageName = '';
+            if (card.month === 1) {
+                if (card.type === '광') imageName = '1_일광.png';
+                else if (card.type === '홍단') imageName = '1_띠.png';
+                else if (card.id === 3) imageName = '1_피1.png';
+                else if (card.id === 4) imageName = '1_피2.png';
+            } else if (card.month === 2) {
+                if (card.type === '열끗') imageName = '2_끗.png';
+                else if (card.type === '홍단') imageName = '2_띠.png';
+                else if (card.id === 7) imageName = '2_피1.png';
+                else if (card.id === 8) imageName = '2_피2.png';
+            } else if (card.month === 3) {
+                if (card.type === '광') imageName = '3_삼광.png';
+                else if (card.type === '홍단') imageName = '3_띠.png';
+                else if (card.id === 11) imageName = '3_피1.png';
+                else if (card.id === 12) imageName = '3_피2.png';
+            } else if (card.month === 4) {
+                if (card.type === '열끗') imageName = '4_끗.png';
+                else if (card.type === '초단') imageName = '4_띠.png';
+                else if (card.id === 15) imageName = '4_피1.png';
+                else if (card.id === 16) imageName = '4_피2.png';
+            } else if (card.month === 5) {
+                if (card.type === '열끗') imageName = '5_끗.png';
+                else if (card.type === '초단') imageName = '5_띠.png';
+                else if (card.id === 19) imageName = '5_피1.png';
+                else if (card.id === 20) imageName = '5_피2.png';
+            } else if (card.month === 6) {
+                if (card.type === '열끗') imageName = '6_끗.png';
+                else if (card.type === '청단') imageName = '6_띠.png';
+                else if (card.id === 23) imageName = '6_피1.png';
+                else if (card.id === 24) imageName = '6_피2.png';
+            } else if (card.month === 7) {
+                if (card.type === '열끗') imageName = '7_끗.png';
+                else if (card.type === '초단') imageName = '7_띠.png';
+                else if (card.id === 27) imageName = '7_피1.png';
+                else if (card.id === 28) imageName = '7_피2.png';
+            } else if (card.month === 8) {
+                if (card.type === '광') imageName = '8_팔광.png';
+                else if (card.type === '열끗') imageName = '8_끗.png';
+                else if (card.id === 31) imageName = '8_피1.png';
+                else if (card.id === 32) imageName = '8_피2.png';
+            } else if (card.month === 9) {
+                if (card.type === '열끗') imageName = '9_쌍피.png';
+                else if (card.type === '청단') imageName = '9_띠.png';
+                else if (card.id === 35) imageName = '9_피1.png';
+                else if (card.id === 36) imageName = '9_피2.png';
+            } else if (card.month === 10) {
+                if (card.type === '열끗') imageName = '10_끗.png';
+                else if (card.type === '청단') imageName = '10_띠.png';
+                else if (card.id === 39) imageName = '10_피1.png';
+                else if (card.id === 40) imageName = '10_피2.png';
+            } else if (card.month === 11) {
+                if (card.type === '광') imageName = '11_똥광.png';
+                else if (card.type === '쌍피') imageName = '11_쌍피.png';
+                else if (card.id === 43) imageName = '11_피1.png';
+                else if (card.id === 44) imageName = '11_피2.png';
+            } else if (card.month === 12) {
+                if (card.type === '광') imageName = '12_비광.png';
+                else if (card.type === '열끗') imageName = '12_끗.png';
+                else if (card.type === '쌍피') imageName = '12_쌍피.png';
+                else if (card.type === '피') imageName = '12_띠.png';
+            }
+            
+            if (imageName) {
+                cardElement.style.backgroundImage = `url('new card/${imageName}')`;
+                cardElement.style.backgroundSize = 'cover';
+                cardElement.style.backgroundPosition = 'center';
+            }
+        }
+        
+        // 카드 스타일 설정
+        cardElement.style.cssText += `
+            position: fixed;
+            left: ${centerX - 60}px;
+            top: ${centerY - 80}px;
+            width: 100px;
+            height: 160px;
+            z-index: 10002;
+            box-shadow: 0 0 50px rgba(255, 215, 0, 1);
+            border: 3px solid #ffd700;
+            border-radius: 8px;
+            transform: scale(0) rotateY(0deg);
+            transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            background-size: cover;
+            background-position: center;
+        `;
+        document.body.appendChild(cardElement);
+
+        // 카드 정보 표시
+        const cardInfo = DOMUtils.createElement('div', {
+            style: {
+                position: 'fixed',
+                left: '50%',
+                top: `${centerY + 100}px`,
+                transform: 'translateX(-50%)',
+                textAlign: 'center',
+                opacity: '0',
+                zIndex: 10001,
+                transition: 'opacity 0.5s ease'
+            },
+            innerHTML: `
+                <div style="color: #fff; font-size: 24px; font-weight: bold; margin-bottom: 10px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                    ${card.month}월 - ${card.name}
+                </div>
+                <div style="color: #ffd700; font-size: 18px; text-shadow: 2px 2px 4px rgba(0,0,0,0.5);">
+                    덱에 추가됩니다!
+                </div>
+            `
+        });
+        document.body.appendChild(cardInfo);
+
+        // 1단계: 카드 나타나기
+        setTimeout(() => {
+            cardElement.style.transform = 'scale(1.5) rotateY(360deg)';
+            cardInfo.style.opacity = '1';
+        }, 100);
+
+        // 2단계: 잠시 대기 후 덱으로 이동
+        setTimeout(() => {
+            // 덱 위치로 이동 (덱 카드의 중앙으로)
+            if (deckRect) {
+                const targetX = deckRect.left + (deckRect.width / 2) - 50;
+                const targetY = deckRect.top + (deckRect.height / 2) - 80;
+                
+                cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                cardElement.style.left = `${targetX}px`;
+                cardElement.style.top = `${targetY}px`;
+                cardElement.style.transform = 'scale(0.3) rotate(720deg)';
+                cardElement.style.opacity = '0';
+            } else {
+                // 덱 위치를 찾을 수 없으면 우측 상단으로
+                cardElement.style.transition = 'all 0.8s cubic-bezier(0.4, 0, 0.2, 1)';
+                cardElement.style.left = `${window.innerWidth - 150}px`;
+                cardElement.style.top = `100px`;
+                cardElement.style.transform = 'scale(0.3) rotate(720deg)';
+                cardElement.style.opacity = '0';
+            }
+            
+            // 정보 텍스트 페이드 아웃
+            cardInfo.style.opacity = '0';
+            
+            // 효과음 재생
+            if (typeof playSound === 'function') {
+                playSound('SE/allow1.mp3');
+            }
+        }, 2000);
+
+        // 3단계: 제거 및 덱 카운트 업데이트
+        setTimeout(() => {
+            cardElement.remove();
+            cardInfo.remove();
+            seasonTitle.remove();
+            
+            // 덱 카운트 업데이트
+            if (typeof updateDeckCount === 'function') {
+                updateDeckCount();
+            }
+            
+            PopupComponent.showMessage(
+                `${card.month}월 ${card.name}이(가) 덱에 추가되었습니다!`,
+                'success'
+            );
+        }, 3000);
+    }
+
+    // 강화 효과 애니메이션 표시
+    showEnhancementAnimation(card, item, callback) {
+        // 강화 타입에 따른 스타일 정의 (실제 게임 효과와 동일)
+        const enhancementStyles = {
+            '청': {
+                border: '3px solid #00bfff',
+                boxShadow: '0 0 20px rgba(0, 191, 255, 0.8), inset 0 0 15px rgba(0, 191, 255, 0.3)',
+                gradient: 'linear-gradient(135deg, rgba(0, 191, 255, 0.3) 0%, rgba(0, 191, 255, 0.15) 30%, transparent 60%)',
+                glow: 'radial-gradient(ellipse at top left, rgba(0, 191, 255, 0.25) 0%, transparent 50%)'
+            },
+            '적': {
+                border: '3px solid #ff4444',
+                boxShadow: '0 0 20px rgba(255, 68, 68, 0.8), inset 0 0 15px rgba(255, 68, 68, 0.3)',
+                gradient: 'linear-gradient(135deg, rgba(255, 68, 68, 0.3) 0%, rgba(255, 68, 68, 0.15) 30%, transparent 60%)',
+                glow: 'radial-gradient(ellipse at top left, rgba(255, 68, 68, 0.25) 0%, transparent 50%)'
+            },
+            '백': {
+                border: '3px solid #ffffff',
+                boxShadow: '0 0 20px rgba(255, 255, 255, 0.9), inset 0 0 15px rgba(255, 255, 255, 0.4)',
+                gradient: 'linear-gradient(135deg, rgba(255, 255, 255, 0.35) 0%, rgba(255, 255, 255, 0.2) 30%, transparent 60%)',
+                glow: 'radial-gradient(ellipse at top left, rgba(255, 255, 255, 0.3) 0%, transparent 50%)'
+            },
+            '흑': {
+                border: '3px solid #424242',
+                boxShadow: '0 0 20px rgba(66, 66, 66, 0.8), inset 0 0 15px rgba(0, 0, 0, 0.5)',
+                gradient: 'linear-gradient(135deg, rgba(66, 66, 66, 0.4) 0%, rgba(0, 0, 0, 0.3) 30%, transparent 60%)',
+                glow: 'radial-gradient(ellipse at top left, rgba(66, 66, 66, 0.3) 0%, transparent 50%)'
+            },
+            '황': {
+                border: '3px solid #ffd700',
+                boxShadow: '0 0 25px rgba(255, 215, 0, 0.9), inset 0 0 20px rgba(255, 215, 0, 0.4)',
+                gradient: 'linear-gradient(135deg, rgba(255, 215, 0, 0.4) 0%, rgba(255, 215, 0, 0.2) 30%, transparent 60%)',
+                glow: 'radial-gradient(ellipse at top left, rgba(255, 215, 0, 0.35) 0%, transparent 50%)'
+            }
+        };
+        
+        const enhanceStyle = enhancementStyles[item.enhancementType] || enhancementStyles['황'];
+        
+        // 카드 표시 컨테이너 (배경 없음)
+        const container = DOMUtils.createElement('div', {
+            style: {
+                position: 'fixed',
+                top: '50%',
+                left: '50%',
+                transform: 'translate(-50%, -50%)',
+                zIndex: 20000
+            }
+        });
+        
+        // 카드 엘리먼트 생성
+        const cardElement = typeof window.createCardElement === 'function' 
+            ? window.createCardElement(card) 
+            : DOMUtils.createElement('div', {
+                className: 'card',
+                style: {
+                    background: `url('cards/${card.id}.svg') center/cover`,
+                    borderRadius: '12px'
+                }
+            });
+        
+        // 카드 기본 스타일 설정
+        cardElement.style.cssText += `
+            width: 200px;
+            height: 320px;
+            position: relative;
+            transform: scale(0);
+            animation: enhanceCardAppear 0.5s ease forwards;
+            border-radius: 12px;
+            overflow: hidden;
+        `;
+        
+        // 강화 효과 적용 (0.5초 후)
+        setTimeout(() => {
+            // 테두리와 그림자 효과
+            cardElement.style.border = enhanceStyle.border;
+            cardElement.style.boxShadow = enhanceStyle.boxShadow;
+            cardElement.style.transition = 'all 0.3s ease';
+            
+            // 그라데이션 오버레이
+            const gradientOverlay = DOMUtils.createElement('div', {
+                style: {
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: enhanceStyle.gradient,
+                    borderRadius: 'inherit',
+                    pointerEvents: 'none',
+                    opacity: 0,
+                    animation: 'fadeIn 0.5s ease forwards'
+                }
+            });
+            
+            // 글로우 오버레이
+            const glowOverlay = DOMUtils.createElement('div', {
+                style: {
+                    position: 'absolute',
+                    top: 0,
+                    left: 0,
+                    right: 0,
+                    bottom: 0,
+                    background: enhanceStyle.glow,
+                    borderRadius: 'inherit',
+                    pointerEvents: 'none',
+                    opacity: 0,
+                    animation: 'enhancedPulse 2s ease-in-out infinite'
+                }
+            });
+            
+            cardElement.appendChild(gradientOverlay);
+            cardElement.appendChild(glowOverlay);
+            
+            // 파티클 효과
+            this.createEnhancementParticles(container, item.enhancementType);
+        }, 500);
+        
+        // 강화 완료 텍스트
+        const completeText = DOMUtils.createElement('div', {
+            style: {
+                position: 'absolute',
+                bottom: '-80px',
+                left: '50%',
+                transform: 'translateX(-50%)',
+                color: '#ffd700',
+                fontSize: '28px',
+                fontWeight: 'bold',
+                opacity: 0,
+                animation: 'fadeIn 0.5s ease forwards 1.2s',
+                textShadow: '0 0 15px rgba(255, 215, 0, 0.6)',
+                whiteSpace: 'nowrap'
+            },
+            textContent: '강화 완료!'
+        });
+        
+        // 요소 조립
+        container.appendChild(cardElement);
+        container.appendChild(completeText);
+        document.body.appendChild(container);
+        
+        // 효과음 재생
+        if (typeof playSound === 'function') {
+            playSound('SE/powerup.mp3');
+        }
+        
+        // 애니메이션 완료 후 처리 - 덱으로 이동
+        setTimeout(() => {
+            // 애니메이션 초기화 (기존 animation 제거)
+            cardElement.style.animation = 'none';
+
+            // 무극의 보주 (카드 제거)인 경우
+            if (item.id === 'void_orb') {
+                // 빨간 X 표시 추가
+                const removeEffect = DOMUtils.createElement('div', {
+                    style: {
+                        position: 'absolute',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        fontSize: '120px',
+                        color: '#ff0000',
+                        fontWeight: 'bold',
+                        textShadow: '0 0 20px rgba(255, 0, 0, 0.8)',
+                        zIndex: 10
+                    },
+                    textContent: '✖'
+                });
+                cardElement.appendChild(removeEffect);
+
+                // 0.3초 후 위로 날아가며 사라지는 애니메이션
+                setTimeout(() => {
+                    // 카드를 직접 이동 (현재 scale(1)에서 시작)
+                    cardElement.style.transition = 'transform 0.8s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
+                    cardElement.style.transform = 'scale(1) translateY(-800px) scale(0.1) rotate(720deg)';
+                    cardElement.style.transform = 'scale(0.1) translateY(-800px) rotate(720deg)';
+                    cardElement.style.opacity = '0';
+                }, 300);
+            } else {
+                // 강화 보주들 - 덱으로 이동 애니메이션
+                const deckElement = document.getElementById('deck-info');
+                if (deckElement && deckElement.offsetParent !== null) {
+                    const deckRect = deckElement.getBoundingClientRect();
+
+                    // 현재 중앙 위치에서 덱 위치까지의 거리 계산
+                    const currentX = window.innerWidth / 2;
+                    const currentY = window.innerHeight / 2;
+                    const targetX = deckRect.left + deckRect.width / 2;
+                    const targetY = deckRect.top + deckRect.height / 2;
+
+                    const deltaX = targetX - currentX;
+                    const deltaY = targetY - currentY;
+
+                    // 2단계 애니메이션으로 분리
+                    // 1단계: 살짝 뜨면서 회전 시작
+                    cardElement.style.transition = 'transform 0.3s ease-out';
+                    cardElement.style.transform = 'scale(1.1) translateY(-20px) rotate(10deg)';
+
+                    // 2단계: 덱으로 이동하면서 크기 줄이기
+                    setTimeout(() => {
+                        cardElement.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.6s ease 0.4s';
+                        cardElement.style.transform = `translate(${deltaX}px, ${deltaY}px) scale(0.15) rotate(360deg)`;
+                        cardElement.style.opacity = '0';
+                    }, 300);
+                } else {
+                    // 덱 요소를 찾을 수 없으면 오른쪽 하단으로
+                    cardElement.style.transition = 'transform 1s cubic-bezier(0.4, 0, 0.2, 1), opacity 0.8s ease';
+                    cardElement.style.transform = 'translate(400px, 400px) scale(0) rotate(360deg)';
+                    cardElement.style.opacity = '0';
+                }
+            }
+
+            setTimeout(() => {
+                container.remove();
+                if (callback) callback();
+            }, 1400);
+        }, 2200);
+    }
+    
+    // 강화 파티클 효과 생성
+    createEnhancementParticles(container, enhanceType) {
+        const colors = {
+            '청': '#00bfff',
+            '적': '#ff4444',
+            '백': '#ffffff',
+            '흑': '#424242',
+            '황': '#ffd700'
+        };
+        
+        const color = colors[enhanceType] || '#ffd700';
+        
+        // 파티클 생성
+        for (let i = 0; i < 12; i++) {
+            setTimeout(() => {
+                const particle = DOMUtils.createElement('div', {
+                    style: {
+                        position: 'absolute',
+                        width: '6px',
+                        height: '6px',
+                        background: color,
+                        borderRadius: '50%',
+                        top: '50%',
+                        left: '50%',
+                        transform: 'translate(-50%, -50%)',
+                        boxShadow: `0 0 10px ${color}`,
+                        animation: `particle-float-${i} 1.5s ease-out forwards`
+                    }
+                });
+                
+                // 동적 애니메이션 생성
+                const angle = (i * 30) * Math.PI / 180;
+                const distance = 150 + Math.random() * 50;
+                const x = Math.cos(angle) * distance;
+                const y = Math.sin(angle) * distance;
+                
+                const style = document.createElement('style');
+                style.textContent = `
+                    @keyframes particle-float-${i} {
+                        0% {
+                            transform: translate(-50%, -50%) scale(0);
+                            opacity: 1;
+                        }
+                        100% {
+                            transform: translate(calc(-50% + ${x}px), calc(-50% + ${y}px)) scale(1);
+                            opacity: 0;
+                        }
+                    }
+                `;
+                document.head.appendChild(style);
+                
+                container.appendChild(particle);
+                
+                // 애니메이션 후 정리
+                setTimeout(() => {
+                    particle.remove();
+                    style.remove();
+                }, 1500);
+            }, i * 50);
+        }
+    }
+    
+    // 카드 선택 팝업 표시
+    showCardSelectionPopup(cards, item) {
+        // 카드가 없으면 에러
+        if (!cards || cards.length === 0) {
+            PopupComponent.showMessage('카드를 불러올 수 없습니다.', 'error');
+            return;
+        }
+        
+        // 보주 아이템인지 확인 (category가 'orb'인 모든 아이템)
+        const isOrbItem = item.category === 'orb';
+        
+        // 카드 선택 컴포넌트 생성
+        CardSelectionComponent.create(cards, {
+            title: item.name,
+            description: item.description,
+            maxCards: 5,
+            showEnhancement: true,
+            isOrbItem: isOrbItem,  // 보주 카테고리인 경우 새로운 UI 사용
+            itemIcon: item.icon || '',  // 아이템 아이콘 전달
+            onSelect: (selectedCard) => {
+                // 오색의 보주의 경우 미리 강화 타입 결정
+                let actualEnhancementType = item.enhancementType;
+                if (item.id === 'rainbow_orb') {
+                    const types = Object.keys(ENHANCEMENT_TYPES);
+                    const randomType = types[Math.floor(Math.random() * types.length)];
+                    actualEnhancementType = ENHANCEMENT_TYPES[randomType].name;
+                }
+                
+                // 임시 아이템 객체 생성 (실제 강화 타입 포함)
+                const animationItem = { ...item, enhancementType: actualEnhancementType };
+                
+                // 강화 효과 적용 애니메이션 표시
+                this.showEnhancementAnimation(selectedCard, animationItem, () => {
+                    // 애니메이션 완료 후 실제 강화 적용
+                    if (item.id === 'rainbow_orb') {
+                        // 오색의 보주: 미리 결정된 타입으로 강화
+                        gameStateManager.applyEnhancement(selectedCard.id, actualEnhancementType);
+                        // gameState에도 동기화
+                        if (typeof gameState !== 'undefined') {
+                            gameState.cardEnhancements[selectedCard.id] = actualEnhancementType;
+                        }
+                        PopupComponent.showMessage(
+                            `${selectedCard.name}에 ${actualEnhancementType} 강화가 부여되었습니다!`, 
+                            'success'
+                        );
+                    } else if (item.enhancementType) {
+                        gameStateManager.applyEnhancement(selectedCard.id, item.enhancementType);
+                        // gameState에도 동기화
+                        if (typeof gameState !== 'undefined') {
+                            gameState.cardEnhancements[selectedCard.id] = item.enhancementType;
+                        }
+                        PopupComponent.showMessage(
+                            `${selectedCard.name}에 ${item.enhancementType} 강화가 부여되었습니다!`, 
+                            'success'
+                        );
+                    } else if (item.effect) {
+                        item.effect(selectedCard);
+                    }
+                    
+                    // 상점 UI 업데이트
+                    if (typeof updateDeckCount === 'function') {
+                        updateDeckCount();
+                    }
+                    if (typeof updateConsumableCards === 'function') {
+                        updateConsumableCards();
+                    }
+                });
+            },
+            onCancel: () => {
+                // 취소 기능 제거 - 환불 없음
+            }
+        });
+    }
+}
+
+// 전역 상점 매니저 인스턴스
+const shopManager = new ShopManager();

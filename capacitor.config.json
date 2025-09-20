@@ -1,0 +1,8 @@
+{
+  "appId": "com.domin200.fioretro",
+  "appName": "Fioretro",
+  "webDir": "www",
+  "server": {
+    "androidScheme": "https"
+  }
+}

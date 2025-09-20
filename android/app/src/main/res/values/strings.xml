@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">Fioretro</string>
+    <string name="title_activity_main">Fioretro</string>
+    <string name="package_name">com.domin200.fioretro</string>
+    <string name="custom_url_scheme">com.domin200.fioretro</string>
+</resources>

@@ -1,0 +1,2188 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>화라투로 - Korean Poker Roguelike</title>
+    
+    <!-- Meta Tags -->
+    <meta name="description" content="화라투로 - 화투와 로그라이크가 만난 독특한 한국형 카드 게임">
+    <meta name="keywords" content="화라투로, 화투, 로그라이크, 카드게임, Korean Poker, Hwaraturo">
+    <meta name="author" content="Fioretro">
+    
+    <!-- Open Graph Tags -->
+    <meta property="og:title" content="화라투로 - Korean Poker Roguelike">
+    <meta property="og:description" content="전통 화투와 로그라이크 장르의 만남! 전략적인 카드 플레이를 즐겨보세요.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://domin200.github.io/Fioretro/">
+    <meta property="og:image" content="https://domin200.github.io/Fioretro/new%20card/1_일광.png">
+    
+    <!-- Twitter Card Tags -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="화라투로 - Korean Poker Roguelike">
+    <meta name="twitter:description" content="전통 화투와 로그라이크 장르의 만남!">
+    <meta name="twitter:image" content="https://domin200.github.io/Fioretro/new%20card/1_일광.png">
+    <style>
+        /* CSS 변수 정의 */
+        :root {
+            /* 색상 */
+            --color-gold: #ffd700;
+            --color-gold-transparent: rgba(255, 215, 0, 0.3);
+            --color-gold-transparent-strong: rgba(255, 215, 0, 0.6);
+            --color-background-overlay: rgba(0, 0, 0, 0.5);
+            --color-background-overlay-dark: rgba(0, 0, 0, 0.7);
+            --color-white-transparent: rgba(255, 255, 255, 0.1);
+            --color-white-transparent-weak: rgba(255, 255, 255, 0.05);
+            --color-green: #64ff64;
+            --color-green-transparent: rgba(100, 255, 100, 0.3);
+
+            /* 크기 */
+            --border-radius-standard: 12px;
+            --border-radius-small: 8px;
+            --border-radius-tiny: 6px;
+            --padding-standard: 15px;
+            --padding-small: 10px;
+            --gap-standard: 10px;
+
+            /* z-index */
+            --z-overlay-high: 10000;
+            --z-overlay-medium: 5000;
+            --z-overlay-low: 100;
+        }
+
+        /* Pretendard Font */
+        @font-face {
+            font-family: 'Pretendard';
+            font-weight: 45 920;
+            font-style: normal;
+            font-display: swap;
+            src: url('./font/Pretendard/variable/woff2/PretendardVariable.woff2') format('woff2-variations');
+        }
+
+        /* 전체 폰트 적용 */
+        html {
+            font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: inherit;
+        }
+
+        body {
+            height: 100vh;
+            padding: 60px 10px;
+            color: white;
+            position: relative;
+            overflow-x: hidden;
+            overflow-y: auto;
+        }
+
+        /* CRT 효과 1: 곡면 착시 (화면 가장자리 어둡게) */
+        body::before {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10000;
+            background: radial-gradient(ellipse at center,
+                transparent 0%,
+                transparent 40%,
+                rgba(0,0,0,0.4) 100%);
+        }
+
+        /* CRT 효과 2: 스캔라인 - 30% 약하게 */
+        body::after {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10001;
+            background-image:
+                repeating-linear-gradient(
+                    0deg,
+                    rgba(0, 0, 0, 0.175) 0px,
+                    rgba(0, 0, 0, 0.175) 1px,
+                    transparent 1px,
+                    transparent 2px
+                );
+            opacity: 0.7;
+        }
+
+        /* CRT 효과 3: RGB 서브픽셀 (별도 요소) - 30% 약하게 */
+        #crt-rgb {
+            content: "";
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 10002;
+            background-image: repeating-linear-gradient(
+                90deg,
+                rgba(255, 0, 0, 0.021) 0px,
+                rgba(0, 255, 0, 0.021) 1px,
+                rgba(0, 0, 255, 0.021) 2px,
+                transparent 3px
+            );
+            mix-blend-mode: screen;
+            opacity: 0.7;
+        }
+        
+        #game-container {
+            max-width: 1400px;
+            width: 100%;
+            height: calc(100vh - 120px);
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 인라인 스타일 대체용 클래스 */
+        .flex-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flex-top {
+            flex: 0.45;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .flex-bottom {
+            flex: 0.55;
+            display: flex;
+            flex-direction: column;
+        }
+
+        #score-board {
+            display: flex;
+            flex-direction: column;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
+            padding: 15px;
+            border-radius: 12px;
+            gap: 8px;
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            backdrop-filter: blur(5px);
+            grid-column: 1;
+            grid-row: 2;
+            position: relative;
+        }
+        
+        .score-item {
+            text-align: center;
+            padding: 6px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .score-row {
+            display: flex;
+            gap: 10px;
+        }
+        
+        /* 데스크탑 전용 표시 */
+        @media (min-width: 769px) {
+            .mobile-row-1 .mobile-target,
+            .mobile-row-2 {
+                display: none !important;
+            }
+        }
+
+        .score-item-half {
+            flex: 1;
+            text-align: center;
+            padding: 5px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 6px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .score-label {
+            font-size: clamp(10px, 1.2vw, 12px);
+            opacity: 0.7;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 5px;
+            color: #aaa;
+            font-weight: 500;
+        }
+        
+        .score-value {
+            font-size: clamp(16px, 2vw, 20px);
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .score-item .score-value {
+            font-size: clamp(18px, 2.5vw, 22px);
+        }
+        
+        .score-item-half .score-value {
+            font-size: clamp(14px, 2vw, 18px);
+        }
+        
+        #main-game-layout {
+            display: grid;
+            grid-template-columns: minmax(180px, 1fr) minmax(400px, 3fr);
+            grid-template-rows: 1fr auto;
+            gap: 10px;
+            flex: 1;
+            min-height: 0;
+        }
+        
+        /* 태블릿 및 모바일 기본 */
+        @media (max-width: 768px) {
+            body {
+                padding: 10px;
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+            }
+
+            #game-container {
+                display: flex;
+                flex-direction: column;
+                height: auto;
+                min-height: calc(100vh - 20px);
+                padding: 10px;
+            }
+            
+            #main-game-layout {
+                display: flex;
+                flex-direction: column;
+                flex: 1;
+                padding: 0;
+                gap: 10px;
+            }
+            
+            /* 획득한패 영역 숨기기 */
+            #captured-area {
+                display: none !important;
+            }
+            
+            /* 점수판을 위로 */
+            #score-board {
+                order: -1;
+                margin-bottom: 10px;
+            }
+
+            /* 모바일에서 점수 레이아웃 재구성 */
+            #score-board .mobile-row-1 .mobile-target,
+            #score-board .mobile-row-2 {
+                display: flex !important;
+            }
+
+            #score-board .desktop-only {
+                display: none !important;
+            }
+            
+            /* 플레이 컨테이너 */
+            #play-container {
+                order: 0;
+                flex: 1;
+                display: flex;
+                flex-direction: column;
+                position: relative;
+            }
+            
+            /* 플레이 컨테이너 내부 레이아웃 */
+            #play-container > div[style*="flex: 1"] {
+                flex: 1;
+                width: 100%;
+            }
+            
+            /* 업그레이드 정보 숨기기 */
+            #upgrades-info {
+                display: none !important;
+            }
+            
+            /* 덱 정보 위치 조정 - 우측 중간 */
+            #deck-info {
+                position: absolute;
+                top: 50%;
+                right: -5px;
+                transform: translateY(-50%);
+                width: 40px;
+                margin: 0;
+                background: rgba(0, 0, 0, 0.5);
+                border-radius: 6px 0 0 6px;
+                padding: 4px 3px;
+                z-index: 10;
+            }
+            
+            .deck-card {
+                width: 35px;
+                height: 52px;
+                font-size: 14px;
+                margin: 3px auto;
+            }
+            
+            .deck-remaining-label {
+                font-size: 8px !important;
+                padding: 1px 3px;
+                bottom: 3px;
+            }
+            
+            /* 카드 크기 축소 */
+            .card {
+                width: 60px !important;
+                height: 90px !important;
+                font-size: 10px !important;
+            }
+            
+            .card-month {
+                font-size: 10px !important;
+            }
+            
+            .card-type {
+                font-size: 16px !important;
+            }
+            
+            .card-name {
+                font-size: 9px !important;
+            }
+            
+            /* 바닥패와 손패 영역 조정 */
+            #floor-area, #hand-area {
+                min-height: 80px;
+                gap: 5px;
+            }
+            
+            /* 구분선 위치 조정 */
+            .divider {
+                margin: 10px auto;
+            }
+            
+            /* 업그레이드 아이콘 크기 축소 */
+            #upgrades-list .upgrade-item {
+                width: 32px;
+                height: 32px;
+                font-size: 16px;
+            }
+            
+            /* 섹션 타이틀 크기 조정 */
+            .section-title {
+                font-size: 12px !important;
+                margin-bottom: 5px;
+            }
+        }
+        
+        #center-area {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            justify-content: center;
+        }
+        
+        #captured-area {
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.5) 0%, rgba(20, 20, 20, 0.5) 100%);
+            padding: 15px;
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            backdrop-filter: blur(5px);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.6);
+            overflow-y: auto;
+            grid-column: 1;
+            grid-row: 1;
+            position: relative;
+        }
+        
+        .captured-cards-container {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .captured-section {
+            margin-bottom: 10px;
+            flex: 1;
+            min-height: 60px;
+        }
+        
+        .captured-title {
+            font-size: 14px;
+            margin-bottom: 5px;
+            opacity: 0.9;
+        }
+        
+        .captured-cards {
+            display: flex;
+            gap: 5px;
+            flex-wrap: wrap;
+            min-height: 50px;
+        }
+        
+        #play-container {
+            background: rgba(0, 0, 0, 0.3);
+            padding: 15px;
+            border-radius: 10px;
+            border: 2px solid rgba(100, 255, 100, 0.25);
+            backdrop-filter: blur(5px);
+            display: flex;
+            flex-direction: row;
+            position: relative;
+            grid-column: 2;
+            grid-row: 1 / 3;
+        }
+
+        /* 게임 중에만 투명하게 (타이틀이 숨겨진 상태) */
+        body:not(.title-visible) #play-container {
+            background: transparent !important;
+            backdrop-filter: none !important;
+            box-shadow: none !important;
+        }
+
+        body:not(.title-visible) #play-container > * {
+            background: transparent !important;
+        }
+        
+        #deck-info {
+            width: 80px;
+            margin: 0 15px;
+            text-align: center;
+            background: transparent;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+        }
+        
+        #upgrades-info {
+            width: 50px;
+            display: flex;
+            flex-direction: column;
+            margin-right: 10px;
+            padding: 10px 5px;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        
+        #upgrades-list {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            max-height: 500px;
+            overflow-y: auto;
+            align-items: center;
+            width: 100%;
+        }
+        
+        #upgrades-list .upgrade-item {
+            width: 40px;
+            height: 40px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 2px solid rgba(255, 215, 0, 0.4);
+            position: relative;
+            backdrop-filter: blur(5px);
+        }
+        
+        #upgrades-list .upgrade-item:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: rgba(255, 215, 0, 0.8);
+            box-shadow: 0 4px 12px rgba(255, 215, 0, 0.4);
+        }
+        
+        
+        .divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, rgba(100, 255, 100, 0.3), transparent);
+            margin: auto 0;
+            width: 100%;
+        }
+        
+        #floor-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            min-height: 120px;
+        }
+        
+        
+        .deck-card {
+            width: 60px;
+            height: 90px;
+            background: linear-gradient(135deg, #333 0%, #555 100%);
+            border-radius: 8px;
+            margin: 5px auto;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.5);
+            transition: transform 0.3s ease;
+            position: relative;
+        }
+        
+        .deck-card:hover {
+            transform: scale(1.05);
+        }
+        
+        .deck-remaining-label {
+            position: absolute;
+            bottom: 6px;
+            background: rgba(0, 0, 0, 0.7);
+            color: white;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 11px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+        
+        #hand-area {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+            min-height: 120px;
+        }
+        
+        /* 3D 카드 컨테이너 */
+        .card-3d {
+            width: clamp(70px, 9vw, 90px);
+            height: clamp(105px, 13.5vw, 135px);
+            perspective: 1000px;
+            position: relative;
+            cursor: pointer;
+            margin: 5px;
+        }
+
+        .card__inner {
+            width: 100%;
+            height: 100%;
+            position: relative;
+            transform-style: preserve-3d;
+            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card-3d.flipped .card__inner {
+            transform: rotateY(180deg);
+        }
+
+        .card__face {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border-radius: 6px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .card__face--front {
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            transform: rotateY(0deg);
+        }
+
+        .card__face--back {
+            background: linear-gradient(135deg, #2c3e50 25%, #34495e 25%, #34495e 50%, #2c3e50 50%, #2c3e50 75%, #34495e 75%, #34495e);
+            background-size: 20px 20px;
+            transform: rotateY(180deg);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        /* 기존 카드 스타일 (호환성 유지) */
+        .card {
+            width: clamp(70px, 9vw, 90px);
+            height: clamp(105px, 13.5vw, 135px);
+            background: linear-gradient(135deg, #f5f5f5 0%, #e0e0e0 100%);
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.3);
+            position: relative;
+            color: #333;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            font-size: clamp(11px, 1.4vw, 13px);
+            overflow: hidden;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+        }
+
+        .card-3d:hover .card__inner {
+            transform: translateY(-8px) scale(1.05);
+        }
+
+        .card-3d.flipped:hover .card__inner {
+            transform: rotateY(180deg) translateY(-8px) scale(1.05);
+        }
+        
+        .card.selected {
+            border: 3px solid #4CAF50 !important;
+            /* transform은 JavaScript float 애니메이션에서 관리 */
+            box-shadow: 0 0 20px rgba(76, 175, 80, 0.6) !important;
+        }
+        
+        .card-month {
+            font-weight: bold;
+            margin-bottom: 5px;
+        }
+        
+        .card-type {
+            font-size: 12px;
+            margin-bottom: 3px;
+            color: #666;
+        }
+        
+        .card-name {
+            font-size: 11px;
+        }
+        
+        .mini-card {
+            width: clamp(35px, 4vw, 45px);
+            height: clamp(52px, 6vw, 68px);
+            font-size: clamp(9px, 1.1vw, 11px);
+            border-radius: 4px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+            transition: all 0.3s ease;
+        }
+        
+        .mini-card.selected {
+            border: 2px solid #4CAF50 !important;
+            box-shadow: 0 0 10px rgba(76, 175, 80, 0.6) !important;
+            transform: scale(1.1) !important;
+        }
+        
+        #control-area {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+        }
+        
+        /* 스테이지 정보 영역 스타일 */
+        .stage-info-area {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            padding: 12px 20px;
+            background: linear-gradient(135deg, rgba(0, 0, 0, 0.6) 0%, rgba(20, 20, 20, 0.6) 100%);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 10px;
+            box-shadow: none !important;
+            filter: drop-shadow(0 0 0 transparent) !important;
+            backdrop-filter: blur(5px);
+            z-index: 100;
+            min-width: 120px;
+            transition: none !important;
+        }
+
+        .stage-info-content {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 5px;
+            filter: none !important;
+            box-shadow: none !important;
+        }
+
+        .stage-label {
+            font-size: 12px;
+            color: #aaa;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-weight: 500;
+        }
+
+        .stage-value {
+            font-size: 24px;
+            font-weight: bold;
+            color: #ffd700;
+            text-shadow: none !important;
+        }
+
+        /* 태블릿 및 모바일에서 스테이지 정보 조정 */
+        @media (max-width: 768px) {
+            .stage-info-area {
+                top: 10px;
+                right: 10px;
+                padding: 8px 15px;
+                min-width: 90px;
+            }
+
+            .stage-label {
+                font-size: 10px;
+            }
+
+            .stage-value {
+                font-size: 20px;
+            }
+        }
+
+        /* 작은 모바일에서 스테이지 정보 */
+        @media (max-width: 480px) {
+            .stage-info-area {
+                top: 5px;
+                right: 5px;
+                padding: 6px 12px;
+                min-width: 70px;
+                transform: scale(0.9);
+                transform-origin: top right;
+            }
+
+            .stage-label {
+                font-size: 9px;
+            }
+
+            .stage-value {
+                font-size: 16px;
+            }
+        }
+
+        /* 소모품 카드 영역 스타일 */
+        .consumable-area {
+            position: absolute;
+            bottom: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            padding: 15px;
+            background: transparent;
+            border: none;
+            border-radius: 12px;
+            box-shadow: none;
+            z-index: 100;
+        }
+
+        .consumable-slot {
+            width: 80px;
+            height: 110px;
+            border: 2px dashed rgba(255, 215, 0, 0.3);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .consumable-slot:hover {
+            border-color: rgba(255, 215, 0, 0.6);
+            background: rgba(255, 215, 0, 0.05);
+            transform: scale(1.05);
+        }
+
+        /* 태블릿 및 모바일에서 소모품 영역 조정 */
+        @media (max-width: 768px) {
+            .consumable-area {
+                position: fixed;
+                bottom: 10px;
+                right: 10px;
+                padding: 10px;
+                gap: 8px;
+                transform: scale(0.85);
+                transform-origin: bottom right;
+            }
+
+            .consumable-slot {
+                width: 60px;
+                height: 85px;
+            }
+        }
+
+        /* 작은 모바일 화면 */
+        @media (max-width: 480px) {
+            body {
+                padding: 5px;
+                height: auto;
+                min-height: 100vh;
+                overflow-y: auto;
+            }
+
+            #game-container {
+                width: 100%;
+                height: auto;
+                min-height: calc(100vh - 10px);
+                border-radius: 0;
+                padding: 10px;
+            }
+            
+            #main-game-layout {
+                padding: 5px;
+                gap: 10px;
+            }
+            
+            /* 덱 더 작게 */
+            #deck-info {
+                width: 35px;
+                padding: 3px 2px;
+                right: -3px;
+            }
+            
+            .deck-card {
+                width: 30px;
+                height: 45px;
+                font-size: 12px;
+            }
+            
+            .deck-remaining-label {
+                font-size: 7px !important;
+                padding: 1px 2px;
+            }
+            
+            #control-area {
+                flex-direction: row;
+                gap: 10px;
+                margin-top: 10px !important;
+            }
+            
+            .btn {
+                flex: 1;
+                padding: 12px 10px;
+                font-size: 14px;
+            }
+            
+            /* 점수판 컴팩트하게 */
+            #score-board {
+                padding: 10px;
+                gap: 5px;
+            }
+            
+            .score-item {
+                padding: 5px;
+            }
+            
+            .score-label {
+                font-size: 10px !important;
+            }
+            
+            .score-value {
+                font-size: 16px !important;
+            }
+            
+            /* 업그레이드 선택 팝업 모바일 최적화 */
+            .upgrade-container {
+                width: 90%;
+                padding: 20px;
+            }
+            
+            .upgrade-card {
+                width: 80px;
+                height: 100px;
+                padding: 8px;
+            }
+            
+            .upgrade-card .upgrade-icon {
+                font-size: 24px;
+            }
+            
+            .upgrade-card .upgrade-name {
+                font-size: 11px;
+            }
+            
+            .upgrade-card .upgrade-desc {
+                font-size: 9px;
+            }
+            
+            /* 플레이 컨테이너 조정 */
+            #play-container {
+                padding: 10px;
+                position: relative;
+            }
+            
+            /* 업그레이드 정보 숨기기 */
+            #upgrades-info {
+                display: none !important;
+            }
+            
+            /* 덱 정보는 768px 미디어쿼리에서 설정한 위치 유지 */
+            
+            /* 카드 더 작게 */
+            .card {
+                width: 50px !important;
+                height: 75px !important;
+            }
+            
+            .card-month {
+                font-size: 9px !important;
+                margin-bottom: 2px;
+            }
+            
+            .card-type {
+                font-size: 14px !important;
+                margin-bottom: 2px;
+            }
+            
+            .card-name {
+                font-size: 8px !important;
+            }
+
+            /* 소모품 영역 모바일 최적화 */
+            .consumable-area {
+                position: fixed;
+                bottom: 80px;  /* 컨트롤 버튼 위로 */
+                right: 5px;
+                padding: 8px;
+                gap: 5px;
+                transform: scale(0.7);
+                transform-origin: bottom right;
+                background: transparent;
+            }
+
+            .consumable-slot {
+                width: 50px;
+                height: 70px;
+                border-width: 1px;
+            }
+        }
+        
+        .btn {
+            padding: 12px 30px;
+            font-size: clamp(14px, 1.8vw, 16px);
+            font-weight: bold;
+            border: none;
+            border-radius: 10px !important;
+            cursor: pointer;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            color: white;
+            box-shadow: 0 3px 6px rgba(0, 0, 0, 0.3);
+            flex: 1;
+            max-width: 160px;
+        }
+
+        .btn-primary, #play-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important;
+            border-radius: 10px !important;
+        }
+
+        .btn-secondary, #discard-btn {
+            background: linear-gradient(135deg, #ff6b6b 0%, #d32f2f 100%) !important;
+            border-radius: 10px !important;
+        }
+        
+        .btn:hover:not(:disabled) {
+            transform: translateY(-2px) scale(1.02);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+        }
+        
+        .btn:active:not(:disabled) {
+            transform: translateY(0) scale(0.98);
+        }
+        
+        .btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .section-title {
+            font-size: clamp(12px, 1.6vw, 14px);
+            margin-bottom: 8px;
+            text-align: center;
+            opacity: 0.9;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            text-transform: uppercase;
+        }
+        /* 애니메이션 추가 */
+        @keyframes pulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+        }
+        
+        .card.new-card {
+            animation: fadeIn 0.3s ease-out;
+        }
+        
+        .score-value {
+            animation: fadeIn 0.5s ease-out;
+        }
+        
+        /* 포커스 효과 개선 */
+        .card:focus {
+            outline: 2px solid #ffd700;
+            outline-offset: 2px;
+        }
+        
+        .btn:focus {
+            outline: 2px solid #ffd700;
+            outline-offset: 2px;
+        }
+        
+        /* 스크롤바 스타일링 */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: rgba(255, 215, 0, 0.4);
+            border-radius: 4px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 215, 0, 0.6);
+        }
+        
+        /* 모바일 터치 최적화 */
+        @media (hover: none) {
+            .card:active {
+                transform: scale(0.95);
+            }
+            
+            .btn:active:not(:disabled) {
+                transform: scale(0.95);
+            }
+        }
+        
+        /* 다크모드 지원 */
+        @media (prefers-color-scheme: dark) {
+            body {
+                color: #f0f0f0;
+            }
+        }
+        
+        /* 업그레이드 선택 팝업 */
+        #upgrade-popup {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            z-index: 5000;
+            justify-content: center;
+            align-items: center;
+            animation: fadeIn 0.3s ease;
+        }
+        
+        .upgrade-container {
+            background: linear-gradient(135deg, #1e3c72 0%, #2a5298 100%);
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 900px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5);
+            animation: slideUp 0.4s ease;
+        }
+        
+        .upgrade-title {
+            text-align: center;
+            font-size: 36px;
+            font-weight: bold;
+            color: #ffd700;
+            margin-bottom: 10px;
+        }
+        
+        .upgrade-subtitle {
+            text-align: center;
+            font-size: 18px;
+            opacity: 0.9;
+            margin-bottom: 30px;
+        }
+        
+        .shop-header {
+            text-align: center;
+            margin-bottom: 30px;
+            padding: 15px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+        }
+        
+        .shop-gold {
+            font-size: 24px;
+        }
+        
+        .upgrade-choices {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        
+        .upgrade-card {
+            background: rgba(255, 255, 255, 0.1);
+            border: 2px solid rgba(255, 215, 0, 0.3);
+            border-radius: 15px;
+            padding: 20px;
+            padding-bottom: 50px;
+            width: 180px;
+            height: 180px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .upgrade-card:hover:not(.purchased):not(.cant-afford) {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #ffd700;
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.3);
+        }
+        
+        .upgrade-card.purchased {
+            background: rgba(50, 50, 50, 0.3);
+            border-color: #555;
+            cursor: not-allowed;
+            opacity: 0.5;
+            filter: grayscale(50%);
+        }
+        
+        .upgrade-card.cant-afford {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        .upgrade-price {
+            position: absolute;
+            bottom: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: rgba(0, 0, 0, 0.8);
+            padding: 5px 15px;
+            border-radius: 20px;
+            color: #ffd700;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        
+        .upgrade-card.purchased .upgrade-price {
+            background: #555;
+            color: #999;
+        }
+        
+        .upgrade-icon {
+            font-size: 48px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+        
+        .upgrade-name {
+            font-size: 20px;
+            font-weight: bold;
+            text-align: center;
+            margin-bottom: 10px;
+            color: #ffd700;
+        }
+        
+        .upgrade-description {
+            font-size: 14px;
+            text-align: center;
+            opacity: 0.9;
+            line-height: 1.4;
+        }
+        
+        .upgrade-rarity {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            font-size: 12px;
+            padding: 4px 8px;
+            border-radius: 5px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .rarity-common {
+            color: #ffffff;
+        }
+        
+        .rarity-rare {
+            color: #4fc3f7;
+        }
+        
+        .rarity-epic {
+            color: #ab47bc;
+        }
+        
+        .rarity-legendary {
+            color: #ffd700;
+        }
+        
+        .upgrade-confirm {
+            display: flex;
+            justify-content: center;
+            margin-top: 30px;
+        }
+        
+        .btn-confirm {
+            padding: 15px 40px;
+            font-size: 20px;
+            background: linear-gradient(135deg, #ffd700 0%, #ffed4e 100%);
+            color: #1e3c72;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            disabled: true;
+        }
+        
+        .btn-confirm:not(:disabled):hover {
+            transform: scale(1.05);
+            box-shadow: 0 10px 30px rgba(255, 215, 0, 0.4);
+        }
+        
+        .btn-confirm:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+        
+        
+        @keyframes slideDown {
+            from { 
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+            to { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideUp {
+            from { 
+                transform: translateY(0);
+                opacity: 1;
+            }
+            to { 
+                transform: translateY(-20px);
+                opacity: 0;
+            }
+        }
+        
+        @keyframes upgradeTrigger {
+            0% { 
+                transform: scale(1);
+            }
+            50% { 
+                transform: scale(1.5);
+                filter: brightness(1.5);
+                box-shadow: 0 0 20px rgba(255, 215, 0, 0.8);
+            }
+            100% { 
+                transform: scale(1);
+            }
+        }
+        
+        .upgrade-triggered {
+            animation: upgradeTrigger 0.6s ease-out;
+        }
+        
+        /* 툴팁 스타일 */
+        .upgrade-tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.95);
+            color: white;
+            padding: 10px 15px;
+            border-radius: 8px;
+            font-size: 13px;
+            white-space: nowrap;
+            z-index: 10000;
+            pointer-events: none;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+            border: 1px solid rgba(255, 215, 0, 0.3);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5);
+            bottom: 100%;
+            left: 50%;
+            transform: translateX(-50%) translateY(-5px);
+        }
+        
+        .upgrade-tooltip.show {
+            opacity: 1;
+        }
+        
+        .upgrade-item {
+            position: relative;
+            cursor: help;
+        }
+        
+        /* 접근성 개선 */
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+        
+        /* 카드 강화 효과 */
+        @keyframes enhancedPulse {
+            0%, 100% { 
+                opacity: 0.6;
+            }
+            50% { 
+                opacity: 1;
+            }
+        }
+        
+        .card.enhanced-청 {
+            position: relative;
+            border: 2px solid #00bfff !important;
+            box-shadow: 0 0 15px rgba(0, 191, 255, 0.6),
+                        inset 0 0 10px rgba(0, 191, 255, 0.2) !important;
+        }
+        
+        .card.enhanced-청::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+                        rgba(0, 191, 255, 0.4) 0%,
+                        rgba(0, 191, 255, 0.2) 30%,
+                        transparent 60%);
+            border-radius: inherit;
+            animation: enhancedPulse 2s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .card.enhanced-청::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at top left,
+                        rgba(0, 191, 255, 0.3) 0%,
+                        transparent 50%);
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .card.enhanced-적 {
+            position: relative;
+            border: 2px solid #ff4444 !important;
+            box-shadow: 0 0 15px rgba(255, 68, 68, 0.6),
+                        inset 0 0 10px rgba(255, 68, 68, 0.2) !important;
+        }
+        
+        .card.enhanced-적::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+                        rgba(255, 68, 68, 0.4) 0%,
+                        rgba(255, 68, 68, 0.2) 30%,
+                        transparent 60%);
+            border-radius: inherit;
+            animation: enhancedPulse 2s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .card.enhanced-적::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at top left,
+                        rgba(255, 68, 68, 0.3) 0%,
+                        transparent 50%);
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .card.enhanced-백 {
+            position: relative;
+            border: 2px solid #ffffff !important;
+            box-shadow: 0 0 15px rgba(255, 255, 255, 0.8),
+                        inset 0 0 10px rgba(255, 255, 255, 0.3) !important;
+        }
+        
+        .card.enhanced-백::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg,
+                        rgba(255, 255, 255, 0.5) 0%,
+                        rgba(255, 255, 255, 0.3) 30%,
+                        rgba(255, 255, 255, 0.1) 60%,
+                        transparent 100%);
+            border-radius: inherit;
+            animation: enhancedPulse 2s ease-in-out infinite;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .card.enhanced-백::after {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: radial-gradient(ellipse at top left,
+                        rgba(255, 255, 255, 0.4) 0%,
+                        transparent 50%);
+            border-radius: inherit;
+            pointer-events: none;
+            z-index: 1;
+        }
+        
+        .card.enhanced-흑 {
+            position: relative;
+            border: 2px solid #8b00ff !important;
+            box-shadow: 0 0 15px rgba(139, 0, 255, 0.6),
+                        inset 0 0 10px rgba(139, 0, 255, 0.2) !important;
+        }
+
+        .card.enhanced-흑::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                135deg,
+                rgba(139, 0, 255, 0.3) 0%,
+                rgba(139, 0, 255, 0.1) 50%,
+                rgba(139, 0, 255, 0.3) 100%
+            );
+            pointer-events: none;
+            border-radius: inherit;
+            animation: blackGradientShift 3s ease-in-out infinite;
+        }
+
+        @keyframes blackGradientShift {
+            0%, 100% { opacity: 0.5; }
+            50% { opacity: 0.8; }
+        }
+
+        .card.enhanced-흑::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 100%;
+            height: 100%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(
+                circle at center,
+                rgba(139, 0, 255, 0.4) 0%,
+                transparent 70%
+            );
+            pointer-events: none;
+            animation: blackPulse 2s ease-in-out infinite;
+        }
+
+        @keyframes blackPulse {
+            0%, 100% { 
+                transform: translate(-50%, -50%) scale(0.8);
+                opacity: 0.3;
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.1);
+                opacity: 0.6;
+            }
+        }
+        
+        .card.enhanced-황 {
+            position: relative;
+            border: 2px solid #ffd700 !important;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.6),
+                        inset 0 0 10px rgba(255, 215, 0, 0.2) !important;
+        }
+        
+        .card.enhanced-황::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(
+                45deg,
+                rgba(255, 215, 0, 0.4) 0%,
+                rgba(255, 255, 100, 0.2) 25%,
+                rgba(255, 215, 0, 0.4) 50%,
+                rgba(255, 255, 100, 0.2) 75%,
+                rgba(255, 215, 0, 0.4) 100%
+            );
+            pointer-events: none;
+            border-radius: inherit;
+            animation: goldShimmer 2.5s linear infinite;
+        }
+
+        @keyframes goldShimmer {
+            0% { 
+                background-position: 0% 50%;
+                opacity: 0.6;
+            }
+            50% {
+                background-position: 100% 50%;
+                opacity: 0.9;
+            }
+            100% { 
+                background-position: 0% 50%;
+                opacity: 0.6;
+            }
+        }
+
+        .card.enhanced-황::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 120%;
+            height: 120%;
+            transform: translate(-50%, -50%);
+            background: radial-gradient(
+                circle at center,
+                rgba(255, 215, 0, 0.5) 0%,
+                rgba(255, 255, 100, 0.3) 30%,
+                transparent 60%
+            );
+            pointer-events: none;
+            animation: goldGlow 1.5s ease-in-out infinite;
+        }
+
+        @keyframes goldGlow {
+            0%, 100% { 
+                transform: translate(-50%, -50%) scale(0.9) rotate(0deg);
+                opacity: 0.4;
+            }
+            50% { 
+                transform: translate(-50%, -50%) scale(1.2) rotate(180deg);
+                opacity: 0.8;
+            }
+        }
+
+        /* Animated Gradient Text Effect */
+        .animated-gradient-text {
+            position: relative;
+            margin: 0 auto;
+            display: flex;
+            max-width: fit-content;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            border-radius: 1.25rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            transition: box-shadow 0.5s ease-out;
+            overflow: hidden;
+            cursor: pointer;
+            padding: 8px 16px;
+        }
+
+        .gradient-overlay {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-size: 300% 100%;
+            animation: gradient linear infinite;
+            border-radius: inherit;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        .gradient-overlay::before {
+            content: '';
+            position: absolute;
+            border-radius: inherit;
+            width: calc(100% - 2px);
+            height: calc(100% - 2px);
+            left: 50%;
+            top: 50%;
+            transform: translate(-50%, -50%);
+            background-color: #060010;
+            z-index: -1;
+        }
+
+        @keyframes gradient {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+        
+        /* 보주 카드 선택 애니메이션 */
+        @keyframes cardAppear {
+            0% { 
+                transform: scale(0);
+                opacity: 0;
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% { 
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes slideIn {
+            from {
+                transform: translateY(-30px) scale(0.95);
+                opacity: 0;
+            }
+            to {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+        }
+        
+        .orb-selection-card.selected {
+            animation: none !important;
+        }
+        
+        /* 강화 애니메이션 */
+        @keyframes enhanceCardAppear {
+            0% { 
+                transform: scale(0) rotate(180deg);
+                opacity: 0;
+            }
+            100% { 
+                transform: scale(1) rotate(0deg);
+                opacity: 1;
+            }
+        }
+        
+        @keyframes enhanceGlow {
+            0% { 
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.2);
+            }
+            100% { 
+                opacity: 0.3;
+                transform: scale(1);
+            }
+        }
+        
+        @keyframes enhanceSymbol {
+            0% {
+                transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+                opacity: 0;
+            }
+            50% {
+                transform: translate(-50%, -50%) scale(1.5) rotate(0deg);
+                opacity: 1;
+            }
+            100% {
+                transform: translate(-50%, -50%) scale(1) rotate(0deg);
+                opacity: 0.8;
+            }
+        }
+        
+        @keyframes fadeOut {
+            from { opacity: 1; }
+            to { opacity: 0; }
+        }
+
+        .text-content {
+            display: inline-block;
+            position: relative;
+            z-index: 2;
+            background-size: 300% 100%;
+            background-clip: text;
+            -webkit-background-clip: text;
+            color: transparent;
+            animation: gradient linear infinite;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* Enhancement specific gradient styles */
+        .gradient-청 .gradient-overlay,
+        .gradient-청 .text-content {
+            background-image: linear-gradient(to right, #00bfff, #87ceeb, #00bfff, #4682b4, #00bfff);
+            animation-duration: 6s;
+        }
+
+        .gradient-적 .gradient-overlay,
+        .gradient-적 .text-content {
+            background-image: linear-gradient(to right, #ff4444, #ff7777, #ff4444, #cc0000, #ff4444);
+            animation-duration: 5s;
+        }
+
+        .gradient-백 .gradient-overlay,
+        .gradient-백 .text-content {
+            background-image: linear-gradient(to right, #ffffff, #f0f0f0, #ffffff, #e8e8e8, #ffffff);
+            animation-duration: 7s;
+        }
+
+        .gradient-흑 .gradient-overlay,
+        .gradient-흑 .text-content {
+            background-image: linear-gradient(to right, #8b00ff, #da70d6, #8b00ff, #9932cc, #8b00ff);
+            animation-duration: 6s;
+        }
+
+        .gradient-황 .gradient-overlay,
+        .gradient-황 .text-content {
+            background-image: linear-gradient(to right, #ffd700, #ffff99, #ffd700, #ffa500, #ffd700);
+            animation-duration: 4s;
+        }
+
+        /* Hover effects */
+        .animated-gradient-text:hover {
+            box-shadow: 0 0 20px rgba(64, 121, 255, 0.5);
+        }
+
+        .gradient-청.animated-gradient-text:hover {
+            box-shadow: 0 0 20px rgba(0, 191, 255, 0.6);
+        }
+
+        .gradient-적.animated-gradient-text:hover {
+            box-shadow: 0 0 20px rgba(255, 68, 68, 0.6);
+        }
+
+        .gradient-백.animated-gradient-text:hover {
+            box-shadow: 0 0 20px rgba(255, 255, 255, 0.6);
+        }
+
+        .gradient-흑.animated-gradient-text:hover {
+            box-shadow: 0 0 20px rgba(139, 0, 255, 0.6);
+        }
+
+        .gradient-황.animated-gradient-text:hover {
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.6);
+        }
+        
+        /* Rarity gradients */
+        .gradient-common .gradient-overlay,
+        .gradient-common .text-content {
+            background-image: linear-gradient(to right, #ffffff, #e0e0e0, #ffffff, #f0f0f0, #ffffff);
+            animation-duration: 3s;
+        }
+        
+        .gradient-rare .gradient-overlay,
+        .gradient-rare .text-content {
+            background-image: linear-gradient(to right, #4fc3f7, #29b6f6, #03a9f4, #4fc3f7, #81d4fa);
+            animation-duration: 3s;
+        }
+        
+        .gradient-epic .gradient-overlay,
+        .gradient-epic .text-content {
+            background-image: linear-gradient(to right, #ab47bc, #ba68c8, #ce93d8, #ab47bc, #8e24aa);
+            animation-duration: 3s;
+        }
+        
+        .gradient-legendary .gradient-overlay,
+        .gradient-legendary .text-content {
+            background-image: linear-gradient(to right, #ffd700, #ffed4e, #fff59d, #ffd700, #ffc107);
+            animation-duration: 2.5s;
+        }
+
+        /* 카드 강화 효과 애니메이션 */
+        @keyframes cardGlow {
+            0%, 100% { box-shadow: 0 0 5px rgba(255, 215, 0, 0.5); }
+            50% { box-shadow: 0 0 20px rgba(255, 215, 0, 0.8); }
+        }
+
+        @keyframes rarePulse {
+            0%, 100% {
+                filter: saturate(100%) brightness(100%);
+                transform: scale(1);
+            }
+            50% {
+                filter: saturate(200%) brightness(110%);
+                transform: scale(1.02);
+            }
+        }
+
+        .card.rare {
+            animation: rarePulse 2s ease-in-out infinite;
+        }
+
+        .card.enhanced-gold .card__face--front {
+            animation: cardGlow 2s ease-in-out infinite;
+        }
+
+        /* 파티클 컨테이너 */
+        .particle-container {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            overflow: hidden;
+        }
+
+        .particle {
+            position: absolute;
+            width: 4px;
+            height: 4px;
+            background: radial-gradient(circle, rgba(255,215,0,0.8), transparent);
+            border-radius: 50%;
+            animation: floatParticle 3s ease-in-out infinite;
+        }
+
+        @keyframes floatParticle {
+            0% {
+                transform: translateY(0) translateX(0) scale(0);
+                opacity: 0;
+            }
+            20% {
+                transform: translateY(-20px) translateX(10px) scale(1);
+                opacity: 1;
+            }
+            80% {
+                transform: translateY(-80px) translateX(-10px) scale(1);
+                opacity: 1;
+            }
+            100% {
+                transform: translateY(-100px) translateX(0) scale(0);
+                opacity: 0;
+            }
+        }
+
+    </style>
+
+    <!-- External Libraries -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body>
+    <!-- CRT 효과들 -->
+    <div id="crt-rgb"></div>
+    <div id="crt-scanlines" style="
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        pointer-events: none;
+        z-index: 10003;
+        background-image: repeating-linear-gradient(
+            0deg,
+            rgba(0, 0, 0, 0.105) 0px,
+            rgba(0, 0, 0, 0.105) 1px,
+            transparent 1px,
+            transparent 3px
+        );
+        opacity: 0.7;
+    "></div>
+
+    <div id="game-container">
+        <div id="main-game-layout">
+            <div id="captured-area">
+                    <div class="captured-cards-container">
+                        <div class="captured-section">
+                            <div class="captured-title">광 (<span id="gwang-count">0</span>)</div>
+                            <div class="captured-cards" id="captured-gwang-cards"></div>
+                        </div>
+                        <div class="captured-section">
+                            <div class="captured-title">열끗 (<span id="yeol-count">0</span>)</div>
+                            <div class="captured-cards" id="captured-yeol-cards"></div>
+                        </div>
+                        <div class="captured-section">
+                            <div class="captured-title">단 (<span id="dan-count">0</span>)</div>
+                            <div class="captured-cards" id="captured-dan-cards"></div>
+                        </div>
+                        <div class="captured-section">
+                            <div class="captured-title">피 (<span id="pi-count">0</span>)</div>
+                            <div class="captured-cards" id="captured-pi-cards"></div>
+                        </div>
+                    </div>
+            </div>
+            
+            <div id="play-container">
+                <div id="upgrades-info">
+                    <div id="upgrades-list">
+                        <!-- 동적으로 생성됨 -->
+                    </div>
+                </div>
+                
+                <div style="flex: 1; display: flex; flex-direction: column;">
+                    <div style="flex: 0.45; display: flex; flex-direction: column;">
+                        <div class="section-title">바닥 패</div>
+                        <div id="floor-area" style="flex: 1;"></div>
+                    </div>
+                    
+                    <div class="divider"></div>
+                    
+                    <div style="flex: 0.55; display: flex; flex-direction: column;">
+                        <div class="section-title" style="margin-top: 15px;">내 손패</div>
+                        <div id="hand-area" style="flex: 1; display: flex; align-items: center;"></div>
+                        
+                        <div id="control-area" style="margin-top: 15px;">
+                            <button class="btn btn-secondary" id="discard-btn" onclick="discardCards()">버리기(4)</button>
+                            <button class="btn btn-primary" id="play-btn" onclick="playCard()">바닥에 내기</button>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- 스테이지 정보 영역 (우측 상단) -->
+                <div id="stage-info-area" class="stage-info-area">
+                    <div class="stage-info-content">
+                        <div class="stage-label">스테이지</div>
+                        <div class="stage-value"><span id="stage-display">1</span></div>
+                    </div>
+                </div>
+
+                <!-- 소모품 카드 영역 -->
+                <div id="consumable-area" class="consumable-area">
+                    <div id="consumable-slot-1" class="consumable-slot"></div>
+                    <div id="consumable-slot-2" class="consumable-slot"></div>
+                </div>
+                
+                <div id="deck-info">
+                    <div class="deck-card">
+                        🎴
+                        <div class="deck-remaining-label">
+                            덱 <span id="deck-remaining">42</span>/<span id="deck-total">48</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div id="score-board">
+                    <div class="score-item desktop-only">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 5px;">
+                            <div class="score-label" style="flex: 1;">스테이지 <span id="stage-num">1</span></div>
+                            <div class="score-label" style="flex: 2; text-align: center;">목표점수</div>
+                            <div style="flex: 1;"></div>
+                        </div>
+                        <div class="score-value" id="target">50</div>
+                    </div>
+                    <!-- 모바일: 목표점수, 내점수, 배수 한 줄 -->
+                    <div class="score-row mobile-row-1">
+                        <div class="score-item-half mobile-target" style="display: none; text-align: center;">
+                            <div class="score-label">목표</div>
+                            <div class="score-value"><span id="target-mobile">50</span></div>
+                        </div>
+                        <div class="score-item-half">
+                            <div class="score-label">내점수</div>
+                            <div class="score-value" id="score">0</div>
+                        </div>
+                        <div class="score-item-half">
+                            <div class="score-label">배수</div>
+                            <div class="score-value" id="multiplier">x1</div>
+                        </div>
+                    </div>
+                    <!-- 모바일: 최종점수, 소지금 한 줄 -->
+                    <div class="score-row mobile-row-2" style="display: none;">
+                        <div class="score-item-half" style="background: linear-gradient(135deg, rgba(100, 255, 100, 0.1) 0%, rgba(100, 255, 100, 0.05) 100%); border: 1px solid rgba(100, 255, 100, 0.3);">
+                            <div class="score-label" style="color: #64ff64;">최종 점수</div>
+                            <div class="score-value" style="color: #64ff64; font-size: 18px; font-weight: bold;">
+                                <span id="total-score-mobile">0</span>
+                            </div>
+                        </div>
+                        <div class="score-item-half" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 255, 0, 0.05) 100%); border: 1px solid rgba(255, 215, 0, 0.3);">
+                            <div class="score-label" style="color: #ffd700;">소지금</div>
+                            <div class="score-value" style="color: #ffd700; font-size: 16px;">
+                                <span id="gold-amount-mobile">0</span>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- 데스크탑용 -->
+                    <div class="score-item desktop-only" style="background: linear-gradient(135deg, rgba(100, 255, 100, 0.1) 0%, rgba(100, 255, 100, 0.05) 100%); border: 1px solid rgba(100, 255, 100, 0.3);">
+                        <div class="score-label" style="color: #64ff64;">최종 점수</div>
+                        <div class="score-value" style="color: #64ff64; font-size: 24px; font-weight: bold;">
+                            <span id="total-score">0</span>
+                        </div>
+                    </div>
+                    <div class="score-item desktop-only" style="background: linear-gradient(135deg, rgba(255, 215, 0, 0.1) 0%, rgba(255, 255, 0, 0.05) 100%); border: 1px solid rgba(255, 215, 0, 0.3);">
+                        <div class="score-label" style="color: #ffd700;">소지금</div>
+                        <div class="score-value" style="color: #ffd700; font-size: 20px;">
+                            <span id="gold-amount">0</span>
+                        </div>
+                    </div>
+                </div>
+        </div>
+    </div>
+    
+    
+    <!-- 배경음악 -->
+    <audio id="bgm" loop autoplay>
+        <source src="bgm/Card Chaos.mp3" type="audio/mpeg">
+        Your browser does not support the audio element.
+    </audio>
+    
+    
+    <!-- Enhanced Game Scripts -->
+    <script src="balatro-bg.js"></script>
+    <script src="hwatu-config.js"></script>
+    <script src="hwatu-utils.js"></script>
+    <script src="hwatu-state.js"></script>
+    <script src="hwatu-components.js"></script>
+    <script src="hwatu-shop.js"></script>
+    <script src="hwatu-game.js"></script>
+
+    <!-- New Enhancement Scripts -->
+    <script src="hwatu-sound-simple.js"></script>
+    <script src="hwatu-ui.js"></script>
+    <script src="hwatu-enhancements.js"></script>
+    <script>
+        // 전역 변수로 배경 객체 저장
+        let balatroBackground;
+        
+        // 기본 색상 저장
+        const defaultColors = {
+            color1: '#2D5016',  // 어두운 녹색 (화투판)
+            color2: '#FFD700',  // 밝은 노랑 (금색)
+            color3: '#1E3A5F'   // 진한 파랑
+        };
+        
+        // 랜덤 색상 생성 함수
+        function getRandomColor() {
+            const hue = Math.floor(Math.random() * 360);
+            const saturation = 50 + Math.floor(Math.random() * 30);
+            const lightness = 25 + Math.floor(Math.random() * 30);
+            return `hsl(${hue}, ${saturation}%, ${lightness}%)`;
+        }
+        
+        // 색상 보간 함수
+        function lerpColor(startColor, endColor, progress) {
+            const start = balatroBackground.hexToVec4(startColor);
+            const end = balatroBackground.hexToVec4(endColor);
+            return [
+                start[0] + (end[0] - start[0]) * progress,
+                start[1] + (end[1] - start[1]) * progress,
+                start[2] + (end[2] - start[2]) * progress,
+                start[3] + (end[3] - start[3]) * progress
+            ];
+        }
+        
+        // 현재 색상 저장
+        let currentColors = {...defaultColors};
+        
+        // 배경 색상 업데이트 함수 (부드러운 전환)
+        function updateBackgroundColors(stage) {
+            if (!balatroBackground) return;
+            
+            let targetColors;
+            if (stage === 1) {
+                // 스테이지 1은 기본 색상
+                targetColors = defaultColors;
+            } else {
+                // 스테이지 2 이상은 랜덤 색상
+                targetColors = {
+                    color1: getRandomColor(),
+                    color2: getRandomColor(),
+                    color3: getRandomColor()
+                };
+            }
+            
+            // 부드러운 색상 전환 애니메이션
+            const startColors = {...currentColors};
+            const duration = 2000; // 2초간 전환
+            const startTime = Date.now();
+            
+            function animate() {
+                const elapsed = Date.now() - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+                
+                // 이징 함수 적용 (ease-in-out)
+                const easeProgress = progress < 0.5 
+                    ? 2 * progress * progress 
+                    : -1 + (4 - 2 * progress) * progress;
+                
+                const gl = balatroBackground.gl;
+                if (gl && balatroBackground.uniforms) {
+                    gl.useProgram(balatroBackground.program);
+                    
+                    // 각 색상을 보간
+                    const color1 = lerpColor(startColors.color1, targetColors.color1, easeProgress);
+                    const color2 = lerpColor(startColors.color2, targetColors.color2, easeProgress);
+                    const color3 = lerpColor(startColors.color3, targetColors.color3, easeProgress);
+                    
+                    gl.uniform4fv(balatroBackground.uniforms.uColor1, color1);
+                    gl.uniform4fv(balatroBackground.uniforms.uColor2, color2);
+                    gl.uniform4fv(balatroBackground.uniforms.uColor3, color3);
+                }
+                
+                if (progress < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    // 전환 완료 후 현재 색상 업데이트
+                    currentColors = targetColors;
+                }
+            }
+            
+            animate();
+        }
+        
+        // Balatro 배경 초기화
+        document.addEventListener('DOMContentLoaded', () => {
+            balatroBackground = new BalatroBackground(document.body, {
+                spinRotation: 1.0,  // 고정 속도
+                spinSpeed: 1.0,
+                color1: defaultColors.color1,
+                color2: defaultColors.color2,
+                color3: defaultColors.color3,
+                contrast: 3.5,
+                lighting: 0.3,
+                spinAmount: 0.3,
+                pixelFilter: 745.0,
+                spinEase: 1.0,  // 1로 고정
+                isRotate: true,  // 회전 활성화
+                mouseInteraction: false  // 마우스 인터랙션 비활성화
+            });
+            
+            // BGM 볼륨 조절 및 자동 재생
+            const bgm = document.getElementById('bgm');
+            bgm.volume = 0.3;  // 볼륨 30%로 설정
+            
+            // 사용자 인터랙션 후 재생 (브라우저 정책)
+            document.addEventListener('click', () => {
+                if (bgm.paused) {
+                    bgm.play().catch(e => console.log('Audio play failed:', e));
+                }
+            }, { once: true });
+        });
+    </script>
+</body>
+</html>

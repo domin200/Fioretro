@@ -1,1 +1,1 @@
-🎮 Electron 래핑 초기 설정: main.js 생성 및 npm 스크립트 구성
+📱 Capacitor 모바일 앱 설정: iOS/Android 플랫폼 추가 및 빌드 스크립트 구성
