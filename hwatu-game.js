@@ -6281,14 +6281,14 @@ function startGame() {
             
             <div style="flex: 1; display: flex; flex-direction: column;">
                 <div style="flex: 0.45; display: flex; flex-direction: column;">
-                    <div class="section-title">바닥 패</div>
+                    <div class="section-title">바닥 패 (<span id="floor-count">0</span>/<span id="floor-max">5</span>)</div>
                     <div id="floor-area" style="flex: 1;"></div>
                 </div>
-                
+
                 <div class="divider"></div>
-                
+
                 <div style="flex: 0.55; display: flex; flex-direction: column;">
-                    <div class="section-title" style="margin-top: 15px;">내 손패</div>
+                    <div class="section-title" style="margin-top: 15px;">내 손패 (<span id="hand-count">0</span>/<span id="hand-max">5</span>)</div>
                     <div id="hand-area" style="flex: 1; display: flex; align-items: center;"></div>
                     
                     <div id="control-area" style="margin-top: 15px;">
